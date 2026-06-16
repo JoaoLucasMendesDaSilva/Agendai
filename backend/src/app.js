@@ -5,6 +5,7 @@ const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const path = require('path');
 const { testDatabaseConnection } = require('./config/database');
+const authRoutes = require('./routes/authRoutes');
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -43,6 +44,8 @@ app.use(
 );
 
 app.use(express.json({ limit: '100kb' }));
+
+app.use('/api/auth', authRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({
