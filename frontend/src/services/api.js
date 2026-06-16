@@ -34,7 +34,9 @@ async function request(path, options = {}) {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(data.mensagem || 'Nao foi possivel concluir a solicitacao.');
+    throw new Error(
+      data.erro || data.mensagem || 'Erro ao comunicar com o servidor.'
+    );
   }
 
   return data;
