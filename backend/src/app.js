@@ -4,6 +4,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const path = require('path');
+const { testDatabaseConnection } = require('./config/database');
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -51,6 +52,21 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get('/api/db-health', async (req, res, next) => {
+  try {
+    await testDatabaseConnection();
+
+    res.json({
+      status: 'ok',
+      mensagem: 'Conexao com o banco de dados em funcionamento.',
+    });
+  } catch (err) {
+    err.status = 503;
+    err.publicMessage = 'Nao foi possivel conectar ao banco de dados.';
+    next(err);
+  }
+});
+
 app.use((req, res) => {
   res.status(404).json({
     erro: 'Rota nao encontrada.',
@@ -61,14 +77,22 @@ app.use((err, req, res, next) => {
   const statusCode = err.status || 500;
 
   if (process.env.NODE_ENV !== 'production') {
-    console.error(err);
+    console.error({
+      codigo: err.code,
+      status: statusCode,
+      metodo: req.method,
+      rota: req.originalUrl,
+    });
   }
 
+  const publicErrorMessage =
+    err.publicMessage ||
+    (statusCode >= 500
+      ? 'Erro interno do servidor.'
+      : err.message || 'Nao foi possivel processar a requisicao.');
+
   res.status(statusCode).json({
-    erro:
-      statusCode === 500
-        ? 'Erro interno do servidor.'
-        : err.message || 'Nao foi possivel processar a requisicao.',
+    erro: publicErrorMessage,
   });
 });
 
