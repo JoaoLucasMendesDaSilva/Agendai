@@ -20,12 +20,14 @@ async function request(path, options = {}) {
     ...options.headers,
   };
 
-  if (token) {
+  if (token && options.auth !== false) {
     headers.Authorization = `Bearer ${token}`;
   }
 
+  const { auth, ...fetchOptions } = options;
+
   const response = await fetch(`${API_URL}${path}`, {
-    ...options,
+    ...fetchOptions,
     headers,
   });
 

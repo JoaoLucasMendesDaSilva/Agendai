@@ -168,6 +168,18 @@ textarea:focus {
   margin: 0 auto;
 }
 
+.public-page {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+.public-header {
+  padding-top: 12px;
+}
+
 .dashboard-header {
   display: grid;
   gap: 16px;
@@ -285,6 +297,57 @@ textarea:focus {
   font-weight: 700;
 }
 
+.step-label {
+  margin-bottom: 6px;
+  color: #246b61;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.choice-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.choice-card {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  border: 1px solid #d8dee9;
+  border-radius: 8px;
+  padding: 16px;
+  color: #17202a;
+  background: #ffffff;
+  text-align: left;
+}
+
+.choice-card.is-selected,
+.time-button.is-selected {
+  border-color: #246b61;
+  outline: 3px solid rgba(36, 107, 97, 0.18);
+}
+
+.choice-card span {
+  color: #526070;
+}
+
+.time-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.time-button {
+  min-height: 48px;
+  border: 1px solid #d8dee9;
+  border-radius: 8px;
+  color: #17202a;
+  background: #ffffff;
+  font-weight: 700;
+}
+
 @media (min-width: 720px) {
   .auth-panel,
   .dashboard-panel {
@@ -306,5 +369,13 @@ textarea:focus {
 
   .button-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .choice-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .time-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

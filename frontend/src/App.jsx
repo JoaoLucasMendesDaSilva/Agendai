@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Cadastro from './pages/Cadastro';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import AgendamentoPublico from './pages/AgendamentoPublico';
 import Negocio from './pages/Negocio';
 import Profissionais from './pages/Profissionais';
 import Servicos from './pages/Servicos';
@@ -35,6 +36,12 @@ function App() {
     }
 
     setPath(nextPath);
+  }
+
+  if (path.startsWith('/agendar/')) {
+    const slugOuId = decodeURIComponent(path.replace('/agendar/', '').trim());
+
+    return <AgendamentoPublico slugOuId={slugOuId} />;
   }
 
   if (path === '/cadastro') {
