@@ -9,6 +9,7 @@ const authRoutes = require('./routes/authRoutes');
 const negocioRoutes = require('./routes/negocioRoutes');
 const servicosRoutes = require('./routes/servicosRoutes');
 const profissionaisRoutes = require('./routes/profissionaisRoutes');
+const publicoRoutes = require('./routes/publicoRoutes');
 
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -52,6 +53,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/negocio', negocioRoutes);
 app.use('/api/servicos', servicosRoutes);
 app.use('/api/profissionais', profissionaisRoutes);
+app.use('/api/publico', publicoRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({
