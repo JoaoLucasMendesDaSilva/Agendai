@@ -27,6 +27,16 @@ function Dashboard({ navigate }) {
           Sua sessao esta ativa. As proximas etapas vao adicionar cadastro do
           negocio, servicos, profissionais e agenda.
         </p>
+
+        <div className="action-list">
+          <button
+            className="button button-primary"
+            onClick={() => navigate('/negocio')}
+            type="button"
+          >
+            Meu negocio
+          </button>
+        </div>
       </section>
     </main>
   );

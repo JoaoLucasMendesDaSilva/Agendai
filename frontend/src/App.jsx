@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Cadastro from './pages/Cadastro';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import Negocio from './pages/Negocio';
 
 function App() {
   const [path, setPath] = useState(window.location.pathname);
@@ -42,6 +43,14 @@ function App() {
     return (
       <ProtectedRoute navigate={navigate}>
         <Dashboard navigate={navigate} />
+      </ProtectedRoute>
+    );
+  }
+
+  if (path === '/negocio') {
+    return (
+      <ProtectedRoute navigate={navigate}>
+        <Negocio navigate={navigate} />
       </ProtectedRoute>
     );
   }

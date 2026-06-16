@@ -62,5 +62,6 @@ export {
   clearToken,
   getToken,
   loginUsuario,
+  request,
   setToken,
 };

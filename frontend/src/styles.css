@@ -56,6 +56,7 @@ h2 {
 p,
 label,
 input,
+textarea,
 button {
   margin: 0;
   font-size: 1rem;
@@ -78,17 +79,27 @@ label {
   font-weight: 700;
 }
 
-input {
+input,
+textarea {
   width: 100%;
-  min-height: 48px;
   border: 1px solid #b9c2cf;
   border-radius: 8px;
   padding: 12px 14px;
   color: #17202a;
   background: #ffffff;
+  font-family: inherit;
 }
 
-input:focus {
+input {
+  min-height: 48px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus {
   border-color: #246b61;
   outline: 3px solid rgba(36, 107, 97, 0.18);
 }
@@ -139,6 +150,11 @@ input:focus {
   background: #dcfce7;
 }
 
+.message-info {
+  color: #17446b;
+  background: #e7f1fb;
+}
+
 .dashboard-page {
   display: grid;
   align-content: start;
@@ -162,6 +178,54 @@ input:focus {
   box-shadow: none;
 }
 
+.action-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.summary-box {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+  border: 1px solid #d8dee9;
+  border-radius: 8px;
+  padding: 16px;
+  background: #f8fafc;
+}
+
+.form-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.checkbox-group {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  border: 1px solid #d8dee9;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.checkbox-group legend {
+  padding: 0 6px;
+  color: #344054;
+  font-weight: 700;
+}
+
+.checkbox-label {
+  grid-template-columns: 24px 1fr;
+  align-items: center;
+  gap: 10px;
+  font-weight: 400;
+}
+
+.checkbox-label input {
+  width: 20px;
+  min-height: 20px;
+}
+
 @media (min-width: 720px) {
   .auth-panel,
   .dashboard-panel {
@@ -175,5 +239,9 @@ input:focus {
 
   .dashboard-header .button {
     width: auto;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
   }
 }
