@@ -41,6 +41,39 @@ body {
     #f7f9fb;
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes softFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
 button,
 input,
 select,
@@ -51,6 +84,7 @@ textarea {
 .page {
   min-height: 100vh;
   padding: 20px;
+  animation: fadeIn 320ms ease both;
 }
 
 .page-center {
@@ -125,6 +159,7 @@ textarea {
   border-radius: 20px;
   background: var(--white);
   box-shadow: var(--shadow-soft);
+  animation: slideUp 380ms ease both;
 }
 
 .auth-form-panel {
@@ -151,6 +186,7 @@ textarea {
     radial-gradient(circle at 72% 12%, rgba(255, 255, 255, 0.08), transparent 18%),
     linear-gradient(180deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.18)),
     linear-gradient(145deg, #0b7b69, #075047);
+  animation: fadeIn 440ms ease 80ms both;
 }
 
 .auth-visual-panel .brand-name,
@@ -163,6 +199,7 @@ textarea {
   width: min(100%, 300px);
   height: 270px;
   margin: 20px auto;
+  animation: softFloat 6s ease-in-out infinite;
 }
 
 .calendar-board {
@@ -351,7 +388,7 @@ textarea {
   color: var(--gray-900);
   background: var(--white);
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
 input,
@@ -381,11 +418,21 @@ textarea:focus {
   padding: 13px 18px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
 }
 
 .button:hover {
-  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(16, 24, 40, 0.09);
+  transform: translateY(-2px);
+}
+
+.button:active {
+  transform: scale(0.98);
 }
 
 .button:disabled {
@@ -400,16 +447,28 @@ textarea:focus {
   box-shadow: 0 12px 24px rgba(0, 127, 111, 0.22);
 }
 
+.button-primary:hover {
+  background: linear-gradient(180deg, var(--green-800), var(--green-900));
+}
+
 .button-secondary {
   color: var(--green-800);
   border: 1px solid rgba(0, 127, 111, 0.22);
   background: var(--green-50);
 }
 
+.button-secondary:hover {
+  background: var(--green-100);
+}
+
 .button-danger {
   color: var(--red-600);
   border: 1px solid rgba(201, 59, 59, 0.24);
   background: var(--red-100);
+}
+
+.button-danger:hover {
+  background: #ffdada;
 }
 
 .button-link {
@@ -424,6 +483,7 @@ textarea:focus {
   border-radius: 12px;
   padding: 12px 14px;
   font-size: 0.92rem;
+  animation: fadeIn 280ms ease both;
 }
 
 .message-error {
@@ -485,6 +545,17 @@ textarea:focus {
   font-weight: 600;
   text-align: left;
   cursor: pointer;
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.sidebar-link:hover {
+  background: var(--green-50);
+  color: var(--green-800);
+  transform: translateX(2px);
 }
 
 .sidebar-link.is-active {
@@ -604,6 +675,16 @@ textarea:focus {
   padding: 16px;
   background: var(--white);
   box-shadow: var(--shadow-card);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.metric-card:hover {
+  border-color: rgba(0, 127, 111, 0.18);
+  box-shadow: 0 16px 34px rgba(16, 24, 40, 0.09);
+  transform: translateY(-3px);
 }
 
 .metric-action {
@@ -756,6 +837,7 @@ textarea:focus {
   border-radius: 20px;
   background: var(--white);
   box-shadow: var(--shadow-soft);
+  animation: slideUp 360ms ease both;
 }
 
 .public-booking-header {
@@ -798,6 +880,7 @@ textarea:focus {
   justify-items: center;
   color: var(--gray-500);
   text-align: center;
+  transition: color 180ms ease, transform 180ms ease;
 }
 
 .booking-step span {
@@ -810,6 +893,12 @@ textarea:focus {
   background: var(--white);
   font-size: 0.78rem;
   font-weight: 700;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
 }
 
 .booking-step strong {
@@ -832,6 +921,11 @@ textarea:focus {
   background: var(--green-800);
 }
 
+.booking-step.is-active span {
+  box-shadow: 0 0 0 5px rgba(0, 127, 111, 0.1);
+  transform: translateY(-1px);
+}
+
 .public-booking-content {
   display: grid;
   gap: 18px;
@@ -846,6 +940,16 @@ textarea:focus {
   padding: 18px;
   background: var(--white);
   box-shadow: var(--shadow-card);
+  animation: slideUp 320ms ease both;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.booking-section:hover {
+  border-color: rgba(0, 127, 111, 0.13);
+  box-shadow: 0 14px 30px rgba(16, 24, 40, 0.075);
 }
 
 .booking-choice {
@@ -949,6 +1053,16 @@ textarea:focus {
   background: var(--white);
   padding: 22px;
   box-shadow: var(--shadow-card);
+  animation: slideUp 320ms ease both;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.dashboard-panel:hover {
+  border-color: rgba(0, 127, 111, 0.13);
+  box-shadow: 0 14px 30px rgba(16, 24, 40, 0.075);
 }
 
 .dashboard-grid .dashboard-panel,
@@ -978,6 +1092,16 @@ textarea:focus {
   background: var(--white);
   text-align: left;
   cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.quick-action:hover {
+  border-color: rgba(0, 127, 111, 0.2);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-2px);
 }
 
 .shortcut-strip {
@@ -1024,6 +1148,16 @@ textarea:focus {
   font-weight: 600;
   text-align: left;
   cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.status-action:hover {
+  border-color: rgba(0, 127, 111, 0.2);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-2px);
 }
 
 .donut-chart {
@@ -1097,6 +1231,7 @@ textarea:focus {
   border-radius: 14px;
   padding: 18px;
   background: #fbfcfd;
+  animation: fadeIn 280ms ease both;
 }
 
 .dashboard-empty strong {
@@ -1252,14 +1387,42 @@ textarea:focus {
   background: var(--white);
   font-size: 0.86rem;
   font-weight: 600;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    color 200ms ease,
+    transform 200ms ease;
+}
+
+.day-pill:hover span {
+  border-color: rgba(0, 127, 111, 0.34);
+  color: var(--green-800);
+  background: var(--green-50);
+  box-shadow: 0 10px 22px rgba(16, 24, 40, 0.07);
+  transform: translateY(-2px);
+}
+
+.day-pill:active span {
+  transform: scale(0.98);
 }
 
 .day-pill input:checked + span {
-  border-color: rgba(0, 127, 111, 0.38);
+  border-color: rgba(0, 127, 111, 0.5);
   color: var(--green-800);
   background: var(--green-100);
-  box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.08);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 127, 111, 0.12),
+    0 0 0 4px rgba(0, 127, 111, 0.08);
+}
+
+.day-pill:hover input:checked + span {
+  border-color: rgba(0, 127, 111, 0.64);
+  background: #dff3ec;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 127, 111, 0.16),
+    0 10px 22px rgba(0, 127, 111, 0.1),
+    0 0 0 4px rgba(0, 127, 111, 0.1);
 }
 
 .day-pill input:focus-visible + span {
@@ -1291,6 +1454,16 @@ textarea:focus {
   padding: 16px;
   background: var(--white);
   box-shadow: var(--shadow-card);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.item-card:hover {
+  border-color: rgba(0, 127, 111, 0.18);
+  box-shadow: 0 16px 34px rgba(16, 24, 40, 0.09);
+  transform: translateY(-3px);
 }
 
 .item-card h3 {
@@ -1312,6 +1485,16 @@ textarea:focus {
   padding: 16px;
   background: var(--white);
   box-shadow: var(--shadow-card);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.entity-card:hover {
+  border-color: rgba(0, 127, 111, 0.18);
+  box-shadow: 0 16px 34px rgba(16, 24, 40, 0.09);
+  transform: translateY(-3px);
 }
 
 .entity-card-header {
@@ -1423,12 +1606,28 @@ textarea:focus {
   color: var(--gray-900);
   background: var(--white);
   text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.choice-card:hover {
+  border-color: rgba(0, 127, 111, 0.28);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-2px);
+}
+
+.choice-card:active {
+  transform: scale(0.98);
 }
 
 .choice-card.is-selected,
 .time-button.is-selected {
   border-color: var(--green-700);
   box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.12);
+  transform: translateY(-1px);
 }
 
 .choice-card span {
@@ -1449,6 +1648,23 @@ textarea:focus {
   color: var(--gray-900);
   background: var(--white);
   font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.time-button:hover {
+  border-color: rgba(0, 127, 111, 0.28);
+  box-shadow: var(--shadow-card);
+  transform: translateY(-2px);
+}
+
+.time-button:active {
+  transform: scale(0.98);
 }
 
 .appointment-heading {
@@ -1610,5 +1826,39 @@ textarea:focus {
 
   .management-grid {
     grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+
+  .calendar-visual,
+  .auth-card,
+  .auth-visual-panel,
+  .booking-section,
+  .dashboard-panel,
+  .page,
+  .public-booking-card {
+    animation: none !important;
+  }
+
+  .button:hover,
+  .choice-card:hover,
+  .day-pill:hover span,
+  .entity-card:hover,
+  .item-card:hover,
+  .metric-card:hover,
+  .quick-action:hover,
+  .sidebar-link:hover,
+  .status-action:hover,
+  .time-button:hover {
+    transform: none;
   }
 }
