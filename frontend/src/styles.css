@@ -75,6 +75,23 @@ body {
   }
 }
 
+@keyframes statusPulse {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  70% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
 button,
 input,
 select,
@@ -408,7 +425,7 @@ textarea:focus {
 }
 
 .app-shell {
-  display: grid;
+  display: block;
   min-height: 100vh;
   min-width: 0;
   background: var(--gray-100);
@@ -416,15 +433,45 @@ textarea:focus {
 }
 
 .sidebar {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 2;
+  bottom: 0;
+  left: 0;
+  z-index: 30;
   display: grid;
   gap: 16px;
+  width: min(280px, 84vw);
   padding: 16px;
-  border-bottom: 1px solid var(--gray-300);
+  border-right: 1px solid var(--gray-300);
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.045);
+  box-shadow: 18px 0 40px rgba(16, 24, 40, 0.14);
+  overflow-y: auto;
+  transform: translateX(-105%);
+  transition:
+    box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.app-shell.is-menu-open .sidebar {
+  transform: translateX(0);
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  border: 0;
+  padding: 0;
+  background: rgba(16, 24, 40, 0.34);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 240ms ease;
+}
+
+.app-shell.is-menu-open .sidebar-overlay {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .sidebar-brand {
@@ -518,6 +565,7 @@ textarea:focus {
 
 .menu-button {
   display: grid;
+  gap: 4px;
   width: 42px;
   height: 42px;
   place-items: center;
@@ -525,6 +573,16 @@ textarea:focus {
   border-radius: 10px;
   background: var(--white);
   box-shadow: var(--shadow-card);
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.menu-button:hover {
+  background: var(--green-50);
+  box-shadow: 0 12px 24px rgba(16, 24, 40, 0.08);
+  transform: translateY(-1px);
 }
 
 .menu-button span {
@@ -532,6 +590,27 @@ textarea:focus {
   height: 2px;
   border-radius: 99px;
   background: var(--gray-700);
+  transition:
+    background 180ms ease,
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.menu-button.is-open span {
+  background: var(--green-800);
+}
+
+.menu-button.is-open span:first-child {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.menu-button.is-open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0.4);
+}
+
+.menu-button.is-open span:last-child {
+  transform: translateY(-6px) rotate(-45deg);
 }
 
 .topbar-user {
@@ -548,11 +627,21 @@ textarea:focus {
 }
 
 .notification-dot {
+  position: relative;
   width: 9px;
   height: 9px;
   border-radius: 50%;
   background: var(--green-700);
   box-shadow: 0 0 0 5px rgba(0, 127, 111, 0.12);
+}
+
+.notification-dot::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(0, 129, 111, 0.38);
+  content: "";
+  animation: statusPulse 2.1s ease-out infinite;
 }
 
 .avatar {
@@ -1748,14 +1837,31 @@ textarea:focus {
 @media (min-width: 1040px) {
   .app-shell {
     grid-template-columns: 260px 1fr;
+    display: grid;
+    transition: grid-template-columns 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .app-shell.is-sidebar-collapsed {
+    grid-template-columns: 84px 1fr;
+  }
+
+  .sidebar-overlay {
+    display: none;
   }
 
   .sidebar {
+    position: sticky;
+    bottom: auto;
+    left: auto;
+    z-index: 2;
+    width: auto;
     min-height: 100vh;
     align-content: start;
+    overflow-x: hidden;
     border-right: 1px solid var(--gray-300);
     border-bottom: 0;
     box-shadow: none;
+    transform: none;
   }
 
   .sidebar-brand {
@@ -1768,6 +1874,32 @@ textarea:focus {
 
   .sidebar-logout {
     margin-top: auto;
+  }
+
+  .app-shell.is-sidebar-collapsed .sidebar {
+    padding-inline: 12px;
+  }
+
+  .app-shell.is-sidebar-collapsed .sidebar-brand {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .app-shell.is-sidebar-collapsed .sidebar-brand .brand-name {
+    display: none;
+  }
+
+  .app-shell.is-sidebar-collapsed .sidebar-link {
+    justify-content: center;
+    gap: 0;
+    padding-inline: 8px;
+    font-size: 0;
+  }
+
+  .app-shell.is-sidebar-collapsed .sidebar-icon {
+    width: 34px;
+    height: 34px;
+    font-size: initial;
   }
 
   .workspace-content {
@@ -1800,6 +1932,10 @@ textarea:focus {
   .dashboard-panel,
   .page,
   .public-booking-card {
+    animation: none !important;
+  }
+
+  .notification-dot::after {
     animation: none !important;
   }
 

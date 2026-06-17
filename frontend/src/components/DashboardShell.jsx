@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   CalendarDays,
   LayoutDashboard,
@@ -23,8 +24,38 @@ function DashboardShell({
   onLogout,
   usuario,
 }) {
+  const [menuAberto, setMenuAberto] = useState(() => {
+    if (typeof window === 'undefined') {
+      return true;
+    }
+
+    return window.innerWidth >= 1040;
+  });
+
+  function alternarMenu() {
+    setMenuAberto((aberto) => !aberto);
+  }
+
+  function fecharMenuMobile() {
+    if (typeof window !== 'undefined' && window.innerWidth < 1040) {
+      setMenuAberto(false);
+    }
+  }
+
+  function navegarPara(path) {
+    navigate(path);
+    fecharMenuMobile();
+  }
+
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${menuAberto ? 'is-menu-open' : 'is-sidebar-collapsed'}`}>
+      <button
+        aria-label="Fechar menu"
+        className="sidebar-overlay"
+        onClick={() => setMenuAberto(false)}
+        type="button"
+      />
+
       <aside className="sidebar">
         <div className="sidebar-brand">
           <BrandLogo />
@@ -40,8 +71,9 @@ function DashboardShell({
                   currentPath === item.path ? 'is-active' : ''
                 }`}
                 key={item.path}
-                onClick={() => navigate(item.path)}
+                onClick={() => navegarPara(item.path)}
                 type="button"
+                title={item.label}
               >
                 <span className="sidebar-icon" aria-hidden="true">
                   <Icon size={19} strokeWidth={2} />
@@ -56,6 +88,7 @@ function DashboardShell({
           className="sidebar-link sidebar-logout"
           onClick={onLogout}
           type="button"
+          title="Sair"
         >
           <span className="sidebar-icon" aria-hidden="true">
             <LogOut size={19} strokeWidth={2} />
@@ -66,7 +99,13 @@ function DashboardShell({
 
       <section className="workspace">
         <header className="topbar">
-          <button className="menu-button" type="button" aria-label="Menu">
+          <button
+            aria-expanded={menuAberto}
+            aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
+            className={`menu-button ${menuAberto ? 'is-open' : ''}`}
+            onClick={alternarMenu}
+            type="button"
+          >
             <span />
             <span />
             <span />
