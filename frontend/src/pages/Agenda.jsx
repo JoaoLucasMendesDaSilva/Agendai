@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CalendarDays, CalendarX } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -182,7 +183,9 @@ function Agenda({ navigate }) {
 
         {!carregando && precisaCadastrarNegocio && (
           <div className="dashboard-empty">
-            <span className="empty-icon" aria-hidden="true" />
+            <span className="empty-icon" aria-hidden="true">
+              <CalendarDays size={24} strokeWidth={2} />
+            </span>
             <div>
               <strong>Cadastre o negócio primeiro</strong>
               <p>Depois disso, você poderá consultar os agendamentos.</p>
@@ -201,7 +204,9 @@ function Agenda({ navigate }) {
           !precisaCadastrarNegocio &&
           agendamentos.length === 0 && (
             <div className="dashboard-empty">
-              <span className="empty-icon" aria-hidden="true" />
+              <span className="empty-icon" aria-hidden="true">
+                <CalendarX size={24} strokeWidth={2} />
+              </span>
               <div>
                 <strong>Nenhum agendamento encontrado</strong>
                 <p>Não há horários para o filtro selecionado.</p>

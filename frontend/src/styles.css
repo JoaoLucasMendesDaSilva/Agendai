@@ -36,6 +36,7 @@ body {
   margin: 0;
   min-width: 320px;
   font-weight: 400;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at top left, rgba(0, 127, 111, 0.08), transparent 32%),
     #f7f9fb;
@@ -409,7 +410,9 @@ textarea:focus {
 .app-shell {
   display: grid;
   min-height: 100vh;
+  min-width: 0;
   background: var(--gray-100);
+  overflow-x: hidden;
 }
 
 .sidebar {
@@ -481,8 +484,10 @@ textarea:focus {
 }
 
 .sidebar-icon svg,
+.empty-icon svg,
 .metric-icon svg,
 .quick-icon svg,
+.summary-icon svg,
 .status-action-icon svg {
   display: block;
 }
@@ -497,6 +502,8 @@ textarea:focus {
 
 .workspace {
   min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .topbar {
@@ -562,6 +569,8 @@ textarea:focus {
 .workspace-content {
   display: grid;
   gap: 20px;
+  min-width: 0;
+  max-width: 100%;
   padding: 20px;
 }
 
@@ -574,14 +583,19 @@ textarea:focus {
 
 .metrics-grid {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
   gap: 16px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .metric-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr);
   align-items: center;
   gap: 14px;
   min-height: 104px;
+  min-width: 0;
   border: 1px solid rgba(223, 229, 236, 0.78);
   border-radius: var(--radius);
   padding: 16px;
@@ -601,10 +615,15 @@ textarea:focus {
 
 .metric-action {
   width: 100%;
+  max-width: 100%;
   border: 1px solid rgba(223, 229, 236, 0.78);
   color: inherit;
   text-align: left;
   cursor: pointer;
+}
+
+.metric-card > div {
+  min-width: 0;
 }
 
 .metric-card p {
@@ -616,8 +635,10 @@ textarea:focus {
 .metric-card strong {
   display: block;
   color: var(--gray-900);
-  font-size: 1.65rem;
-  line-height: 1.1;
+  font-size: clamp(1.15rem, 1.7vw, 1.42rem);
+  line-height: 1.18;
+  overflow-wrap: normal;
+  text-wrap: balance;
 }
 
 .metric-card small {
@@ -665,6 +686,8 @@ textarea:focus {
 .dashboard-grid {
   display: grid;
   gap: 18px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .management-grid {
@@ -695,10 +718,11 @@ textarea:focus {
   height: 54px;
   place-items: center;
   border-radius: 16px;
+  color: var(--green-800);
   background: var(--green-100);
 }
 
-.summary-icon::before {
+.summary-icon:empty::before {
   width: 24px;
   height: 24px;
   border: 3px solid var(--green-800);
@@ -1160,7 +1184,7 @@ textarea:focus {
 
 .dashboard-empty {
   display: grid;
-  grid-template-columns: 52px 1fr;
+  grid-template-columns: 52px minmax(0, 1fr);
   gap: 14px;
   align-items: start;
   margin-top: 22px;
@@ -1188,10 +1212,11 @@ textarea:focus {
   height: 52px;
   place-items: center;
   border-radius: 16px;
+  color: var(--green-800);
   background: var(--green-100);
 }
 
-.empty-icon::before {
+.empty-icon:empty::before {
   width: 24px;
   height: 24px;
   border: 3px solid var(--green-800);
@@ -1669,10 +1694,6 @@ textarea:focus {
     grid-template-columns: minmax(360px, 1fr) minmax(320px, 0.78fr);
   }
 
-  .metrics-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .panel-heading {
     grid-template-columns: 1fr auto;
     align-items: center;
@@ -1751,10 +1772,6 @@ textarea:focus {
 
   .workspace-content {
     padding: 28px;
-  }
-
-  .metrics-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .dashboard-grid {

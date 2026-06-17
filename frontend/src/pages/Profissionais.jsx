@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Users } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -196,7 +197,9 @@ function Profissionais({ navigate }) {
 
           {!carregando && precisaCadastrarNegocio && (
             <div className="dashboard-empty">
-              <span className="empty-icon" aria-hidden="true" />
+              <span className="empty-icon" aria-hidden="true">
+                <Users size={24} strokeWidth={2} />
+              </span>
               <div>
                 <strong>Cadastre o negócio primeiro</strong>
                 <p>Depois disso, você poderá adicionar profissionais.</p>
@@ -299,7 +302,9 @@ function Profissionais({ navigate }) {
             !precisaCadastrarNegocio &&
             profissionais.length === 0 && (
               <div className="dashboard-empty">
-                <span className="empty-icon" aria-hidden="true" />
+                <span className="empty-icon" aria-hidden="true">
+                  <Users size={24} strokeWidth={2} />
+                </span>
                 <div>
                   <strong>Nenhum profissional cadastrado</strong>
                   <p>Adicione a equipe que atenderá os clientes.</p>

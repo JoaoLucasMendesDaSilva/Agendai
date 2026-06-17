@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Scissors } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -203,7 +204,9 @@ function Servicos({ navigate }) {
 
           {!carregando && precisaCadastrarNegocio && (
             <div className="dashboard-empty">
-              <span className="empty-icon" aria-hidden="true" />
+              <span className="empty-icon" aria-hidden="true">
+                <Scissors size={24} strokeWidth={2} />
+              </span>
               <div>
                 <strong>Cadastre o negócio primeiro</strong>
                 <p>Depois disso, você poderá adicionar serviços.</p>
@@ -307,7 +310,9 @@ function Servicos({ navigate }) {
 
           {!carregando && !precisaCadastrarNegocio && servicos.length === 0 && (
             <div className="dashboard-empty">
-              <span className="empty-icon" aria-hidden="true" />
+              <span className="empty-icon" aria-hidden="true">
+                <Scissors size={24} strokeWidth={2} />
+              </span>
               <div>
                 <strong>Nenhum serviço cadastrado</strong>
                 <p>Adicione o primeiro serviço para começar a receber horários.</p>

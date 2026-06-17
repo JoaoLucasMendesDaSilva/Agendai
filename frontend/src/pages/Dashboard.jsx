@@ -108,7 +108,9 @@ function Dashboard({ navigate }) {
           </div>
 
           <div className="dashboard-empty">
-            <span className="empty-icon" aria-hidden="true" />
+            <span className="empty-icon" aria-hidden="true">
+              <CalendarCheck size={24} strokeWidth={2} />
+            </span>
             <div>
               <strong>Agenda pronta para uso</strong>
               <p>

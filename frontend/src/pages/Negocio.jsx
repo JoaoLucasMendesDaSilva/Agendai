@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Store } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -316,7 +317,9 @@ function Negocio({ navigate }) {
         </div>
 
         <aside className="dashboard-panel management-summary">
-          <span className="summary-icon" aria-hidden="true" />
+          <span className="summary-icon" aria-hidden="true">
+            <Store size={24} strokeWidth={2} />
+          </span>
           <h2>Status do negócio</h2>
           <p className="panel-text">
             {negocio
