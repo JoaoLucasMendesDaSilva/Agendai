@@ -65,6 +65,14 @@ function montarPayload(form) {
   };
 }
 
+function montarLinkPublico(slug) {
+  if (!slug || typeof window === 'undefined') {
+    return '';
+  }
+
+  return `${window.location.origin}/agendar/${slug}`;
+}
+
 function Negocio({ navigate }) {
   const { logout, usuario } = useAuth();
   const [negocio, setNegocio] = useState(null);
@@ -73,6 +81,8 @@ function Negocio({ navigate }) {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
+  const [feedbackLink, setFeedbackLink] = useState('');
+  const linkPublico = montarLinkPublico(negocio?.slug_publico);
 
   useEffect(() => {
     let ativo = true;
@@ -151,6 +161,42 @@ function Negocio({ navigate }) {
   function handleLogout() {
     logout();
     navigate('/login', { replace: true });
+  }
+
+  async function copiarLinkPublico() {
+    if (!linkPublico) {
+      return;
+    }
+
+    setFeedbackLink('');
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(linkPublico);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = linkPublico;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        const copiou = document.execCommand('copy');
+        document.body.removeChild(textarea);
+
+        if (!copiou) {
+          throw new Error('copy-failed');
+        }
+      }
+
+      setFeedbackLink('Link copiado!');
+      window.setTimeout(() => setFeedbackLink(''), 2500);
+    } catch {
+      setFeedbackLink(
+        'Não foi possível copiar. Selecione e copie o link manualmente.',
+      );
+    }
   }
 
   return (
@@ -335,7 +381,28 @@ function Negocio({ navigate }) {
               </div>
               <div>
                 <dt>Link público</dt>
-                <dd>{negocio.slug_publico}</dd>
+                <dd>
+                  <div className="public-link-box">
+                    <span className="public-link-text">{linkPublico}</span>
+                    <button
+                      className="button button-primary button-small"
+                      onClick={copiarLinkPublico}
+                      type="button"
+                    >
+                      Copiar link
+                    </button>
+                  </div>
+                  {feedbackLink && (
+                    <p
+                      aria-live="polite"
+                      className={`copy-feedback ${
+                        feedbackLink.startsWith('Não') ? 'is-error' : ''
+                      }`}
+                    >
+                      {feedbackLink}
+                    </p>
+                  )}
+                </dd>
               </div>
               <div>
                 <dt>Cidade</dt>
