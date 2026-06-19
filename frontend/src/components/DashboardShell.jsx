@@ -3,11 +3,14 @@ import {
   CalendarDays,
   LayoutDashboard,
   LogOut,
+  Moon,
   Scissors,
   Store,
+  Sun,
   Users,
 } from 'lucide-react';
 import BrandLogo from './BrandLogo';
+import { useTheme } from '../contexts/ThemeContext';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', path: '/dashboard', Icon: LayoutDashboard },
@@ -25,6 +28,7 @@ function DashboardShell({
   onLogout,
   usuario,
 }) {
+  const { isDark, toggleTheme } = useTheme();
   const [menuAberto, setMenuAberto] = useState(() => {
     if (typeof window === 'undefined') {
       return true;
@@ -110,6 +114,19 @@ function DashboardShell({
             <span />
             <span />
             <span />
+          </button>
+          <button
+            aria-label={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
+            className="theme-toggle"
+            onClick={toggleTheme}
+            type="button"
+          >
+            {isDark ? (
+              <Sun aria-hidden="true" size={18} strokeWidth={2} />
+            ) : (
+              <Moon aria-hidden="true" size={18} strokeWidth={2} />
+            )}
+            <span>{isDark ? 'Claro' : 'Escuro'}</span>
           </button>
           <div className="topbar-user">
             <span className="notification-dot" aria-hidden="true" />

@@ -1,11 +1,18 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
 :root {
-  color: #101727;
-  background: #f7f9fb;
+  color: var(--gray-900);
+  background: var(--page-bg);
   font-family: Poppins, Arial, Helvetica, sans-serif;
   font-weight: 400;
   line-height: 1.5;
+  color-scheme: light;
+  --page-bg: #f7f9fb;
+  --page-bg-soft: #fbfcfd;
+  --panel-bg: #ffffff;
+  --panel-bg-soft: #fbfdfc;
+  --input-bg: #ffffff;
+  --overlay-bg: rgba(255, 255, 255, 0.9);
   --green-900: #075047;
   --green-800: #006b5a;
   --green-700: #00816f;
@@ -28,6 +35,34 @@
   --radius: 16px;
 }
 
+[data-theme="dark"] {
+  color-scheme: dark;
+  --page-bg: #071211;
+  --page-bg-soft: #0b1716;
+  --panel-bg: #101c1b;
+  --panel-bg-soft: #132322;
+  --input-bg: #0c1817;
+  --overlay-bg: rgba(16, 28, 27, 0.9);
+  --green-900: #d8fff4;
+  --green-800: #7be0c9;
+  --green-700: #31b99f;
+  --green-100: #123c34;
+  --green-50: #0f2b26;
+  --yellow-100: #3a2d0f;
+  --yellow-600: #f6c65b;
+  --blue-100: #112c4b;
+  --blue-600: #88bfff;
+  --red-100: #3a171a;
+  --red-600: #ff8a8a;
+  --gray-900: #f4f7fb;
+  --gray-700: #d5dde7;
+  --gray-500: #a6b1c0;
+  --gray-300: #2d3a47;
+  --gray-100: #111f24;
+  --shadow-soft: 0 18px 48px rgba(0, 0, 0, 0.36);
+  --shadow-card: 0 14px 32px rgba(0, 0, 0, 0.26);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -39,7 +74,7 @@ body {
   overflow-x: hidden;
   background:
     radial-gradient(circle at top left, rgba(0, 127, 111, 0.08), transparent 32%),
-    #f7f9fb;
+    var(--page-bg);
 }
 
 @keyframes fadeIn {
@@ -1021,10 +1056,11 @@ textarea:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   min-height: 70px;
   padding: 14px 20px;
   border-bottom: 1px solid var(--gray-300);
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--overlay-bg);
 }
 
 .menu-button {
@@ -1075,6 +1111,35 @@ textarea:focus {
 
 .menu-button.is-open span:last-child {
   transform: translateY(-6px) rotate(-45deg);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  border: 1px solid rgba(0, 127, 111, 0.16);
+  border-radius: 999px;
+  padding: 9px 12px;
+  color: var(--green-800);
+  background: var(--green-50);
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.theme-toggle:hover {
+  border-color: rgba(0, 127, 111, 0.28);
+  background: var(--green-100);
+  transform: translateY(-1px);
 }
 
 .topbar-user {
@@ -2839,6 +2904,186 @@ textarea:focus {
 .details-list dd {
   margin: 0;
   overflow-wrap: anywhere;
+}
+
+[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at top left, rgba(49, 185, 159, 0.13), transparent 34%),
+    var(--page-bg);
+}
+
+[data-theme="dark"] .auth-card,
+[data-theme="dark"] .dashboard-panel,
+[data-theme="dark"] .metric-card,
+[data-theme="dark"] .entity-card,
+[data-theme="dark"] .client-card,
+[data-theme="dark"] .history-item,
+[data-theme="dark"] .next-appointment-card,
+[data-theme="dark"] .dashboard-empty,
+[data-theme="dark"] .booking-section,
+[data-theme="dark"] .booking-review-card,
+[data-theme="dark"] .public-booking-card,
+[data-theme="dark"] .choice-card,
+[data-theme="dark"] .time-button,
+[data-theme="dark"] .quick-action,
+[data-theme="dark"] .status-action,
+[data-theme="dark"] .landing-feature-card,
+[data-theme="dark"] .landing-step-card,
+[data-theme="dark"] .landing-plan-card,
+[data-theme="dark"] .landing-final-cta,
+[data-theme="dark"] .landing-floating-card,
+[data-theme="dark"] .landing-mockup-card,
+[data-theme="dark"] .mockup-row,
+[data-theme="dark"] .agenda-card-pro,
+[data-theme="dark"] .agenda-card-time,
+[data-theme="dark"] .search-field,
+[data-theme="dark"] .public-link-box,
+[data-theme="dark"] .qr-code-frame {
+  border-color: var(--gray-300);
+  background: var(--panel-bg);
+  box-shadow: var(--shadow-card);
+}
+
+[data-theme="dark"] .auth-form-panel,
+[data-theme="dark"] .workspace,
+[data-theme="dark"] .workspace-content,
+[data-theme="dark"] .dashboard-page,
+[data-theme="dark"] .public-page {
+  background: transparent;
+}
+
+[data-theme="dark"] .sidebar {
+  border-color: var(--gray-300);
+  background: rgba(16, 28, 27, 0.96);
+}
+
+[data-theme="dark"] .landing-page,
+[data-theme="dark"] .public-booking-page {
+  background:
+    radial-gradient(circle at 12% 4%, rgba(49, 185, 159, 0.16), transparent 28%),
+    radial-gradient(circle at 86% 12%, rgba(246, 198, 91, 0.1), transparent 24%),
+    linear-gradient(180deg, #071211 0%, #0b1716 52%, #071211 100%);
+}
+
+[data-theme="dark"] .landing-nav {
+  border-color: var(--gray-300);
+  background: rgba(16, 28, 27, 0.86);
+}
+
+[data-theme="dark"] .landing-hero-visual {
+  border-color: var(--gray-300);
+  background:
+    radial-gradient(circle at 22% 18%, rgba(49, 185, 159, 0.12), transparent 22%),
+    linear-gradient(145deg, rgba(49, 185, 159, 0.14), rgba(16, 28, 27, 0.94) 42%, rgba(246, 198, 91, 0.08));
+}
+
+[data-theme="dark"] .landing-final-cta,
+[data-theme="dark"] .landing-plan-card.is-highlighted,
+[data-theme="dark"] .booking-intro-card,
+[data-theme="dark"] .confirmation-card,
+[data-theme="dark"] .agenda-empty-state,
+[data-theme="dark"] .client-card.is-selected,
+[data-theme="dark"] .next-appointment-card {
+  background:
+    radial-gradient(circle at 88% 10%, rgba(49, 185, 159, 0.12), transparent 28%),
+    var(--panel-bg-soft);
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  border-color: var(--gray-300);
+  color: var(--gray-900);
+  background: var(--input-bg);
+}
+
+[data-theme="dark"] input::placeholder {
+  color: var(--gray-500);
+}
+
+[data-theme="dark"] .menu-button,
+[data-theme="dark"] .agenda-filter-button,
+[data-theme="dark"] .landing-footer span {
+  background: var(--panel-bg);
+}
+
+[data-theme="dark"] .sidebar-overlay {
+  background: rgba(0, 0, 0, 0.58);
+}
+
+[data-theme="dark"] .button-primary {
+  color: var(--white);
+  background: linear-gradient(180deg, #00816f, #075047);
+  box-shadow: 0 14px 28px rgba(0, 127, 111, 0.26);
+}
+
+[data-theme="dark"] .button-secondary,
+[data-theme="dark"] .theme-toggle,
+[data-theme="dark"] .status-action-icon,
+[data-theme="dark"] .quick-icon,
+[data-theme="dark"] .metric-icon,
+[data-theme="dark"] .empty-icon,
+[data-theme="dark"] .summary-icon,
+[data-theme="dark"] .landing-icon,
+[data-theme="dark"] .client-avatar,
+[data-theme="dark"] .business-hours-note {
+  color: var(--green-800);
+  background: var(--green-50);
+}
+
+[data-theme="dark"] .button-danger {
+  color: var(--red-600);
+  background: var(--red-100);
+}
+
+[data-theme="dark"] .message-error {
+  color: var(--red-600);
+  background: var(--red-100);
+}
+
+[data-theme="dark"] .message-success,
+[data-theme="dark"] .status-confirmado {
+  color: var(--green-800);
+  background: var(--green-100);
+}
+
+[data-theme="dark"] .message-info,
+[data-theme="dark"] .status-concluido,
+[data-theme="dark"] .metric-blue,
+[data-theme="dark"] .status-action-blue {
+  color: var(--blue-600);
+  background: var(--blue-100);
+}
+
+[data-theme="dark"] .status-pendente,
+[data-theme="dark"] .metric-yellow,
+[data-theme="dark"] .status-action-yellow,
+[data-theme="dark"] .plan-label {
+  color: var(--yellow-600);
+  background: var(--yellow-100);
+}
+
+[data-theme="dark"] .status-cancelado {
+  color: var(--red-600);
+  background: var(--red-100);
+}
+
+[data-theme="dark"] .public-booking-header,
+[data-theme="dark"] .auth-visual-panel {
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, 0.1), transparent 20%),
+    linear-gradient(145deg, #0b7b69, #053d37);
+}
+
+[data-theme="dark"] .booking-steps,
+[data-theme="dark"] .summary-box,
+[data-theme="dark"] .agenda-observations {
+  background: var(--gray-100);
+}
+
+[data-theme="dark"] .booking-choice {
+  background:
+    linear-gradient(180deg, var(--panel-bg), var(--panel-bg-soft));
 }
 
 @media (min-width: 720px) {
