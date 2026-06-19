@@ -1250,7 +1250,7 @@ textarea:focus {
 }
 
 .agenda-panel {
-  max-width: 980px;
+  max-width: 1120px;
 }
 
 .management-form-card,
@@ -2249,6 +2249,196 @@ textarea:focus {
   align-self: end;
 }
 
+.agenda-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.agenda-filter-button {
+  min-height: 40px;
+  border: 1px solid rgba(0, 127, 111, 0.16);
+  border-radius: 999px;
+  padding: 9px 14px;
+  color: var(--gray-700);
+  background: var(--white);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.agenda-filter-button:hover,
+.agenda-filter-button.is-active {
+  border-color: rgba(0, 127, 111, 0.28);
+  color: var(--green-800);
+  background: var(--green-50);
+  box-shadow: 0 10px 22px rgba(0, 127, 111, 0.08);
+  transform: translateY(-1px);
+}
+
+.agenda-filter-button.is-active {
+  color: var(--white);
+  background: linear-gradient(180deg, #00816f, var(--green-800));
+}
+
+.agenda-empty-state {
+  background:
+    radial-gradient(circle at 86% 16%, rgba(0, 127, 111, 0.08), transparent 26%),
+    var(--white);
+}
+
+.agenda-date-groups {
+  display: grid;
+  gap: 24px;
+  margin-top: 22px;
+}
+
+.agenda-date-group {
+  display: grid;
+  gap: 14px;
+}
+
+.agenda-date-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.agenda-date-heading > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--green-800);
+  background: var(--green-100);
+}
+
+.agenda-date-heading h3 {
+  margin: 0;
+  color: var(--gray-900);
+  font-size: 1.05rem;
+}
+
+.agenda-date-heading p {
+  margin: 2px 0 0;
+  color: var(--gray-500);
+  font-size: 0.86rem;
+}
+
+.agenda-card-list {
+  display: grid;
+  gap: 14px;
+}
+
+.agenda-card-pro {
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(223, 229, 236, 0.84);
+  border-radius: 18px;
+  padding: 16px;
+  background: var(--white);
+  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.035);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.agenda-card-pro:hover {
+  border-color: rgba(0, 127, 111, 0.2);
+  box-shadow: 0 16px 34px rgba(16, 24, 40, 0.09);
+  transform: translateY(-2px);
+}
+
+.agenda-card-time {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 3px;
+  border-radius: 15px;
+  padding: 12px;
+  color: var(--green-800);
+  background: var(--green-50);
+}
+
+.agenda-card-time strong {
+  color: var(--green-900);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.agenda-card-time span {
+  color: var(--gray-500);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.agenda-card-content {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.agenda-card-header {
+  display: grid;
+  gap: 10px;
+}
+
+.agenda-card-header h4 {
+  margin: 0;
+  color: var(--gray-900);
+  font-size: 1.08rem;
+}
+
+.agenda-card-header p {
+  margin: 3px 0 0;
+  color: var(--gray-500);
+  font-size: 0.9rem;
+}
+
+.agenda-info-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.agenda-info-grid span {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+  color: var(--gray-700);
+  font-size: 0.9rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.agenda-info-grid svg {
+  flex: 0 0 auto;
+  color: var(--green-800);
+}
+
+.agenda-observations {
+  margin: 0;
+  border-left: 3px solid rgba(0, 127, 111, 0.24);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--gray-700);
+  background: var(--gray-100);
+  font-size: 0.9rem;
+}
+
+.agenda-observations strong {
+  color: var(--gray-900);
+}
+
 .professional-title {
   display: flex;
   align-items: center;
@@ -2603,6 +2793,20 @@ textarea:focus {
     align-items: end;
   }
 
+  .agenda-card-pro {
+    grid-template-columns: 112px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .agenda-card-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .agenda-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .shortcut-strip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -2764,6 +2968,8 @@ textarea:focus {
 
   .button:hover,
   .choice-card:hover,
+  .agenda-card-pro:hover,
+  .agenda-filter-button:hover,
   .day-pill:hover span,
   .entity-card:hover,
   .item-card:hover,
