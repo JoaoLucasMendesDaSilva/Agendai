@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   CalendarDays,
+  Download,
   LayoutDashboard,
   LogOut,
   Moon,
@@ -29,6 +30,17 @@ function DashboardShell({
   usuario,
 }) {
   const { isDark, toggleTheme } = useTheme();
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [pwaInstalado, setPwaInstalado] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true
+    );
+  });
   const [menuAberto, setMenuAberto] = useState(() => {
     if (typeof window === 'undefined') {
       return true;
@@ -36,6 +48,26 @@ function DashboardShell({
 
     return window.innerWidth >= 1040;
   });
+
+  useEffect(() => {
+    function handleBeforeInstallPrompt(event) {
+      event.preventDefault();
+      setInstallPrompt(event);
+    }
+
+    function handleAppInstalled() {
+      setInstallPrompt(null);
+      setPwaInstalado(true);
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
 
   function alternarMenu() {
     setMenuAberto((aberto) => !aberto);
@@ -50,6 +82,21 @@ function DashboardShell({
   function navegarPara(path) {
     navigate(path);
     fecharMenuMobile();
+  }
+
+  async function instalarAplicativo() {
+    if (!installPrompt) {
+      return;
+    }
+
+    await installPrompt.prompt();
+    const escolha = await installPrompt.userChoice;
+
+    if (escolha.outcome === 'accepted') {
+      setPwaInstalado(true);
+    }
+
+    setInstallPrompt(null);
   }
 
   return (
@@ -115,6 +162,17 @@ function DashboardShell({
             <span />
             <span />
           </button>
+          <div className="topbar-actions">
+            {installPrompt && !pwaInstalado && (
+              <button
+                className="install-app-button"
+                onClick={instalarAplicativo}
+                type="button"
+              >
+                <Download aria-hidden="true" size={17} strokeWidth={2} />
+                <span>Instalar aplicativo</span>
+              </button>
+            )}
           <button
             aria-label={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
             className="theme-toggle"
@@ -137,6 +195,7 @@ function DashboardShell({
               <strong>{usuario?.nome || 'Usuário'}</strong>
               <small>Empreendedor</small>
             </div>
+          </div>
           </div>
         </header>
 

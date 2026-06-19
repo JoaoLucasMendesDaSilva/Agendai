@@ -1113,6 +1113,15 @@ textarea:focus {
   transform: translateY(-6px) rotate(-45deg);
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.install-app-button,
 .theme-toggle {
   display: inline-flex;
   align-items: center;
@@ -1142,6 +1151,16 @@ textarea:focus {
   transform: translateY(-1px);
 }
 
+.install-app-button {
+  border-color: rgba(0, 127, 111, 0.24);
+  color: var(--white);
+  background: linear-gradient(180deg, #00816f, var(--green-800));
+}
+
+.install-app-button:hover {
+  background: linear-gradient(180deg, var(--green-800), var(--green-900));
+}
+
 .topbar-user {
   display: flex;
   align-items: center;
@@ -1153,6 +1172,20 @@ textarea:focus {
   display: block;
   color: var(--gray-500);
   font-size: 0.78rem;
+}
+
+@media (max-width: 560px) {
+  .install-app-button span,
+  .theme-toggle span,
+  .topbar-user div {
+    display: none;
+  }
+
+  .install-app-button,
+  .theme-toggle {
+    width: 40px;
+    padding-inline: 0;
+  }
 }
 
 .notification-dot {
@@ -3015,6 +3048,11 @@ textarea:focus {
   color: var(--white);
   background: linear-gradient(180deg, #00816f, #075047);
   box-shadow: 0 14px 28px rgba(0, 127, 111, 0.26);
+}
+
+[data-theme="dark"] .install-app-button {
+  color: var(--white);
+  background: linear-gradient(180deg, #00816f, #075047);
 }
 
 [data-theme="dark"] .button-secondary,
