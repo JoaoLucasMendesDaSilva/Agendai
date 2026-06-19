@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Download, Store } from 'lucide-react';
+import { Download, MessageCircle, Store } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import DashboardShell from '../components/DashboardShell';
 import { useAuth } from '../contexts/AuthContext';
@@ -199,6 +199,16 @@ function Negocio({ navigate }) {
         'Não foi possível copiar. Selecione e copie o link manualmente.',
       );
     }
+  }
+
+  function compartilharWhatsApp() {
+    if (!linkPublico) {
+      return;
+    }
+
+    const mensagem = `Olá! Agende seu horário pelo nosso link: ${linkPublico}`;
+    const urlWhatsApp = `https://wa.me/?text=${encodeURIComponent(mensagem)}`;
+    window.open(urlWhatsApp, '_blank', 'noopener,noreferrer');
   }
 
   function baixarQrCode() {
@@ -403,13 +413,27 @@ function Negocio({ navigate }) {
                 <dd>
                   <div className="public-link-box">
                     <span className="public-link-text">{linkPublico}</span>
-                    <button
-                      className="button button-primary button-small"
-                      onClick={copiarLinkPublico}
-                      type="button"
-                    >
-                      Copiar link
-                    </button>
+                    <div className="public-link-actions">
+                      <button
+                        className="button button-primary button-small"
+                        onClick={copiarLinkPublico}
+                        type="button"
+                      >
+                        Copiar link
+                      </button>
+                      <button
+                        className="button button-secondary button-small whatsapp-share-button"
+                        onClick={compartilharWhatsApp}
+                        type="button"
+                      >
+                        <MessageCircle
+                          aria-hidden="true"
+                          size={16}
+                          strokeWidth={2}
+                        />
+                        Compartilhar no WhatsApp
+                      </button>
+                    </div>
                   </div>
                   {feedbackLink && (
                     <p

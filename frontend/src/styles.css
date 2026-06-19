@@ -1644,6 +1644,22 @@ textarea:focus {
   word-break: break-word;
 }
 
+.public-link-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.public-link-actions .button {
+  width: 100%;
+}
+
+.whatsapp-share-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 .copy-feedback {
   margin: 8px 0 0;
   color: var(--green-800);
@@ -1690,6 +1706,14 @@ textarea:focus {
   .public-link-box {
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
+  }
+
+  .public-link-actions {
+    grid-template-columns: repeat(2, max-content);
+  }
+
+  .public-link-actions .button {
+    width: auto;
   }
 }
 
