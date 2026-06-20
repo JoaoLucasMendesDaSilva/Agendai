@@ -15,10 +15,12 @@ function clearToken() {
 
 async function request(path, options = {}) {
   const token = getToken();
-  const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  };
+  const isFormData = options.body instanceof FormData;
+  const headers = { ...options.headers };
+
+  if (!isFormData && options.body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   if (token && options.auth !== false) {
     headers.Authorization = `Bearer ${token}`;
@@ -40,6 +42,18 @@ async function request(path, options = {}) {
   }
 
   return data;
+}
+
+function resolverAssetUrl(assetPath) {
+  if (!assetPath) {
+    return '';
+  }
+
+  if (/^https?:\/\//i.test(assetPath)) {
+    return assetPath;
+  }
+
+  return `${API_URL}${assetPath.startsWith('/') ? '' : '/'}${assetPath}`;
 }
 
 function cadastrarUsuario(dados) {
@@ -67,5 +81,6 @@ export {
   getToken,
   loginUsuario,
   request,
+  resolverAssetUrl,
   setToken,
 };

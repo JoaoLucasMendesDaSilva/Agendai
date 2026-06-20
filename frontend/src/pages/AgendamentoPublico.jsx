@@ -15,6 +15,7 @@ import {
   listarProfissionaisPublicos,
   listarServicosPublicos,
 } from '../services/publicoService';
+import { resolverAssetUrl } from '../services/api';
 
 const CLIENTE_INICIAL = {
   nome: '',
@@ -165,6 +166,8 @@ function AgendamentoPublico({ slugOuId }) {
           ? 2
           : 1;
   const statusAberto = negocioEstaAberto(negocio);
+  const logoUrl = resolverAssetUrl(negocio?.logo_url);
+  const bannerUrl = resolverAssetUrl(negocio?.banner_url);
   const localizacao = [
     negocio?.cidade && formatarCidade(negocio.cidade),
     negocio?.endereco,
@@ -379,10 +382,21 @@ function AgendamentoPublico({ slugOuId }) {
   return (
     <main className="page public-booking-page">
       <section className="public-booking-card">
+        {bannerUrl && (
+          <div className="public-business-banner">
+            <img src={bannerUrl} alt={`Capa de ${negocio?.nome || 'negócio'}`} />
+          </div>
+        )}
         <header className="public-booking-header">
           <div className="public-business-hero">
-            <div className="business-avatar" aria-hidden="true">
-              {negocio?.nome?.charAt(0)?.toUpperCase() || 'A'}
+            <div className={`business-avatar ${logoUrl ? 'has-image' : ''}`}>
+              {logoUrl ? (
+                <img src={logoUrl} alt={`Logo de ${negocio?.nome || 'negócio'}`} />
+              ) : (
+                <span aria-hidden="true">
+                  {negocio?.nome?.charAt(0)?.toUpperCase() || 'A'}
+                </span>
+              )}
             </div>
             <div>
               <p className="eyebrow">Agendamento online</p>

@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
-import { Download, MessageCircle, Store } from 'lucide-react';
+import { Download, ImageUp, MessageCircle, Store } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import DashboardShell from '../components/DashboardShell';
 import { useAuth } from '../contexts/AuthContext';
 import {
+  atualizarIdentidadeVisual,
   atualizarNegocio,
   buscarNegocio,
   criarNegocio,
 } from '../services/negocioService';
+import { resolverAssetUrl } from '../services/api';
 
 const DIAS_SEMANA = [
   { valor: 0, label: 'Domingo' },
@@ -74,6 +76,27 @@ function montarLinkPublico(slug) {
   return `${window.location.origin}/agendar/${slug}`;
 }
 
+function BrandUploadField({ label, limite, onChange, preview, tipo }) {
+  return (
+    <label className="brand-upload-field">
+      <span>{label}</span>
+      <small>PNG, JPG ou WEBP. Máximo de {limite} MB.</small>
+      <span className={`brand-preview brand-preview-${tipo}`}>
+        {preview ? (
+          <img src={preview} alt={`Preview ${label.toLowerCase()}`} />
+        ) : (
+          <ImageUp aria-hidden="true" size={28} strokeWidth={2} />
+        )}
+      </span>
+      <input
+        accept="image/png,image/jpeg,image/webp"
+        onChange={(event) => onChange(tipo, event.target.files?.[0])}
+        type="file"
+      />
+    </label>
+  );
+}
+
 function Negocio({ navigate }) {
   const { logout, usuario } = useAuth();
   const qrCodeRef = useRef(null);
@@ -84,6 +107,15 @@ function Negocio({ navigate }) {
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
   const [feedbackLink, setFeedbackLink] = useState('');
+  const [arquivosMarca, setArquivosMarca] = useState({
+    logo: null,
+    banner: null,
+  });
+  const [previewsMarca, setPreviewsMarca] = useState({
+    logo: '',
+    banner: '',
+  });
+  const [enviandoMarca, setEnviandoMarca] = useState(false);
   const linkPublico = montarLinkPublico(negocio?.slug_publico);
 
   useEffect(() => {
@@ -99,6 +131,10 @@ function Negocio({ navigate }) {
         if (ativo) {
           setNegocio(resposta.negocio);
           setForm(montarForm(resposta.negocio));
+          setPreviewsMarca({
+            logo: resolverAssetUrl(resposta.negocio?.logo_url),
+            banner: resolverAssetUrl(resposta.negocio?.banner_url),
+          });
         }
       } catch (err) {
         if (ativo) {
@@ -123,6 +159,86 @@ function Negocio({ navigate }) {
       ...atual,
       [campo]: valor,
     }));
+  }
+
+  function selecionarImagem(tipo, arquivo) {
+    setErro('');
+    setSucesso('');
+
+    if (!arquivo) {
+      return;
+    }
+
+    const tiposPermitidos = ['image/png', 'image/jpeg', 'image/webp'];
+    const limite = tipo === 'logo' ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
+
+    if (!tiposPermitidos.includes(arquivo.type)) {
+      setErro('Use uma imagem PNG, JPG, JPEG ou WEBP.');
+      return;
+    }
+
+    if (arquivo.size > limite) {
+      setErro(
+        tipo === 'logo'
+          ? 'A logo deve ter no máximo 5 MB.'
+          : 'O banner deve ter no máximo 10 MB.',
+      );
+      return;
+    }
+
+    setArquivosMarca((atual) => ({ ...atual, [tipo]: arquivo }));
+    setPreviewsMarca((atual) => {
+      if (atual[tipo]?.startsWith('blob:')) {
+        URL.revokeObjectURL(atual[tipo]);
+      }
+
+      return {
+        ...atual,
+        [tipo]: URL.createObjectURL(arquivo),
+      };
+    });
+  }
+
+  async function salvarIdentidadeVisual(event) {
+    event.preventDefault();
+
+    if (!negocio || (!arquivosMarca.logo && !arquivosMarca.banner)) {
+      return;
+    }
+
+    setErro('');
+    setSucesso('');
+    setEnviandoMarca(true);
+
+    try {
+      const resposta = await atualizarIdentidadeVisual(
+        negocio.id,
+        arquivosMarca,
+      );
+
+      Object.values(previewsMarca).forEach((preview) => {
+        if (preview?.startsWith('blob:')) {
+          URL.revokeObjectURL(preview);
+        }
+      });
+
+      setNegocio(resposta.negocio);
+      setArquivosMarca({ logo: null, banner: null });
+      setPreviewsMarca({
+        logo: resolverAssetUrl(resposta.negocio.logo_url),
+        banner: resolverAssetUrl(resposta.negocio.banner_url),
+      });
+      setSucesso(resposta.mensagem);
+      window.dispatchEvent(
+        new CustomEvent('agendai:brand-updated', {
+          detail: { logoUrl: resposta.negocio.logo_url },
+        }),
+      );
+    } catch (err) {
+      setErro(err.message);
+    } finally {
+      setEnviandoMarca(false);
+    }
   }
 
   function alternarDia(dia) {
@@ -270,7 +386,8 @@ function Negocio({ navigate }) {
           )}
 
           {!carregando && (
-            <form className="form" onSubmit={handleSubmit}>
+            <>
+              <form className="form" onSubmit={handleSubmit}>
               <fieldset className="form-section">
                 <legend>Dados do negócio</legend>
 
@@ -387,7 +504,36 @@ function Negocio({ navigate }) {
               >
                 {salvando ? 'Salvando...' : 'Salvar negócio'}
               </button>
-            </form>
+              </form>
+
+              <form className="brand-form" onSubmit={salvarIdentidadeVisual}>
+                <fieldset className="form-section">
+                  <legend>Identidade visual</legend>
+                  <p className="panel-text">
+                    Personalize sua página pública com a logo e a capa do seu negócio.
+                  </p>
+                  {!negocio ? (
+                    <p className="message message-info">
+                      Salve os dados do negócio antes de enviar as imagens.
+                    </p>
+                  ) : (
+                    <div className="brand-upload-grid">
+                      <BrandUploadField label="Logo" limite="5" onChange={selecionarImagem} preview={previewsMarca.logo} tipo="logo" />
+                      <BrandUploadField label="Banner ou capa" limite="10" onChange={selecionarImagem} preview={previewsMarca.banner} tipo="banner" />
+                    </div>
+                  )}
+                </fieldset>
+                {negocio && (
+                  <button
+                    className="button button-secondary"
+                    disabled={enviandoMarca || (!arquivosMarca.logo && !arquivosMarca.banner)}
+                    type="submit"
+                  >
+                    {enviandoMarca ? 'Enviando imagens...' : 'Salvar identidade visual'}
+                  </button>
+                )}
+              </form>
+            </>
           )}
         </div>
 

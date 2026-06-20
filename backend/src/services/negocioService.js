@@ -1,4 +1,8 @@
 const { getDatabasePool } = require('../config/database');
+const {
+  removerImagemPorUrl,
+  salvarImagens,
+} = require('../utils/imageStorage');
 
 const CAMPOS_PROIBIDOS = [
   'id',
@@ -157,6 +161,8 @@ function formatarNegocio(negocio) {
     horario_abertura: negocio.horario_abertura,
     horario_fechamento: negocio.horario_fechamento,
     dias_funcionamento: parseDiasFuncionamento(negocio.dias_funcionamento),
+    logo_url: negocio.logo_url,
+    banner_url: negocio.banner_url,
     ativo: Boolean(negocio.ativo),
   };
 }
@@ -316,7 +322,8 @@ async function buscarNegocioDoUsuario(usuarioId) {
   const pool = getDatabasePool();
   const [linhas] = await pool.execute(
     `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
-      horario_abertura, horario_fechamento, dias_funcionamento, ativo
+      horario_abertura, horario_fechamento, dias_funcionamento, logo_url,
+      banner_url, ativo
      FROM negocios
      WHERE usuario_id = ?
      LIMIT 1`,
@@ -363,7 +370,8 @@ async function criarNegocio(usuarioId, dados) {
 
   const [linhas] = await pool.execute(
     `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
-      horario_abertura, horario_fechamento, dias_funcionamento, ativo
+      horario_abertura, horario_fechamento, dias_funcionamento, logo_url,
+      banner_url, ativo
      FROM negocios
      WHERE id = ? AND usuario_id = ?
      LIMIT 1`,
@@ -383,7 +391,8 @@ async function atualizarNegocio(usuarioId, negocioId, dados) {
   const pool = getDatabasePool();
   const [linhas] = await pool.execute(
     `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
-      horario_abertura, horario_fechamento, dias_funcionamento, ativo
+      horario_abertura, horario_fechamento, dias_funcionamento, logo_url,
+      banner_url, ativo
      FROM negocios
      WHERE id = ? AND usuario_id = ?
      LIMIT 1`,
@@ -446,7 +455,8 @@ async function atualizarNegocio(usuarioId, negocioId, dados) {
 
   const [negociosAtualizados] = await pool.execute(
     `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
-      horario_abertura, horario_fechamento, dias_funcionamento, ativo
+      horario_abertura, horario_fechamento, dias_funcionamento, logo_url,
+      banner_url, ativo
      FROM negocios
      WHERE id = ? AND usuario_id = ?
      LIMIT 1`,
@@ -456,7 +466,67 @@ async function atualizarNegocio(usuarioId, negocioId, dados) {
   return formatarNegocio(negociosAtualizados[0]);
 }
 
+async function atualizarIdentidadeVisual(usuarioId, negocioId, arquivos) {
+  const id = Number(negocioId);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    throw criarErro(404, 'Negocio nao encontrado.');
+  }
+
+  const pool = getDatabasePool();
+  const [linhas] = await pool.execute(
+    `SELECT id, logo_url, banner_url
+     FROM negocios
+     WHERE id = ? AND usuario_id = ?
+     LIMIT 1`,
+    [id, usuarioId]
+  );
+  const negocioAtual = linhas[0];
+
+  if (!negocioAtual) {
+    throw criarErro(404, 'Negocio nao encontrado.');
+  }
+
+  const imagensSalvas = await salvarImagens(arquivos);
+  const atualizacoes = [];
+  const valores = [];
+
+  for (const imagem of imagensSalvas) {
+    atualizacoes.push(`${imagem.tipo}_url = ?`);
+    valores.push(imagem.url);
+  }
+
+  valores.push(id, usuarioId);
+
+  try {
+    const [resultado] = await pool.execute(
+      `UPDATE negocios
+       SET ${atualizacoes.join(', ')}
+       WHERE id = ? AND usuario_id = ?`,
+      valores
+    );
+
+    if (resultado.affectedRows === 0) {
+      throw criarErro(404, 'Negocio nao encontrado.');
+    }
+  } catch (erro) {
+    await Promise.allSettled(
+      imagensSalvas.map((imagem) => removerImagemPorUrl(imagem.url))
+    );
+    throw erro;
+  }
+
+  await Promise.allSettled(
+    imagensSalvas.map((imagem) =>
+      removerImagemPorUrl(negocioAtual[`${imagem.tipo}_url`])
+    )
+  );
+
+  return buscarNegocioDoUsuario(usuarioId);
+}
+
 module.exports = {
+  atualizarIdentidadeVisual,
   atualizarNegocio,
   buscarNegocioDoUsuario,
   criarNegocio,

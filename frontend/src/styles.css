@@ -2953,6 +2953,130 @@ textarea:focus {
   overflow-wrap: anywhere;
 }
 
+.brand-form {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+  border-top: 1px solid var(--gray-300);
+  padding-top: 24px;
+}
+
+.brand-upload-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.brand-upload-field {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.brand-upload-field > span:first-child {
+  color: var(--gray-900);
+  font-weight: 600;
+}
+
+.brand-upload-field small {
+  color: var(--gray-500);
+  font-weight: 400;
+}
+
+.brand-preview {
+  display: grid;
+  width: 100%;
+  min-height: 150px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px dashed rgba(0, 127, 111, 0.38);
+  border-radius: 14px;
+  color: var(--green-800);
+  background: var(--green-50);
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease;
+}
+
+.brand-upload-field:hover .brand-preview {
+  border-color: var(--green-700);
+  box-shadow: 0 12px 28px rgba(0, 127, 111, 0.1);
+  transform: translateY(-2px);
+}
+
+.brand-preview-logo {
+  width: min(100%, 210px);
+  aspect-ratio: 1;
+  justify-self: start;
+}
+
+.brand-preview-banner {
+  aspect-ratio: 16 / 6;
+}
+
+.brand-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.brand-preview-banner img {
+  object-fit: cover;
+}
+
+.brand-upload-field input[type="file"] {
+  width: 100%;
+  padding: 10px;
+}
+
+.public-business-banner {
+  width: 100%;
+  max-height: 300px;
+  overflow: hidden;
+  aspect-ratio: 16 / 5;
+  background: var(--gray-100);
+}
+
+.public-business-banner img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.business-avatar.has-image {
+  overflow: hidden;
+  padding: 0;
+  background: var(--white);
+}
+
+.business-avatar.has-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.avatar.has-image {
+  overflow: hidden;
+  padding: 0;
+}
+
+.avatar.has-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (min-width: 720px) {
+  .brand-upload-grid {
+    grid-template-columns: minmax(190px, 0.7fr) minmax(0, 1.3fr);
+    align-items: start;
+  }
+}
 [data-theme="dark"] body {
   background:
     radial-gradient(circle at top left, rgba(49, 185, 159, 0.13), transparent 34%),

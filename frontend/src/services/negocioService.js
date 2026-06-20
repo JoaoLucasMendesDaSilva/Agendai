@@ -18,4 +18,26 @@ function atualizarNegocio(id, dados) {
   });
 }
 
-export { atualizarNegocio, buscarNegocio, criarNegocio };
+function atualizarIdentidadeVisual(id, arquivos) {
+  const dados = new FormData();
+
+  if (arquivos.logo) {
+    dados.append('logo', arquivos.logo);
+  }
+
+  if (arquivos.banner) {
+    dados.append('banner', arquivos.banner);
+  }
+
+  return request(`/api/negocio/${id}/identidade-visual`, {
+    method: 'PUT',
+    body: dados,
+  });
+}
+
+export {
+  atualizarIdentidadeVisual,
+  atualizarNegocio,
+  buscarNegocio,
+  criarNegocio,
+};

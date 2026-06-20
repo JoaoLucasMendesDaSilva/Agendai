@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import { useTheme } from '../contexts/ThemeContext';
+import { buscarNegocio } from '../services/negocioService';
+import { resolverAssetUrl } from '../services/api';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', path: '/dashboard', Icon: LayoutDashboard },
@@ -31,6 +33,7 @@ function DashboardShell({
 }) {
   const { isDark, toggleTheme } = useTheme();
   const [installPrompt, setInstallPrompt] = useState(null);
+  const [logoNegocio, setLogoNegocio] = useState('');
   const [pwaInstalado, setPwaInstalado] = useState(() => {
     if (typeof window === 'undefined') {
       return false;
@@ -48,6 +51,29 @@ function DashboardShell({
 
     return window.innerWidth >= 1040;
   });
+
+  useEffect(() => {
+    let ativo = true;
+
+    buscarNegocio()
+      .then((resposta) => {
+        if (ativo) {
+          setLogoNegocio(resolverAssetUrl(resposta.negocio?.logo_url));
+        }
+      })
+      .catch(() => {});
+
+    function atualizarMarca(event) {
+      setLogoNegocio(resolverAssetUrl(event.detail?.logoUrl));
+    }
+
+    window.addEventListener('agendai:brand-updated', atualizarMarca);
+
+    return () => {
+      ativo = false;
+      window.removeEventListener('agendai:brand-updated', atualizarMarca);
+    };
+  }, []);
 
   useEffect(() => {
     function handleBeforeInstallPrompt(event) {
@@ -188,8 +214,12 @@ function DashboardShell({
           </button>
           <div className="topbar-user">
             <span className="notification-dot" aria-hidden="true" />
-            <span className="avatar" aria-hidden="true">
-              {usuario?.nome?.charAt(0)?.toUpperCase() || 'U'}
+            <span className={`avatar ${logoNegocio ? 'has-image' : ''}`} aria-hidden="true">
+              {logoNegocio ? (
+                <img src={logoNegocio} alt="" />
+              ) : (
+                usuario?.nome?.charAt(0)?.toUpperCase() || 'U'
+              )}
             </span>
             <div>
               <strong>{usuario?.nome || 'Usuário'}</strong>

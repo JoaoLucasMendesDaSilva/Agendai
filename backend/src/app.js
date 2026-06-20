@@ -4,6 +4,9 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 const path = require('path');
+
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
 const { testDatabaseConnection } = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
 const negocioRoutes = require('./routes/negocioRoutes');
@@ -12,7 +15,7 @@ const profissionaisRoutes = require('./routes/profissionaisRoutes');
 const publicoRoutes = require('./routes/publicoRoutes');
 const agendamentosRoutes = require('./routes/agendamentosRoutes');
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+const { UPLOAD_ROOT } = require('./utils/imageStorage');
 
 const app = express();
 
@@ -49,6 +52,19 @@ app.use(
 );
 
 app.use(express.json({ limit: '100kb' }));
+
+app.use(
+  '/uploads',
+  express.static(UPLOAD_ROOT, {
+    dotfiles: 'deny',
+    fallthrough: true,
+    maxAge: '7d',
+    setHeaders(res) {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+    },
+  })
+);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/negocio', negocioRoutes);
@@ -102,7 +118,10 @@ app.use((err, req, res, next) => {
       status: statusCode,
       metodo: req.method,
       rota: req.originalUrl,
+      mensagem: err.message
     });
+    
+    console.error(err);
   }
 
   const publicErrorMessage =

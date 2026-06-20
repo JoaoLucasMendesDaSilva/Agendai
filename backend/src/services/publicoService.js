@@ -275,6 +275,8 @@ function formatarNegocioPublico(negocio) {
     horario_fechamento: negocio.horario_fechamento,
     intervalo_agendamento_minutos: negocio.intervalo_agendamento_minutos,
     dias_funcionamento: parseJsonArray(negocio.dias_funcionamento),
+    logo_url: negocio.logo_url,
+    banner_url: negocio.banner_url,
   };
 }
 
@@ -316,7 +318,7 @@ async function buscarNegocioPublico(slugOuId) {
   const valor = String(slugOuId || '').trim();
   let sql = `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
       horario_abertura, horario_fechamento, intervalo_agendamento_minutos,
-      dias_funcionamento
+      dias_funcionamento, logo_url, banner_url
     FROM negocios
     WHERE ativo = true AND `;
   const params = [];
