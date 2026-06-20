@@ -124,6 +124,9 @@ function Negocio({ navigate }) {
     banner: '',
   });
   const [enviandoMarca, setEnviandoMarca] = useState(false);
+  const possuiImagemPendente = Boolean(
+    arquivosMarca.logo || arquivosMarca.banner,
+  );
   const linkPublico = montarLinkPublico(negocio?.slug_publico);
 
   useEffect(() => {
@@ -236,14 +239,14 @@ function Negocio({ navigate }) {
         logo: resolverAssetUrl(resposta.negocio.logo_url),
         banner: resolverAssetUrl(resposta.negocio.banner_url),
       });
-      setSucesso(resposta.mensagem);
+      setSucesso('Identidade visual salva com sucesso.');
       window.dispatchEvent(
         new CustomEvent('agendai:brand-updated', {
           detail: { logoUrl: resposta.negocio.logo_url },
         }),
       );
     } catch (err) {
-      setErro(err.message);
+      setErro('Não foi possível salvar a identidade visual.');
     } finally {
       setEnviandoMarca(false);
     }
@@ -531,13 +534,18 @@ function Negocio({ navigate }) {
                     </div>
                   )}
                 </fieldset>
+                {possuiImagemPendente && (
+                  <p className="message message-info" aria-live="polite">
+                    Imagem selecionada. Clique em salvar para aplicar.
+                  </p>
+                )}
                 {negocio && (
                   <button
                     className="button button-secondary"
-                    disabled={enviandoMarca || (!arquivosMarca.logo && !arquivosMarca.banner)}
+                    disabled={enviandoMarca || !possuiImagemPendente}
                     type="submit"
                   >
-                    {enviandoMarca ? 'Enviando imagens...' : 'Salvar identidade visual'}
+                    {enviandoMarca ? 'Salvando...' : 'Salvar identidade visual'}
                   </button>
                 )}
               </form>
