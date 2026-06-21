@@ -90,6 +90,48 @@ function filtrarAgendamentosPorPeriodo(agendamentos, inicio, fim) {
   });
 }
 
+function escaparCelulaCsv(valor) {
+  const texto = String(valor ?? '');
+  const textoSeguro = /^[=+\-@]/.test(texto.trimStart()) ? `'${texto}` : texto;
+
+  return `"${textoSeguro.replace(/"/g, '""')}"`;
+}
+
+function criarCsvAgendamentos(agendamentos) {
+  const cabecalho = [
+    'Data',
+    'Horário',
+    'Cliente',
+    'Telefone',
+    'E-mail',
+    'Serviço',
+    'Profissional',
+    'Status',
+    'Observações',
+  ];
+  const linhas = agendamentos
+    .map((agendamento) => ({
+      ...agendamento,
+      dataInicio: obterData(agendamento),
+    }))
+    .sort((a, b) => (a.dataInicio?.getTime() || 0) - (b.dataInicio?.getTime() || 0))
+    .map((agendamento) => [
+      agendamento.dataInicio ? formatarData(agendamento.dataInicio) : '',
+      agendamento.dataInicio ? formatarHorario(agendamento.dataInicio) : '',
+      agendamento.cliente_nome,
+      agendamento.cliente_telefone,
+      agendamento.cliente_email,
+      agendamento.servico_nome,
+      agendamento.profissional_nome,
+      agendamento.status,
+      agendamento.observacoes,
+    ]);
+
+  return [cabecalho, ...linhas]
+    .map((linha) => linha.map(escaparCelulaCsv).join(';'))
+    .join('\r\n');
+}
+
 function encontrarMaisAgendado(agendamentos, campo) {
   const contagem = new Map();
 
@@ -485,6 +527,43 @@ function Dashboard({ navigate }) {
     }
   }
 
+  function exportarAgendamentosCsv() {
+    setErro('');
+
+    if (!periodoRelatorio.inicio || !periodoRelatorio.fim) {
+      setErro('Informe o início e o fim do período para exportar.');
+      return;
+    }
+
+    if (periodoRelatorio.inicio > periodoRelatorio.fim) {
+      setErro('A data inicial não pode ser maior que a data final.');
+      return;
+    }
+
+    try {
+      const agendamentosPeriodo = filtrarAgendamentosPorPeriodo(
+        agendamentos,
+        periodoRelatorio.inicio,
+        periodoRelatorio.fim,
+      );
+      const csv = criarCsvAgendamentos(agendamentosPeriodo);
+      const arquivo = new Blob([`\uFEFF${csv}`], {
+        type: 'text/csv;charset=utf-8;',
+      });
+      const url = URL.createObjectURL(arquivo);
+      const link = document.createElement('a');
+
+      link.href = url;
+      link.download = `agendamentos-${periodoRelatorio.inicio}-${periodoRelatorio.fim}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setErro('Não foi possível exportar os agendamentos.');
+    }
+  }
+
   const metricas = [
     {
       titulo: 'Total de agendamentos',
@@ -569,14 +648,24 @@ function Dashboard({ navigate }) {
               value={periodoRelatorio.fim}
             />
           </label>
-          <button
-            className="button button-primary"
-            disabled={carregando || gerandoRelatorio}
-            onClick={gerarRelatorioPdf}
-            type="button"
-          >
-            {gerandoRelatorio ? 'Gerando...' : 'Gerar relatório PDF'}
-          </button>
+          <div className="button-row">
+            <button
+              className="button button-primary"
+              disabled={carregando || gerandoRelatorio}
+              onClick={gerarRelatorioPdf}
+              type="button"
+            >
+              {gerandoRelatorio ? 'Gerando...' : 'Gerar relatório PDF'}
+            </button>
+            <button
+              className="button button-secondary"
+              disabled={carregando || gerandoRelatorio}
+              onClick={exportarAgendamentosCsv}
+              type="button"
+            >
+              Exportar Excel
+            </button>
+          </div>
         </div>
       </section>
 
