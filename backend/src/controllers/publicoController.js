@@ -1,6 +1,7 @@
 const {
   buscarAgendamentoPublicoPorToken,
   cancelarAgendamentoPublicoPorToken,
+  confirmarPresencaPublicaPorToken,
   criarAgendamentoPublico,
   listarHorariosDisponiveis,
   listarProfissionaisPublicos,
@@ -27,6 +28,21 @@ async function cancelarAgendamento(req, res, next) {
     res.json({
       mensagem: 'Agendamento cancelado com sucesso.',
       agendamento,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function confirmarPresenca(req, res, next) {
+  try {
+    const resultado = await confirmarPresencaPublicaPorToken(req.params.token);
+
+    res.json({
+      mensagem: resultado.jaConfirmado
+        ? 'A presença neste agendamento já está confirmada.'
+        : 'Presença confirmada com sucesso.',
+      agendamento: resultado.agendamento,
     });
   } catch (err) {
     next(err);
@@ -102,6 +118,7 @@ module.exports = {
   buscarAgendamento,
   buscarNegocio,
   cancelarAgendamento,
+  confirmarPresenca,
   criarAgendamento,
   listarHorarios,
   listarProfissionais,

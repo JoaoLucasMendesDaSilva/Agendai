@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import {
   buscarAgendamentoPublico,
   cancelarAgendamentoPublico,
+  confirmarPresencaPublica,
 } from '../services/publicoService';
 
 const STATUS_LABELS = {
@@ -28,6 +29,7 @@ function GerenciarAgendamento({ token }) {
   const [agendamento, setAgendamento] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [cancelando, setCancelando] = useState(false);
+  const [confirmando, setConfirmando] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
 
@@ -76,6 +78,26 @@ function GerenciarAgendamento({ token }) {
       setErro(err.message);
     } finally {
       setCancelando(false);
+    }
+  }
+
+  async function confirmarPresenca() {
+    if (!window.confirm('Deseja confirmar sua presença neste agendamento?')) {
+      return;
+    }
+
+    setConfirmando(true);
+    setErro('');
+    setSucesso('');
+
+    try {
+      const resposta = await confirmarPresencaPublica(token);
+      setAgendamento(resposta.agendamento);
+      setSucesso(resposta.mensagem || 'Presença confirmada com sucesso.');
+    } catch (err) {
+      setErro(err.message);
+    } finally {
+      setConfirmando(false);
     }
   }
 
@@ -155,20 +177,35 @@ function GerenciarAgendamento({ token }) {
                 )}
               </dl>
 
-              <button
-                className="button button-danger"
-                disabled={
-                  cancelando || agendamento.status === 'cancelado'
-                }
-                onClick={cancelar}
-                type="button"
-              >
-                {agendamento.status === 'cancelado'
-                  ? 'Agendamento cancelado'
-                  : cancelando
-                    ? 'Cancelando...'
-                    : 'Cancelar agendamento'}
-              </button>
+              <div className="button-row">
+                {agendamento.status !== 'cancelado' && (
+                  <button
+                    className="button button-primary"
+                    disabled={confirmando || cancelando}
+                    onClick={confirmarPresenca}
+                    type="button"
+                  >
+                    {confirmando ? 'Confirmando...' : 'Confirmar presença'}
+                  </button>
+                )}
+
+                <button
+                  className="button button-danger"
+                  disabled={
+                    cancelando ||
+                    confirmando ||
+                    agendamento.status === 'cancelado'
+                  }
+                  onClick={cancelar}
+                  type="button"
+                >
+                  {agendamento.status === 'cancelado'
+                    ? 'Agendamento cancelado'
+                    : cancelando
+                      ? 'Cancelando...'
+                      : 'Cancelar agendamento'}
+                </button>
+              </div>
             </section>
           )}
         </div>

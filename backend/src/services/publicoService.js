@@ -392,6 +392,36 @@ async function cancelarAgendamentoPublicoPorToken(token) {
   return buscarAgendamentoGerenciavelPorHash(tokenHash);
 }
 
+async function confirmarPresencaPublicaPorToken(token) {
+  const tokenHash = obterHashTokenPublico(token);
+  const pool = getDatabasePool();
+  const [resultado] = await pool.execute(
+    `UPDATE agendamentos
+     SET status = 'confirmado'
+     WHERE token_publico_hash = ?
+       AND status NOT IN ('confirmado', 'cancelado')`,
+    [tokenHash]
+  );
+
+  if (resultado.affectedRows === 0) {
+    const agendamento = await buscarAgendamentoGerenciavelPorHash(tokenHash);
+
+    if (agendamento.status === 'cancelado') {
+      throw criarErro(409, 'Agendamento cancelado não pode ser confirmado.');
+    }
+
+    return {
+      agendamento,
+      jaConfirmado: true,
+    };
+  }
+
+  return {
+    agendamento: await buscarAgendamentoGerenciavelPorHash(tokenHash),
+    jaConfirmado: false,
+  };
+}
+
 async function buscarNegocioPublico(slugOuId) {
   const pool = getDatabasePool();
   const valor = String(slugOuId || '').trim();
@@ -747,6 +777,7 @@ async function criarAgendamentoPublico(slugOuId, dados) {
 module.exports = {
   buscarAgendamentoPublicoPorToken,
   cancelarAgendamentoPublicoPorToken,
+  confirmarPresencaPublicaPorToken,
   criarAgendamentoPublico,
   listarHorariosDisponiveis,
   listarProfissionaisPublicos,

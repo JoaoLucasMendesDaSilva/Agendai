@@ -65,10 +65,21 @@ function cancelarAgendamentoPublico(token) {
   });
 }
 
+function confirmarPresencaPublica(token) {
+  return request(
+    `/api/publico/agendamentos/${encodeURIComponent(token)}/confirmacao`,
+    {
+      auth: false,
+      method: 'PUT',
+    }
+  );
+}
+
 export {
   buscarAgendamentoPublico,
   buscarNegocioPublico,
   cancelarAgendamentoPublico,
+  confirmarPresencaPublica,
   criarAgendamentoPublico,
   listarHorariosDisponiveis,
   listarProfissionaisPublicos,
