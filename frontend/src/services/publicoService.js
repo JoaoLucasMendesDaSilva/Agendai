@@ -75,6 +75,28 @@ function confirmarPresencaPublica(token) {
   );
 }
 
+function listarHorariosReagendamento(token, data) {
+  const params = new URLSearchParams({ data });
+
+  return request(
+    `/api/publico/agendamentos/${encodeURIComponent(
+      token
+    )}/horarios-disponiveis?${params.toString()}`,
+    { auth: false }
+  );
+}
+
+function reagendarAgendamentoPublico(token, dataHoraInicio) {
+  return request(
+    `/api/publico/agendamentos/${encodeURIComponent(token)}/reagendamento`,
+    {
+      auth: false,
+      method: 'PUT',
+      body: JSON.stringify({ data_hora_inicio: dataHoraInicio }),
+    }
+  );
+}
+
 export {
   buscarAgendamentoPublico,
   buscarNegocioPublico,
@@ -82,6 +104,8 @@ export {
   confirmarPresencaPublica,
   criarAgendamentoPublico,
   listarHorariosDisponiveis,
+  listarHorariosReagendamento,
   listarProfissionaisPublicos,
   listarServicosPublicos,
+  reagendarAgendamentoPublico,
 };

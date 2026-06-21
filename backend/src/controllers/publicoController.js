@@ -4,9 +4,11 @@ const {
   confirmarPresencaPublicaPorToken,
   criarAgendamentoPublico,
   listarHorariosDisponiveis,
+  listarHorariosReagendamentoPublico,
   listarProfissionaisPublicos,
   listarServicosPublicos,
   obterNegocio,
+  reagendarAgendamentoPublicoPorToken,
 } = require('../services/publicoService');
 
 async function buscarAgendamento(req, res, next) {
@@ -43,6 +45,35 @@ async function confirmarPresenca(req, res, next) {
         ? 'A presença neste agendamento já está confirmada.'
         : 'Presença confirmada com sucesso.',
       agendamento: resultado.agendamento,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function listarHorariosReagendamento(req, res, next) {
+  try {
+    const resultado = await listarHorariosReagendamentoPublico(
+      req.params.token,
+      req.query
+    );
+
+    res.json(resultado);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function reagendarAgendamento(req, res, next) {
+  try {
+    const agendamento = await reagendarAgendamentoPublicoPorToken(
+      req.params.token,
+      req.body
+    );
+
+    res.json({
+      mensagem: 'Agendamento reagendado com sucesso.',
+      agendamento,
     });
   } catch (err) {
     next(err);
@@ -121,6 +152,8 @@ module.exports = {
   confirmarPresenca,
   criarAgendamento,
   listarHorarios,
+  listarHorariosReagendamento,
   listarProfissionais,
   listarServicos,
+  reagendarAgendamento,
 };

@@ -4,6 +4,8 @@ import {
   buscarAgendamentoPublico,
   cancelarAgendamentoPublico,
   confirmarPresencaPublica,
+  listarHorariosReagendamento,
+  reagendarAgendamentoPublico,
 } from '../services/publicoService';
 
 const STATUS_LABELS = {
@@ -25,11 +27,29 @@ function formatarDataHora(valor) {
   return `${dia}/${mes}/${ano} às ${horario.slice(0, 5)}`;
 }
 
+function hojeIso() {
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+  const dia = String(hoje.getDate()).padStart(2, '0');
+
+  return `${ano}-${mes}-${dia}`;
+}
+
+function formatarHorario(valor) {
+  return String(valor || '').slice(11, 16);
+}
+
 function GerenciarAgendamento({ token }) {
   const [agendamento, setAgendamento] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [cancelando, setCancelando] = useState(false);
   const [confirmando, setConfirmando] = useState(false);
+  const [exibindoReagendamento, setExibindoReagendamento] = useState(false);
+  const [novaData, setNovaData] = useState('');
+  const [horarios, setHorarios] = useState([]);
+  const [carregandoHorarios, setCarregandoHorarios] = useState(false);
+  const [salvandoReagendamento, setSalvandoReagendamento] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
 
@@ -73,6 +93,7 @@ function GerenciarAgendamento({ token }) {
     try {
       const resposta = await cancelarAgendamentoPublico(token);
       setAgendamento(resposta.agendamento);
+      setExibindoReagendamento(false);
       setSucesso(resposta.mensagem || 'Agendamento cancelado com sucesso.');
     } catch (err) {
       setErro(err.message);
@@ -98,6 +119,77 @@ function GerenciarAgendamento({ token }) {
       setErro(err.message);
     } finally {
       setConfirmando(false);
+    }
+  }
+
+  async function selecionarNovaData(valor) {
+    setNovaData(valor);
+    setHorarios([]);
+    setErro('');
+    setSucesso('');
+
+    if (!valor) {
+      return;
+    }
+
+    setCarregandoHorarios(true);
+
+    try {
+      const resposta = await listarHorariosReagendamento(token, valor);
+      setHorarios(resposta.horarios || []);
+    } catch (err) {
+      setErro(err.message);
+    } finally {
+      setCarregandoHorarios(false);
+    }
+  }
+
+  function alternarReagendamento() {
+    setExibindoReagendamento((valorAtual) => !valorAtual);
+    setNovaData('');
+    setHorarios([]);
+    setErro('');
+    setSucesso('');
+  }
+
+  async function reagendar(horario) {
+    const horarioFormatado = formatarHorario(horario.data_hora_inicio);
+
+    if (
+      !window.confirm(
+        `Deseja reagendar para ${formatarDataHora(
+          horario.data_hora_inicio
+        )}?`
+      )
+    ) {
+      return;
+    }
+
+    setSalvandoReagendamento(true);
+    setErro('');
+    setSucesso('');
+
+    try {
+      const resposta = await reagendarAgendamentoPublico(
+        token,
+        horario.data_hora_inicio
+      );
+      setAgendamento(resposta.agendamento);
+      setSucesso(
+        resposta.mensagem ||
+          `Agendamento reagendado para ${horarioFormatado}.`
+      );
+      setExibindoReagendamento(false);
+      setNovaData('');
+      setHorarios([]);
+    } catch (err) {
+      setErro(
+        err.message.includes('indisponível')
+          ? 'Este horário ficou indisponível. Escolha outro horário.'
+          : err.message
+      );
+    } finally {
+      setSalvandoReagendamento(false);
     }
   }
 
@@ -177,15 +269,84 @@ function GerenciarAgendamento({ token }) {
                 )}
               </dl>
 
+              {exibindoReagendamento &&
+                agendamento.status !== 'cancelado' && (
+                  <div className="booking-review-card">
+                    <div>
+                      <p className="step-label">Reagendamento</p>
+                      <h3>Escolha uma nova data e horário</h3>
+                    </div>
+
+                    <label>
+                      Nova data
+                      <input
+                        min={hojeIso()}
+                        onChange={(event) =>
+                          selecionarNovaData(event.target.value)
+                        }
+                        type="date"
+                        value={novaData}
+                      />
+                    </label>
+
+                    {carregandoHorarios && (
+                      <p className="message message-info">
+                        Carregando horários...
+                      </p>
+                    )}
+
+                    {!carregandoHorarios && novaData && horarios.length === 0 && (
+                      <div className="dashboard-empty">
+                        <span className="empty-icon" aria-hidden="true">
+                          <CalendarX size={24} strokeWidth={2} />
+                        </span>
+                        <div>
+                          <strong>Nenhum horário disponível</strong>
+                          <p>Escolha outra data para consultar novos horários.</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="time-grid">
+                      {horarios.map((horario) => (
+                        <button
+                          className="time-button"
+                          disabled={salvandoReagendamento}
+                          key={horario.data_hora_inicio}
+                          onClick={() => reagendar(horario)}
+                          type="button"
+                        >
+                          {formatarHorario(horario.data_hora_inicio)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
               <div className="button-row">
                 {agendamento.status !== 'cancelado' && (
                   <button
                     className="button button-primary"
-                    disabled={confirmando || cancelando}
+                    disabled={
+                      confirmando || cancelando || salvandoReagendamento
+                    }
                     onClick={confirmarPresenca}
                     type="button"
                   >
                     {confirmando ? 'Confirmando...' : 'Confirmar presença'}
+                  </button>
+                )}
+
+                {agendamento.status !== 'cancelado' && (
+                  <button
+                    className="button button-secondary"
+                    disabled={
+                      confirmando || cancelando || salvandoReagendamento
+                    }
+                    onClick={alternarReagendamento}
+                    type="button"
+                  >
+                    {exibindoReagendamento ? 'Fechar reagendamento' : 'Reagendar'}
                   </button>
                 )}
 
@@ -194,6 +355,7 @@ function GerenciarAgendamento({ token }) {
                   disabled={
                     cancelando ||
                     confirmando ||
+                    salvandoReagendamento ||
                     agendamento.status === 'cancelado'
                   }
                   onClick={cancelar}

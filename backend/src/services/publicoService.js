@@ -46,6 +46,22 @@ function obterHashTokenPublico(token) {
   return crypto.createHash('sha256').update(valor).digest('hex');
 }
 
+function validarDadosReagendamento(dados) {
+  const campos = Object.keys(dados || {});
+
+  if (campos.length !== 1 || campos[0] !== 'data_hora_inicio') {
+    throw criarErro(400, 'Envie apenas data_hora_inicio para reagendar.');
+  }
+
+  const dataHoraInicio = validarDataHoraAgendamento(dados.data_hora_inicio);
+
+  if (dataHoraInicio <= new Date()) {
+    throw criarErro(400, 'A nova data e hora não podem estar no passado.');
+  }
+
+  return dataHoraInicio;
+}
+
 function validarIdPositivo(valor, mensagem) {
   const id = Number(valor);
 
@@ -367,6 +383,29 @@ async function buscarAgendamentoGerenciavelPorHash(tokenHash) {
   return formatarAgendamentoGerenciavel(agendamentos[0]);
 }
 
+async function buscarDadosAgendamentoPorHash(
+  executor,
+  tokenHash,
+  bloquear = false
+) {
+  const [agendamentos] = await executor.execute(
+    `SELECT a.id, a.negocio_id, a.servico_id, a.profissional_id, a.status,
+      n.ativo AS negocio_ativo, n.horario_abertura, n.horario_fechamento,
+      n.dias_funcionamento
+     FROM agendamentos a
+     INNER JOIN negocios n ON n.id = a.negocio_id
+     WHERE a.token_publico_hash = ?
+     LIMIT 1${bloquear ? ' FOR UPDATE' : ''}`,
+    [tokenHash]
+  );
+
+  if (agendamentos.length === 0) {
+    throw criarErro(404, 'Agendamento não encontrado.');
+  }
+
+  return agendamentos[0];
+}
+
 async function buscarAgendamentoPublicoPorToken(token) {
   return buscarAgendamentoGerenciavelPorHash(obterHashTokenPublico(token));
 }
@@ -420,6 +459,113 @@ async function confirmarPresencaPublicaPorToken(token) {
     agendamento: await buscarAgendamentoGerenciavelPorHash(tokenHash),
     jaConfirmado: false,
   };
+}
+
+async function listarHorariosReagendamentoPublico(token, filtros) {
+  const tokenHash = obterHashTokenPublico(token);
+  const pool = getDatabasePool();
+  const agendamento = await buscarDadosAgendamentoPorHash(pool, tokenHash);
+
+  if (agendamento.status === 'cancelado') {
+    throw criarErro(409, 'Agendamento cancelado não pode ser reagendado.');
+  }
+
+  return listarHorariosDisponiveis(
+    agendamento.negocio_id,
+    {
+      data: filtros.data,
+      servico_id: agendamento.servico_id,
+      profissional_id: agendamento.profissional_id,
+    },
+    agendamento.id
+  );
+}
+
+async function reagendarAgendamentoPublicoPorToken(token, dados) {
+  const tokenHash = obterHashTokenPublico(token);
+  const dataHoraInicio = validarDadosReagendamento(dados);
+  const pool = getDatabasePool();
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const agendamento = await buscarDadosAgendamentoPorHash(
+      connection,
+      tokenHash,
+      true
+    );
+
+    if (agendamento.status === 'cancelado') {
+      throw criarErro(409, 'Agendamento cancelado não pode ser reagendado.');
+    }
+
+    if (!agendamento.negocio_ativo) {
+      throw criarErro(404, 'Negócio não encontrado.');
+    }
+
+    const servico = await buscarServicoAtivoDoNegocioComConexao(
+      connection,
+      agendamento.negocio_id,
+      agendamento.servico_id
+    );
+    const profissional = await buscarProfissionalAtivoDoNegocioComConexao(
+      connection,
+      agendamento.negocio_id,
+      agendamento.profissional_id
+    );
+    const dataHoraFim = adicionarMinutos(
+      dataHoraInicio,
+      servico.duracao_minutos
+    );
+
+    validarDiaFuncionamento(agendamento, dataHoraInicio);
+    validarDentroDoHorario(agendamento, dataHoraInicio, dataHoraFim);
+
+    const [conflitos] = await connection.execute(
+      `SELECT id
+       FROM agendamentos
+       WHERE negocio_id = ?
+         AND profissional_id = ?
+         AND id <> ?
+         AND status IN ('pendente', 'confirmado')
+         AND data_hora_inicio < ?
+         AND data_hora_fim > ?
+       FOR UPDATE`,
+      [
+        agendamento.negocio_id,
+        profissional.id,
+        agendamento.id,
+        formatarDataHora(dataHoraFim).replace('T', ' '),
+        formatarDataHora(dataHoraInicio).replace('T', ' '),
+      ]
+    );
+
+    if (conflitos.length > 0) {
+      throw criarErro(409, 'Horário indisponível para este profissional.');
+    }
+
+    await connection.execute(
+      `UPDATE agendamentos
+       SET data_hora_inicio = ?, data_hora_fim = ?
+       WHERE id = ? AND token_publico_hash = ? AND status <> 'cancelado'`,
+      [
+        formatarDataHora(dataHoraInicio).replace('T', ' '),
+        formatarDataHora(dataHoraFim).replace('T', ' '),
+        agendamento.id,
+        tokenHash,
+      ]
+    );
+
+    await connection.commit();
+
+    return buscarAgendamentoGerenciavelPorHash(tokenHash);
+  } catch (err) {
+    await connection.rollback();
+    throw err;
+  } finally {
+    connection.release();
+  }
 }
 
 async function buscarNegocioPublico(slugOuId) {
@@ -569,7 +715,11 @@ async function listarProfissionaisPublicos(slugOuId) {
   return profissionais.map(formatarProfissionalPublico);
 }
 
-async function listarHorariosDisponiveis(slugOuId, filtros) {
+async function listarHorariosDisponiveis(
+  slugOuId,
+  filtros,
+  agendamentoIgnoradoId = null
+) {
   const negocio = await buscarNegocioPublico(slugOuId);
   const data = validarDataConsulta(filtros.data);
   const servico = await buscarServicoAtivoDoNegocio(
@@ -605,12 +755,15 @@ async function listarHorariosDisponiveis(slugOuId, filtros) {
      FROM agendamentos
      WHERE negocio_id = ?
        AND profissional_id = ?
+       AND (? IS NULL OR id <> ?)
        AND status IN ('pendente', 'confirmado')
        AND data_hora_inicio < ?
        AND data_hora_fim > ?`,
     [
       negocio.id,
       profissional.id,
+      agendamentoIgnoradoId,
+      agendamentoIgnoradoId,
       formatarDataHora(fechamento).replace('T', ' '),
       formatarDataHora(abertura).replace('T', ' '),
     ]
@@ -780,7 +933,9 @@ module.exports = {
   confirmarPresencaPublicaPorToken,
   criarAgendamentoPublico,
   listarHorariosDisponiveis,
+  listarHorariosReagendamentoPublico,
   listarProfissionaisPublicos,
   listarServicosPublicos,
   obterNegocio,
+  reagendarAgendamentoPublicoPorToken,
 };

@@ -4,9 +4,17 @@ const publicoController = require('../controllers/publicoController');
 const router = express.Router();
 
 router.get('/agendamentos/:token', publicoController.buscarAgendamento);
+router.get(
+  '/agendamentos/:token/horarios-disponiveis',
+  publicoController.listarHorariosReagendamento
+);
 router.put(
   '/agendamentos/:token/confirmacao',
   publicoController.confirmarPresenca
+);
+router.put(
+  '/agendamentos/:token/reagendamento',
+  publicoController.reagendarAgendamento
 );
 router.delete('/agendamentos/:token', publicoController.cancelarAgendamento);
 router.get('/negocio/:slugOuId', publicoController.buscarNegocio);
