@@ -4,14 +4,6 @@ function listarAgendamentos() {
   return request('/api/agendamentos');
 }
 
-function listarAgendamentosHoje() {
-  return request('/api/agendamentos/hoje');
-}
-
-function buscarAgendamento(id) {
-  return request(`/api/agendamentos/${id}`);
-}
-
 function atualizarStatusAgendamento(id, status) {
   return request(`/api/agendamentos/${id}/status`, {
     method: 'PUT',
@@ -27,8 +19,6 @@ function cancelarAgendamento(id) {
 
 export {
   atualizarStatusAgendamento,
-  buscarAgendamento,
   cancelarAgendamento,
   listarAgendamentos,
-  listarAgendamentosHoje,
 };

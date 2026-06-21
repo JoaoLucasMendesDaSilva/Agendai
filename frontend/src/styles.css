@@ -1033,8 +1033,7 @@ textarea:focus {
 .empty-icon svg,
 .metric-icon svg,
 .quick-icon svg,
-.summary-icon svg,
-.status-action-icon svg {
+.summary-icon svg {
   display: block;
 }
 
@@ -1264,15 +1263,6 @@ textarea:focus {
   transform: translateY(-3px);
 }
 
-.metric-action {
-  width: 100%;
-  max-width: 100%;
-  border: 1px solid rgba(223, 229, 236, 0.78);
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
 .metric-card > div {
   min-width: 0;
 }
@@ -1391,23 +1381,6 @@ textarea:focus {
   min-height: 40px;
   padding: 9px 13px;
   font-size: 0.84rem;
-}
-
-.dashboard-page,
-.public-page {
-  display: grid;
-  align-content: start;
-  gap: 20px;
-  max-width: 960px;
-  margin: 0 auto;
-}
-
-.public-page {
-  max-width: 840px;
-}
-
-.public-header {
-  padding-top: 12px;
 }
 
 .public-booking-page {
@@ -1743,17 +1716,6 @@ textarea:focus {
   padding-top: 10px;
 }
 
-.dashboard-header {
-  display: grid;
-  gap: 16px;
-  align-items: start;
-  padding-top: 12px;
-}
-
-.dashboard-header .button {
-  width: 100%;
-}
-
 .auth-panel,
 .dashboard-panel {
   width: min(100%, 760px);
@@ -1777,16 +1739,6 @@ textarea:focus {
 .dashboard-grid .dashboard-panel,
 .workspace .dashboard-panel {
   width: 100%;
-}
-
-.action-list {
-  display: grid;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.action-list-cards {
-  grid-template-columns: 1fr;
 }
 
 .quick-action {
@@ -1833,123 +1785,6 @@ textarea:focus {
   color: var(--green-800);
   background: var(--green-100);
   font-weight: 600;
-}
-
-.status-summary {
-  display: grid;
-  gap: 20px;
-  margin-top: 24px;
-}
-
-.status-actions {
-  gap: 12px;
-}
-
-.status-action {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 48px;
-  border: 1px solid var(--gray-300);
-  border-radius: 12px;
-  padding: 12px 14px;
-  color: var(--gray-700);
-  background: var(--white);
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease;
-}
-
-.status-action-icon {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  flex: 0 0 auto;
-  place-items: center;
-  border-radius: 9px;
-  color: var(--green-800);
-  background: var(--green-100);
-}
-
-.status-action-blue {
-  color: var(--blue-600);
-  background: var(--blue-100);
-}
-
-.status-action-yellow {
-  color: var(--yellow-600);
-  background: var(--yellow-100);
-}
-
-.status-action:hover {
-  border-color: rgba(0, 127, 111, 0.2);
-  box-shadow: var(--shadow-card);
-  transform: translateY(-2px);
-}
-
-.donut-chart {
-  width: 170px;
-  height: 170px;
-  justify-self: center;
-  border-radius: 50%;
-  background: conic-gradient(
-    var(--green-800) 0 53%,
-    var(--yellow-600) 53% 80%,
-    var(--red-600) 80% 93%,
-    var(--blue-600) 93% 100%
-  );
-  position: relative;
-}
-
-.donut-chart::after {
-  position: absolute;
-  inset: 38px;
-  border-radius: 50%;
-  background: var(--white);
-  content: "";
-}
-
-.status-summary ul {
-  display: grid;
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.status-summary li {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--gray-700);
-}
-
-.dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  margin-right: 8px;
-  border-radius: 50%;
-}
-
-.dot-green {
-  background: var(--green-800);
-}
-
-.dot-yellow {
-  background: var(--yellow-600);
-}
-
-.dot-red {
-  background: var(--red-600);
-}
-
-.dot-blue {
-  background: var(--blue-600);
 }
 
 .dashboard-empty {
@@ -2213,46 +2048,6 @@ textarea:focus {
   content: "";
 }
 
-.appointment-table {
-  display: grid;
-  gap: 2px;
-  margin-top: 22px;
-}
-
-.appointment-table [role="row"] {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  align-items: center;
-  border-bottom: 1px solid #eef2f6;
-  padding: 14px 0;
-}
-
-.appointment-table [role="row"]:last-child {
-  border-bottom: 0;
-}
-
-.appointment-table span {
-  color: var(--gray-500);
-  font-size: 0.86rem;
-}
-
-.appointment-table strong {
-  color: var(--gray-900);
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.summary-box {
-  display: grid;
-  gap: 8px;
-  margin-top: 20px;
-  border: 1px solid var(--gray-300);
-  border-radius: 14px;
-  padding: 16px;
-  background: #fbfcfd;
-}
-
 .form-section {
   display: grid;
   gap: 16px;
@@ -2280,33 +2075,6 @@ textarea:focus {
 .filter-row {
   grid-template-columns: 1fr 1fr;
   margin: 20px 0;
-}
-
-.checkbox-group {
-  display: grid;
-  gap: 12px;
-  margin: 0;
-  border: 1px solid var(--gray-300);
-  border-radius: 14px;
-  padding: 16px;
-}
-
-.checkbox-group legend {
-  padding: 0 6px;
-  color: var(--gray-700);
-  font-weight: 600;
-}
-
-.checkbox-label {
-  grid-template-columns: 24px 1fr;
-  align-items: center;
-  gap: 10px;
-  font-weight: 500;
-}
-
-.checkbox-label input {
-  width: 20px;
-  min-height: 20px;
 }
 
 .day-selector {
@@ -2395,31 +2163,6 @@ textarea:focus {
   display: grid;
   gap: 16px;
   margin-top: 20px;
-}
-
-.item-card {
-  display: grid;
-  gap: 16px;
-  border: 1px solid rgba(223, 229, 236, 0.84);
-  border-radius: var(--radius);
-  padding: 16px;
-  background: var(--white);
-  box-shadow: var(--shadow-card);
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease;
-}
-
-.item-card:hover {
-  border-color: rgba(0, 127, 111, 0.18);
-  box-shadow: 0 16px 34px rgba(16, 24, 40, 0.09);
-  transform: translateY(-3px);
-}
-
-.item-card h3 {
-  margin: 0 0 6px;
-  font-size: 1.1rem;
 }
 
 .entity-list {
@@ -2901,11 +2644,6 @@ textarea:focus {
   transform: scale(0.98);
 }
 
-.appointment-heading {
-  display: grid;
-  gap: 12px;
-}
-
 .status-badge {
   justify-self: start;
   border-radius: 999px;
@@ -3107,7 +2845,6 @@ textarea:focus {
 [data-theme="dark"] .choice-card,
 [data-theme="dark"] .time-button,
 [data-theme="dark"] .quick-action,
-[data-theme="dark"] .status-action,
 [data-theme="dark"] .landing-feature-card,
 [data-theme="dark"] .landing-step-card,
 [data-theme="dark"] .landing-plan-card,
@@ -3127,9 +2864,7 @@ textarea:focus {
 
 [data-theme="dark"] .auth-form-panel,
 [data-theme="dark"] .workspace,
-[data-theme="dark"] .workspace-content,
-[data-theme="dark"] .dashboard-page,
-[data-theme="dark"] .public-page {
+[data-theme="dark"] .workspace-content {
   background: transparent;
 }
 
@@ -3205,7 +2940,6 @@ textarea:focus {
 
 [data-theme="dark"] .button-secondary,
 [data-theme="dark"] .theme-toggle,
-[data-theme="dark"] .status-action-icon,
 [data-theme="dark"] .quick-icon,
 [data-theme="dark"] .metric-icon,
 [data-theme="dark"] .empty-icon,
@@ -3235,15 +2969,13 @@ textarea:focus {
 
 [data-theme="dark"] .message-info,
 [data-theme="dark"] .status-concluido,
-[data-theme="dark"] .metric-blue,
-[data-theme="dark"] .status-action-blue {
+[data-theme="dark"] .metric-blue {
   color: var(--blue-600);
   background: var(--blue-100);
 }
 
 [data-theme="dark"] .status-pendente,
 [data-theme="dark"] .metric-yellow,
-[data-theme="dark"] .status-action-yellow,
 [data-theme="dark"] .plan-label {
   color: var(--yellow-600);
   background: var(--yellow-100);
@@ -3262,7 +2994,6 @@ textarea:focus {
 }
 
 [data-theme="dark"] .booking-steps,
-[data-theme="dark"] .summary-box,
 [data-theme="dark"] .agenda-observations {
   background: var(--gray-100);
 }
@@ -3320,8 +3051,7 @@ textarea:focus {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .choice-list,
-  .action-list-cards {
+  .choice-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -3370,18 +3100,8 @@ textarea:focus {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .appointment-table [role="row"] {
-    grid-template-columns: 120px 1fr 1fr auto;
-    gap: 16px;
-  }
-
   .time-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .appointment-heading {
-    grid-template-columns: 1fr auto;
-    align-items: start;
   }
 
   .report-controls {
@@ -3536,7 +3256,6 @@ textarea:focus {
   .agenda-filter-button:hover,
   .day-pill:hover span,
   .entity-card:hover,
-  .item-card:hover,
   .landing-feature-card:hover,
   .landing-nav-link:hover,
   .landing-plan-card:hover,
@@ -3544,7 +3263,6 @@ textarea:focus {
   .metric-card:hover,
   .quick-action:hover,
   .sidebar-link:hover,
-  .status-action:hover,
   .time-button:hover {
     transform: none;
   }
