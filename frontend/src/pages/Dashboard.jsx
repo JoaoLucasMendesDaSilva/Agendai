@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Chart } from 'chart.js/auto';
 import { jsPDF } from 'jspdf';
 import {
@@ -172,6 +172,7 @@ function MetricCard({ Icone, classeIcone = '', titulo, valor, detalhe }) {
 
 function Dashboard({ navigate }) {
   const { logout, usuario } = useAuth();
+  const montadoRef = useRef(false);
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
   const [agendamentos, setAgendamentos] = useState([]);
@@ -183,11 +184,10 @@ function Dashboard({ navigate }) {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
 
-  useEffect(() => {
-    let ativo = true;
-
-    async function carregarIndicadores() {
-      setCarregando(true);
+  const carregarIndicadores = useCallback(async (silencioso = false) => {
+      if (!silencioso) {
+        setCarregando(true);
+      }
       setErro('');
 
       const [
@@ -203,30 +203,33 @@ function Dashboard({ navigate }) {
           buscarNegocio(),
         ]);
 
-      if (!ativo) {
+      if (!montadoRef.current) {
         return;
       }
 
-      setAgendamentos(
-        resultadoAgendamentos.status === 'fulfilled'
-          ? resultadoAgendamentos.value.agendamentos || []
-          : [],
-      );
-      setServicos(
-        resultadoServicos.status === 'fulfilled'
-          ? resultadoServicos.value.servicos || []
-          : [],
-      );
-      setProfissionais(
-        resultadoProfissionais.status === 'fulfilled'
-          ? resultadoProfissionais.value.profissionais || []
-          : [],
-      );
-      setNegocio(
-        resultadoNegocio.status === 'fulfilled'
-          ? resultadoNegocio.value.negocio || null
-          : null,
-      );
+      if (resultadoAgendamentos.status === 'fulfilled') {
+        setAgendamentos(resultadoAgendamentos.value.agendamentos || []);
+      } else if (!silencioso) {
+        setAgendamentos([]);
+      }
+
+      if (resultadoServicos.status === 'fulfilled') {
+        setServicos(resultadoServicos.value.servicos || []);
+      } else if (!silencioso) {
+        setServicos([]);
+      }
+
+      if (resultadoProfissionais.status === 'fulfilled') {
+        setProfissionais(resultadoProfissionais.value.profissionais || []);
+      } else if (!silencioso) {
+        setProfissionais([]);
+      }
+
+      if (resultadoNegocio.status === 'fulfilled') {
+        setNegocio(resultadoNegocio.value.negocio || null);
+      } else if (!silencioso) {
+        setNegocio(null);
+      }
 
       const primeiraFalha = [
         resultadoAgendamentos,
@@ -241,15 +244,27 @@ function Dashboard({ navigate }) {
         );
       }
 
-      setCarregando(false);
-    }
+      if (!silencioso) {
+        setCarregando(false);
+      }
+  }, []);
+
+  useEffect(() => {
+    montadoRef.current = true;
 
     carregarIndicadores();
 
+    function handleFocus() {
+      carregarIndicadores(true);
+    }
+
+    window.addEventListener('focus', handleFocus);
+
     return () => {
-      ativo = false;
+      montadoRef.current = false;
+      window.removeEventListener('focus', handleFocus);
     };
-  }, []);
+  }, [carregarIndicadores]);
 
   const proximoAgendamento = useMemo(
     () => encontrarProximoAgendamento(agendamentos),

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CalendarClock,
   CalendarDays,
@@ -153,6 +153,7 @@ function agruparPorData(agendamentos) {
 
 function Agenda({ navigate }) {
   const { logout, usuario } = useAuth();
+  const montadoRef = useRef(false);
   const [agendamentos, setAgendamentos] = useState([]);
   const [filtro, setFiltro] = useState('todos');
   const [carregando, setCarregando] = useState(true);
@@ -175,24 +176,48 @@ function Agenda({ navigate }) {
     [agendamentosFiltrados],
   );
 
-  async function carregarAgendamentos() {
-    setCarregando(true);
+  const carregarAgendamentos = useCallback(async (silencioso = false) => {
+    if (!silencioso) {
+      setCarregando(true);
+    }
     setErro('');
 
     try {
       const resposta = await listarAgendamentos();
-      setAgendamentos(resposta.agendamentos || []);
+
+      if (montadoRef.current) {
+        setAgendamentos(resposta.agendamentos || []);
+      }
     } catch (err) {
-      setErro(err.message);
-      setAgendamentos([]);
+      if (montadoRef.current) {
+        setErro(err.message);
+
+        if (!silencioso) {
+          setAgendamentos([]);
+        }
+      }
     } finally {
-      setCarregando(false);
+      if (montadoRef.current && !silencioso) {
+        setCarregando(false);
+      }
     }
-  }
+  }, []);
 
   useEffect(() => {
+    montadoRef.current = true;
     carregarAgendamentos();
-  }, []);
+
+    function handleFocus() {
+      carregarAgendamentos(true);
+    }
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      montadoRef.current = false;
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [carregarAgendamentos]);
 
   async function alterarStatus(agendamento, status) {
     setErro('');

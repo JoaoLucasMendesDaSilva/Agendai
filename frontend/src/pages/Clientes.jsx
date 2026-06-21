@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CalendarDays, Search, UserCheck, Users } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
 import { useAuth } from '../contexts/AuthContext';
@@ -134,43 +134,56 @@ function calcularNovosClientes(clientes) {
 
 function Clientes({ navigate }) {
   const { logout, usuario } = useAuth();
+  const montadoRef = useRef(false);
   const [agendamentos, setAgendamentos] = useState([]);
   const [clienteSelecionado, setClienteSelecionado] = useState(null);
   const [busca, setBusca] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState('');
 
-  useEffect(() => {
-    let ativo = true;
-
-    async function carregarClientes() {
-      setCarregando(true);
+  const carregarClientes = useCallback(async (silencioso = false) => {
+      if (!silencioso) {
+        setCarregando(true);
+      }
       setErro('');
 
       try {
         const resposta = await listarAgendamentos();
 
-        if (ativo) {
+        if (montadoRef.current) {
           setAgendamentos(resposta.agendamentos || []);
         }
       } catch (err) {
-        if (ativo) {
+        if (montadoRef.current) {
           setErro(err.message);
-          setAgendamentos([]);
+
+          if (!silencioso) {
+            setAgendamentos([]);
+          }
         }
       } finally {
-        if (ativo) {
+        if (montadoRef.current && !silencioso) {
           setCarregando(false);
         }
       }
-    }
+  }, []);
+
+  useEffect(() => {
+    montadoRef.current = true;
 
     carregarClientes();
 
+    function handleFocus() {
+      carregarClientes(true);
+    }
+
+    window.addEventListener('focus', handleFocus);
+
     return () => {
-      ativo = false;
+      montadoRef.current = false;
+      window.removeEventListener('focus', handleFocus);
     };
-  }, []);
+  }, [carregarClientes]);
 
   const clientes = useMemo(() => agruparClientes(agendamentos), [agendamentos]);
   const clientesFiltrados = useMemo(
