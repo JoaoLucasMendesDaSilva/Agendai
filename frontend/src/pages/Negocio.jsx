@@ -239,7 +239,9 @@ function Negocio({ navigate }) {
         logo: resolverAssetUrl(resposta.negocio.logo_url),
         banner: resolverAssetUrl(resposta.negocio.banner_url),
       });
-      setSucesso('Identidade visual salva com sucesso.');
+      setSucesso(
+        'Identidade visual salva. A página pública já exibe as novas imagens.',
+      );
       window.dispatchEvent(
         new CustomEvent('agendai:brand-updated', {
           detail: { logoUrl: resposta.negocio.logo_url },

@@ -153,8 +153,6 @@ function GerenciarAgendamento({ token }) {
   }
 
   async function reagendar(horario) {
-    const horarioFormatado = formatarHorario(horario.data_hora_inicio);
-
     if (
       !window.confirm(
         `Deseja reagendar para ${formatarDataHora(
@@ -176,8 +174,9 @@ function GerenciarAgendamento({ token }) {
       );
       setAgendamento(resposta.agendamento);
       setSucesso(
-        resposta.mensagem ||
-          `Agendamento reagendado para ${horarioFormatado}.`
+        `Agendamento reagendado para ${formatarDataHora(
+          horario.data_hora_inicio
+        )}.`
       );
       setExibindoReagendamento(false);
       setNovaData('');
@@ -220,10 +219,10 @@ function GerenciarAgendamento({ token }) {
                 <CalendarX size={24} strokeWidth={2} />
               </span>
               <div>
-                <strong>Link de gerenciamento inválido</strong>
+                <strong>Não foi possível abrir este agendamento</strong>
                 <p>
-                  O endereço pode estar incompleto ou não corresponder a um
-                  agendamento. Solicite um novo link ao negócio.
+                  O link pode estar incorreto, incompleto ou ter expirado.
+                  Solicite um novo endereço ao negócio.
                 </p>
                 <a className="button button-secondary button-small" href="/">
                   Voltar ao início

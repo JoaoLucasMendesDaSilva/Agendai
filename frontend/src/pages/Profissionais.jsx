@@ -319,9 +319,9 @@ function Profissionais({ navigate }) {
                   <Users size={24} strokeWidth={2} />
                 </span>
                 <div>
-                  <strong>Nenhum profissional cadastrado</strong>
+                  <strong>Você ainda não cadastrou nenhum profissional</strong>
                   <p>
-                    Cadastre quem realizará os serviços para liberar os
+                    Cadastre o primeiro profissional para disponibilizar
                     horários aos clientes.
                   </p>
                 </div>

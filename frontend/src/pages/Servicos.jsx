@@ -326,10 +326,10 @@ function Servicos({ navigate }) {
                 <Scissors size={24} strokeWidth={2} />
               </span>
               <div>
-                <strong>Nenhum serviço cadastrado</strong>
+                <strong>Você ainda não cadastrou nenhum serviço</strong>
                 <p>
-                  Cadastre nome, duração e preço para disponibilizá-lo aos
-                  clientes.
+                  Cadastre seu primeiro serviço para começar a receber
+                  agendamentos.
                 </p>
               </div>
             </div>
