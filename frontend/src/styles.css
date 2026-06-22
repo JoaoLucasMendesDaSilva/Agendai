@@ -3003,6 +3003,12 @@ textarea:focus {
   background: transparent;
 }
 
+[data-theme="dark"] .auth-panel {
+  border-color: var(--gray-300);
+  background: var(--panel-bg);
+  box-shadow: var(--shadow-card);
+}
+
 [data-theme="dark"] .sidebar {
   border-color: var(--gray-300);
   background: rgba(16, 28, 27, 0.96);
@@ -3019,6 +3025,12 @@ textarea:focus {
 [data-theme="dark"] .landing-nav {
   border-color: var(--gray-300);
   background: rgba(16, 28, 27, 0.86);
+}
+
+[data-theme="dark"] .landing-proof span {
+  border-color: rgba(123, 224, 201, 0.2);
+  color: var(--green-800);
+  background: var(--panel-bg);
 }
 
 [data-theme="dark"] .landing-hero-visual {
