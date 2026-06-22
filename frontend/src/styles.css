@@ -4126,9 +4126,12 @@ textarea:focus {
 
 .landing-plans-section .landing-plan-grid {
   align-items: stretch;
+  grid-template-columns: 1fr;
 }
 
 .landing-plans-section .landing-plan-card {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
   overflow: hidden;
   min-width: 0;
   border-radius: 18px;
@@ -4155,6 +4158,41 @@ textarea:focus {
   gap: 10px;
 }
 
+.landing-plan-notice {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  max-width: 780px;
+  gap: 13px;
+  margin: 0 auto 24px;
+  border: 1px solid rgba(0, 127, 111, 0.2);
+  border-radius: 16px;
+  padding: 16px 18px;
+  color: var(--green-800);
+  background: var(--green-50);
+}
+
+.landing-plan-notice > svg {
+  flex: 0 0 auto;
+}
+
+.landing-plan-notice > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.landing-plan-notice strong {
+  color: var(--green-900);
+  font-size: 0.9rem;
+}
+
+.landing-plan-notice span {
+  color: var(--gray-700);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
 .landing-plans-section .landing-plan-card h3 {
   margin: 0;
   color: var(--gray-700);
@@ -4166,6 +4204,24 @@ textarea:focus {
   color: var(--gray-900);
   font-size: 2rem;
   line-height: 1.1;
+}
+
+.landing-plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.landing-plan-price span {
+  color: var(--gray-500);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.landing-plan-annual {
+  color: var(--green-800);
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .landing-plans-section .landing-plan-card > p {
@@ -4286,6 +4342,17 @@ textarea:focus {
   box-shadow: 0 24px 54px rgba(0, 0, 0, 0.2);
 }
 
+[data-theme="dark"] .landing-plan-notice {
+  border-color: rgba(123, 224, 201, 0.2);
+  background: var(--green-50);
+}
+
+[data-theme="dark"] .landing-plan-notice strong,
+[data-theme="dark"] .landing-plan-notice > svg,
+[data-theme="dark"] .landing-plan-annual {
+  color: var(--green-800);
+}
+
 [data-theme="dark"] .landing-faq-item > button {
   color: var(--gray-900);
 }
@@ -4300,9 +4367,23 @@ textarea:focus {
     justify-content: center;
     text-align: center;
   }
+
+  .landing-plans-section .landing-plan-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 1040px) {
+  .landing-plans-section .landing-plan-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1240px) {
+  .landing-plans-section .landing-plan-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
   .landing-plans-section .landing-plan-card.is-highlighted {
     transform: translateY(-8px);
   }

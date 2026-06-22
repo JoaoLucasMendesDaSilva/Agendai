@@ -110,22 +110,32 @@ const passos = [
 const planos = [
   {
     nome: 'Gratuito',
-    preco: 'R$ 0',
-    descricao: 'Ideal para validar o uso no TCC e em pequenos negócios.',
-    itens: ['Link público', 'QR Code', 'Agenda simples', 'Gestão de serviços e profissionais'],
+    precoMensal: 'R$ 0,00',
+    precoAnual: 'R$ 0,00/ano',
+    descricao: 'Ideal para pequenos negócios que estão começando e querem organizar os primeiros agendamentos sem custo.',
+    itens: ['Até 50 agendamentos por mês', '1 profissional', 'Lembretes por e-mail', 'Link público', 'QR Code', 'Agenda simples'],
+  },
+  {
+    nome: 'Básico',
+    precoMensal: 'R$ 19,90',
+    precoAnual: 'R$ 179,00/ano',
+    descricao: 'Para negócios que já possuem uma rotina de atendimentos e precisam de mais capacidade de agendamento.',
+    itens: ['Até 200 agendamentos por mês', '1 profissional', 'Lembretes por e-mail', 'Gestão de serviços', 'Gestão de clientes', 'Relatórios simples'],
   },
   {
     nome: 'Profissional',
-    preco: 'Em breve',
-    descricao: 'Para negócios que querem automatizar a comunicação e crescer.',
-    itens: ['WhatsApp integrado', 'Relatórios avançados', 'Clientes recorrentes', 'Personalização visual'],
+    precoMensal: 'R$ 39,90',
+    precoAnual: 'R$ 359,00/ano',
+    descricao: 'Para negócios que querem automatizar a comunicação, acompanhar resultados e crescer com mais controle.',
+    itens: ['Agendamentos ilimitados', 'Até 5 profissionais', 'Lembretes por WhatsApp e e-mail', 'Relatórios', 'Personalização visual', 'Gestão de clientes recorrentes'],
     destaque: true,
   },
   {
     nome: 'Rede',
-    preco: 'Sob consulta',
-    descricao: 'Para equipes, redes e operações com múltiplas unidades.',
-    itens: ['Múltiplas unidades', 'Permissões por equipe', 'Relatórios gerenciais', 'Suporte personalizado'],
+    precoMensal: 'R$ 99,90',
+    precoAnual: 'R$ 899,00/ano',
+    descricao: 'Para equipes, redes e negócios com mais de uma unidade que precisam de controle centralizado.',
+    itens: ['Tudo do Plano Profissional', 'Múltiplas unidades', 'Painel centralizado', 'Suporte prioritário', 'Relatórios gerenciais'],
   },
 ];
 
@@ -364,8 +374,15 @@ function LandingPage({ navigate }) {
       <section className="landing-section landing-plans-section" id="planos">
         <div className="landing-section-heading landing-heading-centered">
           <p className="landing-kicker">Planos</p>
-          <h2>Comece gratuitamente e evolua no seu ritmo.</h2>
-          <p>O MVP já entrega a base para organizar sua agenda. Os próximos planos mostram a evolução prevista para o produto.</p>
+          <h2>Um plano para cada fase do seu negócio.</h2>
+          <p>Comece sem custo e evolua conforme sua agenda, equipe e operação crescerem.</p>
+        </div>
+        <div className="landing-plan-notice">
+          <CalendarCheck2 aria-hidden="true" size={22} strokeWidth={2} />
+          <div>
+            <strong>Teste gratuito por 3 meses</strong>
+            <span>Acesso completo ao Plano Profissional. O plano anual oferece desconto em relação ao mensal.</span>
+          </div>
         </div>
         <div className="landing-plan-grid">
           {planos.map((plano) => (
@@ -376,9 +393,13 @@ function LandingPage({ navigate }) {
               <div className="landing-plan-heading">
                 <div>
                   <h3>{plano.nome}</h3>
-                  <strong>{plano.preco}</strong>
+                  <p className="landing-plan-price">
+                    <strong>{plano.precoMensal}</strong>
+                    <span>/mês</span>
+                  </p>
+                  <span className="landing-plan-annual">{plano.precoAnual}</span>
                 </div>
-                {plano.destaque && <span className="plan-label">Mais esperado</span>}
+                {plano.destaque && <span className="plan-label">Mais recomendado</span>}
               </div>
               <p>{plano.descricao}</p>
               <ul>
