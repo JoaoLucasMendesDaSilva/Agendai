@@ -3895,33 +3895,6 @@ textarea:focus {
   box-shadow: 0 8px 22px rgba(16, 24, 40, 0.04);
 }
 
-.landing-faq-item summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 18px;
-  color: var(--gray-900);
-  font-size: 0.92rem;
-  font-weight: 600;
-  cursor: pointer;
-  list-style: none;
-}
-
-.landing-faq-item summary::-webkit-details-marker {
-  display: none;
-}
-
-.landing-faq-item summary svg {
-  flex: 0 0 auto;
-  color: var(--green-800);
-  transition: transform 180ms ease;
-}
-
-.landing-faq-item[open] summary svg {
-  transform: rotate(180deg);
-}
-
 .landing-faq-item p {
   margin: 0;
   border-top: 1px solid var(--gray-300);
@@ -4119,7 +4092,234 @@ textarea:focus {
     transform: none;
   }
 
-  .landing-faq-item summary svg {
+}
+
+/* Landing: planos e FAQ interativo */
+.landing-value-strip {
+  display: grid;
+  width: min(100%, 1200px);
+  gap: 12px;
+  margin: 26px auto 0;
+  border: 1px solid rgba(0, 127, 111, 0.15);
+  border-radius: 18px;
+  padding: 18px;
+  background: var(--green-50);
+}
+
+.landing-value-strip span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--green-900);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.landing-value-strip svg {
+  flex: 0 0 auto;
+  color: var(--green-700);
+}
+
+.landing-plans-section {
+  padding-top: 86px;
+}
+
+.landing-plans-section .landing-plan-grid {
+  align-items: stretch;
+}
+
+.landing-plans-section .landing-plan-card {
+  overflow: hidden;
+  min-width: 0;
+  border-radius: 18px;
+  padding: 24px;
+  background: var(--white);
+}
+
+.landing-plans-section .landing-plan-card.is-highlighted {
+  border-color: rgba(0, 127, 111, 0.38);
+  background: #f1fbf7;
+  box-shadow: 0 24px 54px rgba(0, 107, 90, 0.14);
+}
+
+.landing-plan-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.landing-plan-heading > div {
+  display: grid;
+  min-width: 0;
+  gap: 10px;
+}
+
+.landing-plans-section .landing-plan-card h3 {
+  margin: 0;
+  color: var(--gray-700);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.landing-plans-section .landing-plan-card strong {
+  color: var(--gray-900);
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.landing-plans-section .landing-plan-card > p {
+  min-height: 3.2em;
+  line-height: 1.6;
+}
+
+.landing-plans-section .landing-plan-card ul {
+  margin-top: 10px;
+  border-top: 1px solid var(--gray-300);
+  padding-top: 18px;
+}
+
+.landing-plans-section .landing-plan-card li {
+  align-items: flex-start;
+  line-height: 1.45;
+}
+
+.landing-plans-section .plan-label {
+  flex: 0 0 auto;
+  color: var(--green-800);
+  background: var(--green-100);
+}
+
+.landing-faq-item {
+  overflow: hidden;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.landing-faq-item.is-open {
+  border-color: rgba(0, 127, 111, 0.3);
+  box-shadow: 0 14px 30px rgba(16, 24, 40, 0.07);
+}
+
+.landing-faq-item > button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 0;
+  padding: 18px;
+  color: var(--gray-900);
+  background: transparent;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.landing-faq-item > button:hover {
+  color: var(--green-800);
+}
+
+.landing-faq-item > button:focus-visible {
+  outline: 3px solid rgba(0, 127, 111, 0.2);
+  outline-offset: -3px;
+}
+
+.landing-faq-item > button svg {
+  flex: 0 0 auto;
+  color: var(--green-800);
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-faq-item.is-open > button svg {
+  transform: rotate(180deg);
+}
+
+.landing-faq-answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease;
+}
+
+.landing-faq-answer > div {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.landing-faq-item.is-open .landing-faq-answer {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.landing-faq-answer p {
+  margin: 0;
+  border-top: 1px solid var(--gray-300);
+  padding: 16px 18px 18px;
+  color: var(--gray-500);
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+
+[data-theme="dark"] .landing-value-strip {
+  border-color: rgba(123, 224, 201, 0.2);
+  background: var(--green-50);
+}
+
+[data-theme="dark"] .landing-value-strip span {
+  color: var(--green-800);
+}
+
+[data-theme="dark"] .landing-plans-section .landing-plan-card {
+  border-color: var(--gray-300);
+  background: var(--panel-bg);
+}
+
+[data-theme="dark"] .landing-plans-section .landing-plan-card.is-highlighted {
+  border-color: rgba(123, 224, 201, 0.34);
+  background: var(--panel-bg-soft);
+  box-shadow: 0 24px 54px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .landing-faq-item > button {
+  color: var(--gray-900);
+}
+
+@media (min-width: 640px) {
+  .landing-value-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 20px 24px;
+  }
+
+  .landing-value-strip span {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (min-width: 1040px) {
+  .landing-plans-section .landing-plan-card.is-highlighted {
+    transform: translateY(-8px);
+  }
+
+  .landing-plans-section .landing-plan-card.is-highlighted:hover {
+    transform: translateY(-11px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-faq-answer,
+  .landing-faq-item > button svg {
     transition: none;
+  }
+
+  .landing-plans-section .landing-plan-card.is-highlighted,
+  .landing-plans-section .landing-plan-card.is-highlighted:hover {
+    transform: none;
   }
 }

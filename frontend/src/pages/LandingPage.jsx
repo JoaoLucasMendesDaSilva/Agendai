@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -106,30 +107,54 @@ const passos = [
   ['Acompanhe', 'Gerencie agenda, clientes e indicadores em um só painel.'],
 ];
 
+const planos = [
+  {
+    nome: 'Gratuito',
+    preco: 'R$ 0',
+    descricao: 'Ideal para validar o uso no TCC e em pequenos negócios.',
+    itens: ['Link público', 'QR Code', 'Agenda simples', 'Gestão de serviços e profissionais'],
+  },
+  {
+    nome: 'Profissional',
+    preco: 'Em breve',
+    descricao: 'Para negócios que querem automatizar a comunicação e crescer.',
+    itens: ['WhatsApp integrado', 'Relatórios avançados', 'Clientes recorrentes', 'Personalização visual'],
+    destaque: true,
+  },
+  {
+    nome: 'Rede',
+    preco: 'Sob consulta',
+    descricao: 'Para equipes, redes e operações com múltiplas unidades.',
+    itens: ['Múltiplas unidades', 'Permissões por equipe', 'Relatórios gerenciais', 'Suporte personalizado'],
+  },
+];
+
 const perguntas = [
   {
     pergunta: 'O cliente precisa criar uma conta para agendar?',
-    resposta: 'Não. O fluxo público pede apenas os dados necessários para o atendimento e a confirmação do horário.',
+    resposta: 'Não. O cliente acessa o link público, escolhe serviço, profissional, data e horário sem precisar criar cadastro.',
   },
   {
     pergunta: 'Como evito dois agendamentos no mesmo horário?',
-    resposta: 'O Agendai verifica a disponibilidade do profissional e bloqueia conflitos antes de confirmar o agendamento.',
+    resposta: 'O sistema valida os horários disponíveis e bloqueia conflitos automaticamente.',
   },
   {
     pergunta: 'Posso divulgar minha agenda pelo WhatsApp?',
-    resposta: 'Sim. Cada negócio recebe um link público que pode ser copiado, compartilhado pelo WhatsApp ou transformado em QR Code.',
+    resposta: 'Sim. O Agendai gera um link público que pode ser compartilhado pelo WhatsApp, redes sociais, QR Code ou materiais impressos.',
   },
   {
     pergunta: 'O Agendai funciona no celular?',
-    resposta: 'Sim. A interface é responsiva e o PWA pode ser instalado no Android, iPhone e desktop, conforme o suporte do navegador.',
+    resposta: 'Sim. O sistema é responsivo e também pode ser instalado como PWA em celular ou desktop.',
   },
   {
     pergunta: 'Quais dados posso acompanhar?',
-    resposta: 'O painel reúne agendamentos, clientes, serviços, profissionais e relatórios em PDF ou Excel usando os dados reais do negócio.',
+    resposta: 'Você acompanha agendamentos, clientes, serviços, profissionais, relatórios em PDF e exportação Excel.',
   },
 ];
 
 function LandingPage({ navigate }) {
+  const [perguntasAbertas, setPerguntasAbertas] = useState([]);
+
   function irParaCadastro() {
     navigate('/cadastro');
   }
@@ -146,6 +171,14 @@ function LandingPage({ navigate }) {
     document.getElementById(id)?.scrollIntoView({
       behavior: prefereReducaoMovimento ? 'auto' : 'smooth',
     });
+  }
+
+  function alternarPergunta(indice) {
+    setPerguntasAbertas((atuais) => (
+      atuais.includes(indice)
+        ? atuais.filter((item) => item !== indice)
+        : [...atuais, indice]
+    ));
   }
 
   return (
@@ -322,18 +355,72 @@ function LandingPage({ navigate }) {
         </div>
       </section>
 
+      <section className="landing-value-strip" aria-label="Benefícios para o negócio">
+        <span><CheckCircle2 aria-hidden="true" size={18} /> Menos conversas perdidas</span>
+        <span><CheckCircle2 aria-hidden="true" size={18} /> Mais organização</span>
+        <span><CheckCircle2 aria-hidden="true" size={18} /> Mais controle do negócio</span>
+      </section>
+
+      <section className="landing-section landing-plans-section" id="planos">
+        <div className="landing-section-heading landing-heading-centered">
+          <p className="landing-kicker">Planos</p>
+          <h2>Comece gratuitamente e evolua no seu ritmo.</h2>
+          <p>O MVP já entrega a base para organizar sua agenda. Os próximos planos mostram a evolução prevista para o produto.</p>
+        </div>
+        <div className="landing-plan-grid">
+          {planos.map((plano) => (
+            <article
+              className={`landing-plan-card ${plano.destaque ? 'is-highlighted' : ''}`}
+              key={plano.nome}
+            >
+              <div className="landing-plan-heading">
+                <div>
+                  <h3>{plano.nome}</h3>
+                  <strong>{plano.preco}</strong>
+                </div>
+                {plano.destaque && <span className="plan-label">Mais esperado</span>}
+              </div>
+              <p>{plano.descricao}</p>
+              <ul>
+                {plano.itens.map((item) => (
+                  <li key={item}>
+                    <CheckCircle2 aria-hidden="true" size={17} strokeWidth={2} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="landing-section landing-faq-section" id="faq">
         <div className="landing-section-heading">
           <p className="landing-kicker">Perguntas frequentes</p>
           <h2>O que você precisa saber antes de começar.</h2>
         </div>
         <div className="landing-faq-list">
-          {perguntas.map(({ pergunta, resposta }) => (
-            <details className="landing-faq-item" key={pergunta}>
-              <summary>{pergunta}<ChevronDown aria-hidden="true" size={20} /></summary>
-              <p>{resposta}</p>
-            </details>
-          ))}
+          {perguntas.map(({ pergunta, resposta }, index) => {
+            const aberta = perguntasAbertas.includes(index);
+            const respostaId = `resposta-faq-${index}`;
+
+            return (
+              <article className={`landing-faq-item ${aberta ? 'is-open' : ''}`} key={pergunta}>
+                <button
+                  aria-controls={respostaId}
+                  aria-expanded={aberta}
+                  onClick={() => alternarPergunta(index)}
+                  type="button"
+                >
+                  {pergunta}
+                  <ChevronDown aria-hidden="true" size={20} />
+                </button>
+                <div className="landing-faq-answer" id={respostaId}>
+                  <div><p>{resposta}</p></div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
