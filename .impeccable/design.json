@@ -1,0 +1,201 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-25T14:51:17.1714407-03:00",
+  "title": "Design System: Agendai",
+  "extensions": {
+    "colorMeta": {
+      "teal-deep": {
+        "role": "primary",
+        "displayName": "Verde Atendimento Profundo",
+        "canonical": "#075047",
+        "tonalRamp": ["#021816", "#04302b", "#075047", "#0b6b5f", "#148875", "#31b99f", "#7be0c9", "#d8fff4"]
+      },
+      "teal-primary": {
+        "role": "primary",
+        "displayName": "Verde Operacional",
+        "canonical": "#006b5a",
+        "tonalRamp": ["#021b18", "#00342c", "#006b5a", "#00816f", "#18a38d", "#52cdb7", "#a9eadc", "#e5f5ef"]
+      },
+      "teal-action": {
+        "role": "primary",
+        "displayName": "Verde Acao",
+        "canonical": "#00816f",
+        "tonalRamp": ["#02201c", "#004236", "#006b5a", "#00816f", "#14a690", "#4ed0ba", "#a9eadc", "#f0fbf7"]
+      },
+      "page-bg": {
+        "role": "neutral",
+        "displayName": "Fundo de Trabalho",
+        "canonical": "#f7f9fb",
+        "tonalRamp": ["#101727", "#344054", "#667085", "#98a2b3", "#dfe5ec", "#f3f6f9", "#f7f9fb", "#fbfcfd"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta Principal",
+        "canonical": "#101727",
+        "tonalRamp": ["#030712", "#101727", "#1f2937", "#344054", "#667085", "#98a2b3", "#dfe5ec", "#f4f7fb"]
+      },
+      "danger": {
+        "role": "danger",
+        "displayName": "Vermelho Bloqueio",
+        "canonical": "#c93b3b",
+        "tonalRamp": ["#2a090b", "#5c1518", "#8f2528", "#c93b3b", "#e86666", "#ff8a8a", "#ffdada", "#ffe7e7"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Titulos de pagina e chamadas principais sem exagero de escala."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Titulos de paineis e secoes operacionais."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto funcional, mensagens, instrucoes e conteudo de formulario."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-discreto",
+        "value": "0 10px 26px rgba(16, 24, 40, 0.055)",
+        "purpose": "Separar cards e atalhos sem pesar a interface."
+      },
+      {
+        "name": "painel-suave",
+        "value": "0 16px 42px rgba(16, 24, 40, 0.07)",
+        "purpose": "Containers grandes como auth card e agendamento publico."
+      },
+      {
+        "name": "foco-verde",
+        "value": "0 0 0 4px rgba(0, 127, 111, 0.12)",
+        "purpose": "Foco e selecao em controles interativos."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-fast",
+        "value": "180ms ease",
+        "purpose": "Hover, foco, borda, cor e pequenos deslocamentos."
+      },
+      {
+        "name": "entry-soft",
+        "value": "320ms ease",
+        "purpose": "Entrada suave de paginas e paineis, respeitando reduced motion."
+      }
+    ],
+    "breakpoints": [
+      { "name": "mobile-tight", "value": "420px" },
+      { "name": "mobile-actions", "value": "560px" },
+      { "name": "tablet", "value": "720px" },
+      { "name": "desktop-shell", "value": "1040px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acao principal do fluxo, como confirmar agendamento ou criar agenda.",
+      "html": "<button class=\"ds-btn-primary\">Confirmar agendamento</button>",
+      "css": ".ds-btn-primary { min-height: 50px; border: 0; border-radius: 10px; padding: 13px 18px; color: #ffffff; background: linear-gradient(180deg, #00816f, #006b5a); box-shadow: 0 12px 24px rgba(0, 127, 111, 0.22); font-family: Poppins, Arial, Helvetica, sans-serif; font-weight: 600; cursor: pointer; transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease; } .ds-btn-primary:hover { background: linear-gradient(180deg, #006b5a, #075047); transform: translateY(-2px); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.18), 0 12px 24px rgba(0, 127, 111, 0.22); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Acao secundaria ou navegacao complementar.",
+      "html": "<button class=\"ds-btn-secondary\">Ver agenda</button>",
+      "css": ".ds-btn-secondary { min-height: 50px; border: 1px solid rgba(0, 127, 111, 0.22); border-radius: 10px; padding: 13px 18px; color: #006b5a; background: #f0fbf7; font-family: Poppins, Arial, Helvetica, sans-serif; font-weight: 600; cursor: pointer; transition: background 180ms ease, border-color 180ms ease, transform 180ms ease; } .ds-btn-secondary:hover { background: #e5f5ef; border-color: rgba(0, 127, 111, 0.32); transform: translateY(-2px); } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.12); }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Campo padrao para formularios administrativos e agendamento publico.",
+      "html": "<label class=\"ds-field\">Nome<input placeholder=\"Digite o nome\" /></label>",
+      "css": ".ds-field { display: grid; gap: 8px; color: #344054; font-family: Poppins, Arial, Helvetica, sans-serif; font-size: 0.9rem; font-weight: 600; } .ds-field input { min-height: 50px; width: 100%; border: 1px solid #dfe5ec; border-radius: 10px; padding: 13px 15px; color: #101727; background: #ffffff; font: inherit; outline: none; transition: border-color 180ms ease, box-shadow 180ms ease; } .ds-field input::placeholder { color: #98a2b3; } .ds-field input:focus { border-color: #00816f; box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.12); }"
+    },
+    {
+      "name": "Dashboard Card",
+      "kind": "card",
+      "refersTo": "dashboard-card",
+      "description": "Painel operacional discreto para metricas, relatorios e blocos de conteudo.",
+      "html": "<article class=\"ds-dashboard-card\"><h3>Proximo agendamento</h3><p>Proximo horario pendente ou confirmado na agenda.</p></article>",
+      "css": ".ds-dashboard-card { display: grid; gap: 8px; border: 1px solid rgba(223, 229, 236, 0.78); border-radius: 16px; padding: 22px; background: #ffffff; box-shadow: 0 10px 26px rgba(16, 24, 40, 0.055); font-family: Poppins, Arial, Helvetica, sans-serif; transition: border-color 180ms ease, box-shadow 180ms ease; } .ds-dashboard-card:hover { border-color: rgba(0, 127, 111, 0.13); box-shadow: 0 14px 30px rgba(16, 24, 40, 0.075); } .ds-dashboard-card h3 { margin: 0; color: #101727; font-size: 1.02rem; line-height: 1.3; } .ds-dashboard-card p { margin: 0; color: #667085; line-height: 1.5; }"
+    },
+    {
+      "name": "Status Chip",
+      "kind": "chip",
+      "refersTo": "status-chip-success",
+      "description": "Indicador compacto para status de agendamento e sincronizacao.",
+      "html": "<span class=\"ds-status-chip\">Confirmado</span>",
+      "css": ".ds-status-chip { display: inline-flex; align-items: center; width: fit-content; border-radius: 999px; padding: 6px 10px; color: #006b5a; background: #e5f5ef; font-family: Poppins, Arial, Helvetica, sans-serif; font-size: 0.85rem; font-weight: 600; }"
+    },
+    {
+      "name": "Sidebar Navigation Item",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Item de navegacao lateral com estado ativo forte e hover leve.",
+      "html": "<button class=\"ds-nav-item\"><span class=\"ds-nav-icon\">A</span><span>Agenda</span></button>",
+      "css": ".ds-nav-item { display: inline-flex; align-items: center; gap: 9px; width: 100%; min-height: 44px; border: 0; border-radius: 10px; padding: 10px 12px; color: #344054; background: transparent; font-family: Poppins, Arial, Helvetica, sans-serif; font-size: 0.92rem; font-weight: 600; text-align: left; cursor: pointer; transition: background 180ms ease, color 180ms ease, transform 180ms ease; } .ds-nav-item:hover { background: #f0fbf7; color: #006b5a; transform: translateX(2px); } .ds-nav-item:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.12); } .ds-nav-icon { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 8px; background: rgba(0, 127, 111, 0.11); color: inherit; font-size: 0.78rem; }"
+    },
+    {
+      "name": "Choice Card",
+      "kind": "card",
+      "refersTo": "choice-card",
+      "description": "Card clicavel para escolher servico, profissional ou horario.",
+      "html": "<button class=\"ds-choice-card\"><strong>Corte masculino</strong><span>45 min</span></button>",
+      "css": ".ds-choice-card { display: grid; gap: 4px; width: 100%; border: 1px solid #dfe5ec; border-radius: 14px; padding: 16px; color: #101727; background: #ffffff; text-align: left; font-family: Poppins, Arial, Helvetica, sans-serif; cursor: pointer; transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease; } .ds-choice-card strong { font-size: 1rem; } .ds-choice-card span { color: #667085; } .ds-choice-card:hover { border-color: rgba(0, 127, 111, 0.28); box-shadow: 0 10px 26px rgba(16, 24, 40, 0.055); transform: translateY(-2px); } .ds-choice-card:focus-visible { outline: none; border-color: #00816f; box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.12); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Painel de Atendimento Claro",
+    "overview": "O Agendai e uma ferramenta de trabalho para quem atende pessoas todos os dias. A interface deve parecer clara, organizada e pronta para uso imediato: mais proxima de um painel de atendimento confiavel do que de um software corporativo pesado.",
+    "keyCharacteristics": [
+      "Produto operacional, nao vitrine decorativa.",
+      "Verde profundo usado para acao, selecao e confianca.",
+      "Superficies claras com hierarquia discreta.",
+      "Linguagem visual mobile-first e facil de tocar.",
+      "Estados de erro, aviso, informacao e sucesso sempre visiveis e compreensiveis."
+    ],
+    "rules": [
+      {
+        "name": "The Less Than Ten Rule",
+        "body": "O verde de acao deve aparecer em menos de 10% de uma tela operacional; quando tudo chama atencao, nada orienta.",
+        "section": "colors"
+      },
+      {
+        "name": "The Semantic Honesty Rule",
+        "body": "Amarelo, azul e vermelho so entram para estado real: aviso, informacao ou erro. Nunca usar essas cores como decoracao solta.",
+        "section": "colors"
+      },
+      {
+        "name": "The Same Voice Rule",
+        "body": "Nao introduzir fonte display, serifada ou decorativa em telas operacionais. O produto precisa parecer familiar e consistente.",
+        "section": "typography"
+      },
+      {
+        "name": "The Professional Discretion Rule",
+        "body": "Sombra deve separar, nao decorar. Se a sombra vira o primeiro elemento percebido, esta forte demais.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do usar o verde profundo para acao, selecao, navegacao ativa e confirmacao.",
+      "Do manter superficies claras, bordas discretas e sombras profissionais discretas.",
+      "Do escrever mensagens em portugues simples, especialmente erros e estados vazios.",
+      "Do preservar fluxo mobile-first: botoes tocaveis, cards empilhados e formularios sem excesso de campos por linha.",
+      "Do respeitar dark mode e prefers-reduced-motion em qualquer nova tela."
+    ],
+    "donts": [
+      "Don't criar uma interface com cara de sistema complicado, amador ou distante do usuario.",
+      "Don't adicionar excesso de informacoes, menus complexos ou linguagem tecnica.",
+      "Don't transformar o painel em dashboard financeiro avancado ou marketplace grande.",
+      "Don't usar estetica tech demais, neon, glassmorphism decorativo ou gradientes roxos genericos.",
+      "Don't usar borda lateral colorida grossa como destaque de card.",
+      "Don't criar cards com radius acima de 20px nas telas operacionais.",
+      "Don't usar sombras pesadas; se parecer flutuante demais, esta fora da linguagem do Agendai."
+    ]
+  }
+}
