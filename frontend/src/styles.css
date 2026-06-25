@@ -1590,9 +1590,11 @@ textarea:focus {
 .booking-step strong {
   display: block;
   max-width: 100%;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  word-break: keep-all;
   font-size: 0.62rem;
   font-weight: 600;
+  line-height: 1.2;
 }
 
 .booking-step.is-active,
@@ -1616,6 +1618,28 @@ textarea:focus {
   display: grid;
   gap: 18px;
   padding: 18px;
+}
+
+@media (max-width: 420px) {
+  .booking-steps {
+    gap: 4px;
+    padding: 14px 10px;
+  }
+
+  .booking-step {
+    gap: 6px;
+  }
+
+  .booking-step span {
+    width: 26px;
+    height: 26px;
+    font-size: 0.74rem;
+  }
+
+  .booking-step strong {
+    max-width: 64px;
+    font-size: 0.56rem;
+  }
 }
 
 .booking-intro-card {
