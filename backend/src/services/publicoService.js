@@ -32,6 +32,16 @@ function criarErro(status, mensagem, code) {
   return error;
 }
 
+function validarAgendamentoGerenciavel(agendamento, acao) {
+  if (agendamento.status === 'cancelado') {
+    throw criarErro(409, `Agendamento cancelado nao pode ser ${acao}.`);
+  }
+
+  if (agendamento.status === 'concluido') {
+    throw criarErro(409, `Agendamento concluido nao pode ser ${acao}.`);
+  }
+}
+
 function gerarTokenPublico() {
   return crypto.randomBytes(32).toString('hex');
 }
@@ -416,16 +426,14 @@ async function cancelarAgendamentoPublicoPorToken(token) {
   const [resultado] = await pool.execute(
     `UPDATE agendamentos
      SET status = 'cancelado'
-     WHERE token_publico_hash = ? AND status <> 'cancelado'`,
+     WHERE token_publico_hash = ?
+       AND status NOT IN ('cancelado', 'concluido')`,
     [tokenHash]
   );
 
   if (resultado.affectedRows === 0) {
     const agendamento = await buscarAgendamentoGerenciavelPorHash(tokenHash);
-
-    if (agendamento.status === 'cancelado') {
-      throw criarErro(409, 'Este agendamento já está cancelado.');
-    }
+    validarAgendamentoGerenciavel(agendamento, 'cancelado');
   }
 
   return buscarAgendamentoGerenciavelPorHash(tokenHash);
@@ -438,16 +446,13 @@ async function confirmarPresencaPublicaPorToken(token) {
     `UPDATE agendamentos
      SET status = 'confirmado'
      WHERE token_publico_hash = ?
-       AND status NOT IN ('confirmado', 'cancelado')`,
+       AND status NOT IN ('confirmado', 'cancelado', 'concluido')`,
     [tokenHash]
   );
 
   if (resultado.affectedRows === 0) {
     const agendamento = await buscarAgendamentoGerenciavelPorHash(tokenHash);
-
-    if (agendamento.status === 'cancelado') {
-      throw criarErro(409, 'Agendamento cancelado não pode ser confirmado.');
-    }
+    validarAgendamentoGerenciavel(agendamento, 'confirmado');
 
     return {
       agendamento,
@@ -466,9 +471,7 @@ async function listarHorariosReagendamentoPublico(token, filtros) {
   const pool = getDatabasePool();
   const agendamento = await buscarDadosAgendamentoPorHash(pool, tokenHash);
 
-  if (agendamento.status === 'cancelado') {
-    throw criarErro(409, 'Agendamento cancelado não pode ser reagendado.');
-  }
+  validarAgendamentoGerenciavel(agendamento, 'reagendado');
 
   return listarHorariosDisponiveis(
     agendamento.negocio_id,
@@ -496,9 +499,7 @@ async function reagendarAgendamentoPublicoPorToken(token, dados) {
       true
     );
 
-    if (agendamento.status === 'cancelado') {
-      throw criarErro(409, 'Agendamento cancelado não pode ser reagendado.');
-    }
+    validarAgendamentoGerenciavel(agendamento, 'reagendado');
 
     if (!agendamento.negocio_ativo) {
       throw criarErro(404, 'Negócio não encontrado.');
@@ -548,7 +549,9 @@ async function reagendarAgendamentoPublicoPorToken(token, dados) {
     await connection.execute(
       `UPDATE agendamentos
        SET data_hora_inicio = ?, data_hora_fim = ?
-       WHERE id = ? AND token_publico_hash = ? AND status <> 'cancelado'`,
+       WHERE id = ?
+         AND token_publico_hash = ?
+         AND status NOT IN ('cancelado', 'concluido')`,
       [
         formatarDataHora(dataHoraInicio).replace('T', ' '),
         formatarDataHora(dataHoraFim).replace('T', ' '),
