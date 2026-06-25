@@ -15,10 +15,12 @@ import {
   Smartphone,
   Stethoscope,
   Store,
+  Sun,
   Users,
 } from 'lucide-react';
 import authIllustration from '../assets/auth-illustration.png';
 import BrandLogo from '../components/BrandLogo';
+import { useTheme } from '../contexts/ThemeContext';
 
 const funcionalidades = [
   {
@@ -167,7 +169,13 @@ const perguntas = [
 ];
 
 function LandingPage({ navigate }) {
+  const { isDark, toggleTheme } = useTheme();
   const [perguntasAbertas, setPerguntasAbertas] = useState([]);
+
+  function irParaLanding() {
+    navigate('/');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   function irParaCadastro() {
     navigate('/cadastro');
@@ -198,13 +206,26 @@ function LandingPage({ navigate }) {
   return (
     <main className="landing-page">
       <nav className="landing-nav" aria-label="Navegação principal">
-        <BrandLogo />
+        <BrandLogo onClick={irParaLanding} />
         <div className="landing-nav-links" aria-label="Seções da página">
           <button onClick={() => rolarPara('funcionalidades')} type="button">Recursos</button>
           <button onClick={() => rolarPara('como-funciona')} type="button">Como funciona</button>
           <button onClick={() => rolarPara('faq')} type="button">Dúvidas</button>
         </div>
         <div className="landing-nav-actions">
+          <button
+            aria-label={isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}
+            className="theme-toggle landing-theme-toggle"
+            onClick={toggleTheme}
+            type="button"
+          >
+            {isDark ? (
+              <Sun aria-hidden="true" size={18} strokeWidth={2} />
+            ) : (
+              <Moon aria-hidden="true" size={18} strokeWidth={2} />
+            )}
+            <span>{isDark ? 'Claro' : 'Escuro'}</span>
+          </button>
           <button className="landing-nav-link" onClick={irParaLogin} type="button">
             Entrar
           </button>
@@ -463,7 +484,7 @@ function LandingPage({ navigate }) {
       </section>
 
       <footer className="landing-footer">
-        <BrandLogo />
+        <BrandLogo onClick={irParaLanding} />
         <p>Sistema de agendamento online para pequenos negócios.</p>
         <div><span>WhatsApp</span><span>QR Code</span><span>PWA</span></div>
       </footer>

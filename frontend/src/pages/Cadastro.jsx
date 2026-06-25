@@ -45,9 +45,9 @@ function Cadastro({ navigate }) {
   }
 
   return (
-    <AuthLayout mode="cadastro">
+    <AuthLayout mode="cadastro" onLogoClick={() => navigate('/')}>
       <section className="auth-panel" aria-labelledby="cadastro-title">
-        <BrandLogo />
+        <BrandLogo onClick={() => navigate('/')} />
         <p className="eyebrow">Primeiro acesso</p>
         <h1 id="cadastro-title">Cadastro</h1>
         <p className="panel-text">

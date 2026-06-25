@@ -1,7 +1,7 @@
 import authIllustration from '../assets/auth-illustration.png';
 import BrandLogo from './BrandLogo';
 
-function AuthLayout({ children, mode = 'login' }) {
+function AuthLayout({ children, mode = 'login', onLogoClick }) {
   const isCadastro = mode === 'cadastro';
 
   return (
@@ -10,7 +10,7 @@ function AuthLayout({ children, mode = 'login' }) {
         <div className="auth-form-panel">{children}</div>
 
         <aside className="auth-visual-panel">
-          <BrandLogo />
+          <BrandLogo onClick={onLogoClick} />
           <div className="auth-visual-proof" aria-label="Resumo do Agendai">
             <span>Agenda online</span>
             <span>Sem conflito</span>

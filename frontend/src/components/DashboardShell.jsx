@@ -136,7 +136,7 @@ function DashboardShell({
 
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <BrandLogo />
+          <BrandLogo onClick={() => navegarPara('/')} />
         </div>
 
         <nav className="sidebar-nav" aria-label="Navegação principal">

@@ -27,10 +27,10 @@ function Login({ navigate }) {
   }
 
   return (
-    <AuthLayout>
+    <AuthLayout onLogoClick={() => navigate('/')}>
       <section className="auth-panel" aria-labelledby="login-title">
         <div className="auth-panel-header">
-          <BrandLogo />
+          <BrandLogo onClick={() => navigate('/')} />
           <span className="auth-secure-chip">
             <ShieldCheck aria-hidden="true" size={16} strokeWidth={2} />
             Acesso seguro

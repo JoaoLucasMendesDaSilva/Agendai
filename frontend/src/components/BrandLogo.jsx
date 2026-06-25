@@ -1,11 +1,18 @@
-function BrandLogo({ compact = false }) {
+function BrandLogo({ compact = false, onClick }) {
+  const Component = onClick ? 'button' : 'div';
+
   return (
-    <div className="brand-logo" aria-label="Agendai">
+    <Component
+      aria-label={onClick ? 'Voltar para a pagina inicial' : 'Agendai'}
+      className={`brand-logo ${onClick ? 'brand-logo-button' : ''}`}
+      onClick={onClick}
+      type={onClick ? 'button' : undefined}
+    >
       <span className="brand-mark" aria-hidden="true">
         <span />
       </span>
       {!compact && <span className="brand-name">Agendai</span>}
-    </div>
+    </Component>
   );
 }
 

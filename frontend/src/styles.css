@@ -205,6 +205,25 @@ textarea {
   font-weight: 700;
 }
 
+.brand-logo-button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.brand-logo-button:hover {
+  color: var(--green-700);
+  transform: translateY(-1px);
+}
+
+.brand-logo-button:focus-visible {
+  outline: none;
+  border-radius: 10px;
+  box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.16);
+}
+
 .brand-mark {
   position: relative;
   display: inline-grid;
@@ -686,6 +705,11 @@ textarea:focus {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.landing-theme-toggle {
+  flex: 0 0 auto;
+  box-shadow: none;
 }
 
 .landing-nav-link {
@@ -4274,6 +4298,20 @@ textarea:focus {
   .landing-demo-workspace,
   .landing-demo-public {
     padding: 28px;
+  }
+}
+
+@media (max-width: 420px) {
+  .landing-nav {
+    gap: 10px;
+  }
+
+  .landing-nav .brand-name {
+    display: none;
+  }
+
+  .landing-nav-actions {
+    gap: 6px;
   }
 }
 
