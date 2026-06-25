@@ -145,6 +145,7 @@ function DashboardShell({
 
             return (
               <button
+                aria-label={item.label}
                 className={`sidebar-link ${
                   currentPath === item.path ? 'is-active' : ''
                 }`}
@@ -163,6 +164,7 @@ function DashboardShell({
         </nav>
 
         <button
+          aria-label="Sair"
           className="sidebar-link sidebar-logout"
           onClick={onLogout}
           type="button"

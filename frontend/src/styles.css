@@ -1329,20 +1329,10 @@ textarea:focus {
   padding: 16px;
   background: var(--white);
   box-shadow: var(--shadow-card);
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease;
 }
 
 .metric-card.is-loading {
   pointer-events: none;
-}
-
-.metric-card:hover {
-  border-color: rgba(0, 127, 111, 0.18);
-  box-shadow: 0 16px 34px rgba(16, 24, 40, 0.09);
-  transform: translateY(-3px);
 }
 
 .metric-card > div {
@@ -2032,13 +2022,21 @@ textarea:focus {
   position: relative;
   display: grid;
   align-items: end;
-  height: 280px;
-  margin-top: 18px;
+  height: 248px;
+  margin-top: 14px;
 }
 
 .dashboard-chart canvas {
   display: block;
   max-width: 100%;
+}
+
+.chart-summary {
+  margin-top: 12px;
+  color: var(--green-800);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.55;
 }
 
 .chart-loading {
@@ -4404,8 +4402,8 @@ textarea:focus {
 
 .landing-plans-section .landing-plan-card strong {
   color: var(--gray-900);
-  font-size: 2rem;
-  line-height: 1.1;
+  font-size: 1rem;
+  line-height: 1.35;
 }
 
 .landing-plan-price {
@@ -4424,6 +4422,11 @@ textarea:focus {
   color: var(--green-800);
   font-size: 0.8rem;
   font-weight: 600;
+}
+
+.landing-plan-stage {
+  color: var(--green-800);
+  font-size: 1rem;
 }
 
 .landing-plans-section .landing-plan-card > p {

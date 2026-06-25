@@ -64,6 +64,14 @@ function formatarDataHora(data) {
   return `${formatarData(data)} ${formatarHorario(data)}`;
 }
 
+function formatarAtualizacao(data) {
+  if (!data) {
+    return 'Painel atualizado';
+  }
+
+  return `Atualizado às ${formatarHorario(data)}`;
+}
+
 function criarChaveCliente(agendamento) {
   const telefone = String(agendamento.cliente_telefone || '').replace(/\D/g, '');
   const email = String(agendamento.cliente_email || '').trim().toLowerCase();
@@ -209,6 +217,22 @@ function montarDadosSemana(agendamentos) {
   return valores;
 }
 
+function resumirSemana(dadosSemana) {
+  const total = dadosSemana.reduce((soma, dia) => soma + dia.total, 0);
+
+  if (total === 0) {
+    return 'Semana atual sem agendamentos registrados.';
+  }
+
+  const maiorTotal = Math.max(...dadosSemana.map((dia) => dia.total));
+  const diasMaisMovimento = dadosSemana
+    .filter((dia) => dia.total === maiorTotal)
+    .map((dia) => dia.label)
+    .join(', ');
+
+  return `Semana atual com ${total} agendamento${total === 1 ? '' : 's'}; maior movimento em ${diasMaisMovimento}.`;
+}
+
 function Dashboard({ navigate }) {
   const { logout, usuario } = useAuth();
   const { isDark } = useTheme();
@@ -223,6 +247,7 @@ function Dashboard({ navigate }) {
   const [gerandoRelatorio, setGerandoRelatorio] = useState(false);
   const [exportandoExcel, setExportandoExcel] = useState(false);
   const [carregando, setCarregando] = useState(true);
+  const [atualizadoEm, setAtualizadoEm] = useState(null);
   const [erro, setErro] = useState('');
 
   const carregarIndicadores = useCallback(async (silencioso = false) => {
@@ -285,6 +310,8 @@ function Dashboard({ navigate }) {
         );
       }
 
+      setAtualizadoEm(new Date());
+
       if (!silencioso) {
         setCarregando(false);
       }
@@ -315,6 +342,11 @@ function Dashboard({ navigate }) {
   const dadosSemana = useMemo(
     () => montarDadosSemana(agendamentos),
     [agendamentos],
+  );
+
+  const resumoSemana = useMemo(
+    () => resumirSemana(dadosSemana),
+    [dadosSemana],
   );
 
   useEffect(() => {
@@ -630,72 +662,17 @@ function Dashboard({ navigate }) {
       <PageHeader
         eyebrow="Visão geral do seu negócio"
         title="Dashboard"
-        description="Acompanhe indicadores reais do atendimento em um painel simples."
+        description="Comece pelo próximo atendimento e acompanhe os dados essenciais do negócio."
         meta={
           <span className="status-badge dashboard-freshness" aria-live="polite">
-            {carregando ? 'Atualizando' : 'Painel atualizado'}
+            {carregando ? 'Atualizando' : formatarAtualizacao(atualizadoEm)}
           </span>
         }
       />
 
       {erro && <p className="message message-error">{erro}</p>}
 
-      <section className="metrics-grid" aria-label="Indicadores do negócio">
-        {metricas.map((metrica) => (
-          <MetricCard key={metrica.titulo} loading={carregando} {...metrica} />
-        ))}
-      </section>
-
-      <Panel
-        className="report-panel"
-        title="Relatório PDF"
-        titleId="report-title"
-        description="Gere um resumo do negócio usando os dados reais do período."
-        icon={
-          <span className="summary-icon" aria-hidden="true">
-            <FileText size={24} strokeWidth={2} />
-          </span>
-        }
-      >
-        <div className="report-controls">
-          <label>
-            Início
-            <input
-              onChange={(event) => atualizarPeriodo('inicio', event.target.value)}
-              type="date"
-              value={periodoRelatorio.inicio}
-            />
-          </label>
-          <label>
-            Fim
-            <input
-              onChange={(event) => atualizarPeriodo('fim', event.target.value)}
-              type="date"
-              value={periodoRelatorio.fim}
-            />
-          </label>
-          <div className="button-row">
-            <button
-              className="button button-primary"
-              disabled={carregando || gerandoRelatorio || exportandoExcel}
-              onClick={gerarRelatorioPdf}
-              type="button"
-            >
-              {gerandoRelatorio ? 'Gerando...' : 'Gerar relatório PDF'}
-            </button>
-            <button
-              className="button button-secondary"
-              disabled={carregando || gerandoRelatorio || exportandoExcel}
-              onClick={exportarAgendamentosXlsx}
-              type="button"
-            >
-              {exportandoExcel ? 'Exportando...' : 'Exportar Excel'}
-            </button>
-          </div>
-        </div>
-      </Panel>
-
-      <section className="dashboard-grid">
+      <section className="dashboard-grid daily-dashboard-grid" aria-label="Atendimento do dia">
         <Panel
           title="Próximo agendamento"
           titleId="next-title"
@@ -747,6 +724,7 @@ function Dashboard({ navigate }) {
           titleId="week-title"
           description="Quantidade de agendamentos por dia na semana atual."
         >
+          <p className="chart-summary">{resumoSemana}</p>
           <div className="dashboard-chart">
             {carregando && (
               <div className="chart-loading" aria-hidden="true">
@@ -797,6 +775,61 @@ function Dashboard({ navigate }) {
           <small>Equipe de atendimento</small>
         </button>
       </section>
+
+      <section className="metrics-grid" aria-label="Indicadores do negócio">
+        {metricas.map((metrica) => (
+          <MetricCard key={metrica.titulo} loading={carregando} {...metrica} />
+        ))}
+      </section>
+
+      <Panel
+        className="report-panel"
+        title="Relatórios e exportações"
+        titleId="report-title"
+        description="Use quando precisar apresentar ou analisar um período específico."
+        icon={
+          <span className="summary-icon" aria-hidden="true">
+            <FileText size={24} strokeWidth={2} />
+          </span>
+        }
+      >
+        <div className="report-controls">
+          <label>
+            Início
+            <input
+              onChange={(event) => atualizarPeriodo('inicio', event.target.value)}
+              type="date"
+              value={periodoRelatorio.inicio}
+            />
+          </label>
+          <label>
+            Fim
+            <input
+              onChange={(event) => atualizarPeriodo('fim', event.target.value)}
+              type="date"
+              value={periodoRelatorio.fim}
+            />
+          </label>
+          <div className="button-row">
+            <button
+              className="button button-primary"
+              disabled={carregando || gerandoRelatorio || exportandoExcel}
+              onClick={gerarRelatorioPdf}
+              type="button"
+            >
+              {gerandoRelatorio ? 'Gerando...' : 'Gerar relatório PDF'}
+            </button>
+            <button
+              className="button button-secondary"
+              disabled={carregando || gerandoRelatorio || exportandoExcel}
+              onClick={exportarAgendamentosXlsx}
+              type="button"
+            >
+              {exportandoExcel ? 'Exportando...' : 'Exportar Excel'}
+            </button>
+          </div>
+        </div>
+      </Panel>
     </DashboardShell>
   );
 }
