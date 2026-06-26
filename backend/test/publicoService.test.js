@@ -31,6 +31,20 @@ function ehConsultaNegocioPublico(sql) {
   );
 }
 
+function ehConsultaNegocioPublicoPorSlug(sql) {
+  return (
+    ehConsultaNegocioPublico(sql) &&
+    normalizarSql(sql).includes('slug_publico = ?')
+  );
+}
+
+function ehConsultaNegocioPublicoPorId(sql) {
+  return (
+    ehConsultaNegocioPublico(sql) &&
+    normalizarSql(sql).includes('id = ?')
+  );
+}
+
 function ehConsultaServico(sql) {
   const consulta = normalizarSql(sql);
 
@@ -435,6 +449,78 @@ test('confirmarPresencaPublicaPorToken mantem retorno idempotente para confirmad
 
   assert.equal(resultado.jaConfirmado, true);
   assert.equal(resultado.agendamento.status, 'confirmado');
+});
+
+test('obterNegocio prioriza slug numerico antes de id', async () => {
+  const { obterNegocio } = carregarPublicoServiceComPool({
+    execute: async (sql, params) => {
+      if (ehConsultaNegocioPublicoPorSlug(sql)) {
+        assert.deepEqual(params, ['123']);
+        return [[
+          negocioPublico({
+            id: NEGOCIO_ID,
+            nome: 'Negocio 123',
+            slug_publico: '123',
+          }),
+        ]];
+      }
+
+      if (ehConsultaNegocioPublicoPorId(sql)) {
+        assert.deepEqual(params, [123]);
+        return [[
+          negocioPublico({
+            id: 123,
+            nome: 'Outro negocio',
+            slug_publico: 'outro-negocio',
+          }),
+        ]];
+      }
+
+      throw new Error(`Consulta inesperada: ${normalizarSql(sql)}`);
+    },
+  });
+
+  const negocio = await obterNegocio('123');
+
+  assert.equal(negocio.id, NEGOCIO_ID);
+  assert.equal(negocio.nome, 'Negocio 123');
+  assert.equal(negocio.slug_publico, '123');
+});
+
+test('obterNegocio mantem fallback por id quando slug numerico nao existe', async () => {
+  const chamadas = [];
+  const { obterNegocio } = carregarPublicoServiceComPool({
+    execute: async (sql, params) => {
+      chamadas.push({ sql, params });
+
+      if (ehConsultaNegocioPublicoPorSlug(sql)) {
+        assert.deepEqual(params, ['123']);
+        return [[]];
+      }
+
+      if (ehConsultaNegocioPublicoPorId(sql)) {
+        assert.deepEqual(params, [123]);
+        return [[
+          negocioPublico({
+            id: 123,
+            nome: 'Studio por ID',
+            slug_publico: 'studio-por-id',
+          }),
+        ]];
+      }
+
+      throw new Error(`Consulta inesperada: ${normalizarSql(sql)}`);
+    },
+  });
+
+  const negocio = await obterNegocio('123');
+
+  assert.equal(negocio.id, 123);
+  assert.equal(negocio.slug_publico, 'studio-por-id');
+  assert.deepEqual(
+    chamadas.map(({ params }) => params),
+    [['123'], [123]]
+  );
 });
 
 test('listarHorariosReagendamentoPublico bloqueia agendamento concluido', async () => {

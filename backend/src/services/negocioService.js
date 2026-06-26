@@ -179,6 +179,10 @@ function criarSlugBase(nome) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
+  if (/^\d+$/.test(slug)) {
+    return `negocio-${slug}`;
+  }
+
   return slug || 'negocio';
 }
 

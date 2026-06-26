@@ -590,30 +590,33 @@ async function reagendarAgendamentoPublicoPorToken(token, dados) {
 async function buscarNegocioPublico(slugOuId) {
   const pool = getDatabasePool();
   const valor = String(slugOuId || '').trim();
-  let sql = `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
+  const sqlBase = `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
       horario_abertura, horario_fechamento, intervalo_agendamento_minutos,
       dias_funcionamento, logo_url, banner_url
     FROM negocios
     WHERE ativo = true AND `;
-  const params = [];
+
+  const [negociosPorSlug] = await pool.execute(
+    `${sqlBase}slug_publico = ? LIMIT 1`,
+    [valor]
+  );
+
+  if (negociosPorSlug.length > 0) {
+    return negociosPorSlug[0];
+  }
 
   if (/^[1-9]\d*$/.test(valor)) {
-    sql += 'id = ?';
-    params.push(Number(valor));
-  } else {
-    sql += 'slug_publico = ?';
-    params.push(valor);
+    const [negociosPorId] = await pool.execute(
+      `${sqlBase}id = ? LIMIT 1`,
+      [Number(valor)]
+    );
+
+    if (negociosPorId.length > 0) {
+      return negociosPorId[0];
+    }
   }
 
-  sql += ' LIMIT 1';
-
-  const [negocios] = await pool.execute(sql, params);
-
-  if (negocios.length === 0) {
-    throw criarErro(404, 'Negócio não encontrado.');
-  }
-
-  return negocios[0];
+  throw criarErro(404, 'Negócio não encontrado.');
 }
 
 async function buscarServicoAtivoDoNegocio(negocioId, servicoId) {

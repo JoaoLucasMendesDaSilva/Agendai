@@ -201,10 +201,111 @@ test('criarNegocio aceita dias_funcionamento valido', async () => {
   });
 
   assert.deepEqual(negocio.dias_funcionamento, [1, 3, 5]);
+  assert.equal(negocio.slug_publico, 'studio-teste');
   assert.equal(
     pool.chamadas.some(({ sql }) => ehInsercaoNegocio(sql)),
     true
   );
+});
+
+test('criarNegocio evita slug publico apenas numerico', async () => {
+  let slugInserido = null;
+  const pool = {
+    execute: async (sql, params) => {
+      if (ehConsultaNegocioUsuario(sql)) {
+        assert.deepEqual(params, [USUARIO_ID]);
+        return [[]];
+      }
+
+      if (ehConsultaSlug(sql)) {
+        assert.deepEqual(params, ['negocio-123']);
+        return [[]];
+      }
+
+      if (ehInsercaoNegocio(sql)) {
+        slugInserido = params[2];
+        assert.equal(params[0], USUARIO_ID);
+        assert.equal(params[1], '123');
+        assert.equal(slugInserido, 'negocio-123');
+        return [{ insertId: NEGOCIO_ID }];
+      }
+
+      if (ehConsultaNegocioPorId(sql)) {
+        assert.deepEqual(params, [NEGOCIO_ID, USUARIO_ID]);
+        return [[
+          {
+            ...negocioLinha('[1,3,5]'),
+            nome: '123',
+            slug_publico: slugInserido,
+          },
+        ]];
+      }
+
+      throw new Error(`Consulta inesperada: ${normalizarSql(sql)}`);
+    },
+  };
+  const { criarNegocio } = carregarNegocioServiceComPool(pool);
+
+  const negocio = await criarNegocio(USUARIO_ID, {
+    nome: '123',
+    dias_funcionamento: [1, 3, 5],
+  });
+
+  assert.equal(negocio.slug_publico, 'negocio-123');
+  assert.equal(/^\d+$/.test(negocio.slug_publico), false);
+});
+
+test('criarNegocio mantem sufixo em slug numerico com colisao', async () => {
+  const slugsConsultados = [];
+  let slugInserido = null;
+  const pool = {
+    execute: async (sql, params) => {
+      if (ehConsultaNegocioUsuario(sql)) {
+        assert.deepEqual(params, [USUARIO_ID]);
+        return [[]];
+      }
+
+      if (ehConsultaSlug(sql)) {
+        slugsConsultados.push(params[0]);
+
+        if (params[0] === 'negocio-123') {
+          return [[{ id: 90 }]];
+        }
+
+        if (params[0] === 'negocio-123-2') {
+          return [[]];
+        }
+      }
+
+      if (ehInsercaoNegocio(sql)) {
+        slugInserido = params[2];
+        assert.equal(params[1], '123');
+        assert.equal(slugInserido, 'negocio-123-2');
+        return [{ insertId: NEGOCIO_ID }];
+      }
+
+      if (ehConsultaNegocioPorId(sql)) {
+        return [[
+          {
+            ...negocioLinha('[1,3,5]'),
+            nome: '123',
+            slug_publico: slugInserido,
+          },
+        ]];
+      }
+
+      throw new Error(`Consulta inesperada: ${normalizarSql(sql)}`);
+    },
+  };
+  const { criarNegocio } = carregarNegocioServiceComPool(pool);
+
+  const negocio = await criarNegocio(USUARIO_ID, {
+    nome: '123',
+    dias_funcionamento: [1, 3, 5],
+  });
+
+  assert.deepEqual(slugsConsultados, ['negocio-123', 'negocio-123-2']);
+  assert.equal(negocio.slug_publico, 'negocio-123-2');
 });
 
 test('atualizarNegocio aceita dias_funcionamento valido', async () => {
