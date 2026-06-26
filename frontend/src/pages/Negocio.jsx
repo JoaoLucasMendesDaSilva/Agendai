@@ -271,6 +271,15 @@ function Negocio({ navigate }) {
     event.preventDefault();
     setErro('');
     setSucesso('');
+
+    if (
+      !Array.isArray(form.dias_funcionamento) ||
+      form.dias_funcionamento.length === 0
+    ) {
+      setErro('Selecione ao menos um dia de funcionamento.');
+      return;
+    }
+
     setSalvando(true);
 
     try {

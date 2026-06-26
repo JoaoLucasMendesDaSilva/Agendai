@@ -6,12 +6,174 @@ const publicoServicePath = require.resolve('../src/services/publicoService');
 
 const TOKEN_VALIDO = 'a'.repeat(64);
 const TOKEN_HASH_VALIDO = 'ffe054fe7ae0cb6dc65c3af9b61d5209f439851db43d0ba5997337df154668eb';
+const NEGOCIO_ID = 20;
+const SERVICO_ID = 30;
+const PROFISSIONAL_ID = 40;
 
 function carregarPublicoServiceComPool(pool) {
   delete require.cache[publicoServicePath];
   require('../src/config/database');
   require.cache[databasePath].exports.getDatabasePool = () => pool;
   return require('../src/services/publicoService');
+}
+
+function normalizarSql(sql) {
+  return sql.replace(/\s+/g, ' ').trim();
+}
+
+function ehConsultaNegocioPublico(sql) {
+  const consulta = normalizarSql(sql);
+
+  return (
+    consulta.includes('FROM negocios') &&
+    consulta.includes('WHERE ativo = true') &&
+    consulta.includes('LIMIT 1')
+  );
+}
+
+function ehConsultaServico(sql) {
+  const consulta = normalizarSql(sql);
+
+  return (
+    consulta.includes('FROM servicos') &&
+    consulta.includes('WHERE id = ? AND negocio_id = ? AND ativo = true')
+  );
+}
+
+function ehConsultaProfissional(sql) {
+  const consulta = normalizarSql(sql);
+
+  return (
+    consulta.includes('FROM profissionais') &&
+    consulta.includes('WHERE id = ? AND negocio_id = ? AND ativo = true')
+  );
+}
+
+function ehConsultaConflitoCriacao(sql) {
+  const consulta = normalizarSql(sql);
+
+  return (
+    consulta.includes('FROM agendamentos') &&
+    !consulta.includes('id <> ?') &&
+    consulta.includes("status IN ('pendente', 'confirmado')") &&
+    consulta.includes('data_hora_inicio < ?') &&
+    consulta.includes('data_hora_fim > ?')
+  );
+}
+
+function ehConsultaConflitoReagendamento(sql) {
+  const consulta = normalizarSql(sql);
+
+  return (
+    consulta.includes('FROM agendamentos') &&
+    consulta.includes('id <> ?') &&
+    consulta.includes("status IN ('pendente', 'confirmado')") &&
+    consulta.includes('data_hora_inicio < ?') &&
+    consulta.includes('data_hora_fim > ?')
+  );
+}
+
+function ehInsercaoAgendamento(sql) {
+  return normalizarSql(sql).includes('INSERT INTO agendamentos');
+}
+
+function ehAtualizacaoReagendamento(sql) {
+  return normalizarSql(sql).includes('UPDATE agendamentos SET data_hora_inicio = ?');
+}
+
+function ehConsultaAgendamentoCriado(sql) {
+  const consulta = normalizarSql(sql);
+
+  return (
+    consulta.includes('FROM agendamentos') &&
+    consulta.includes('WHERE id = ?') &&
+    !consulta.includes('INNER JOIN')
+  );
+}
+
+function ehConsultaAgendamentoPorHash(sql) {
+  const consulta = normalizarSql(sql);
+
+  return (
+    consulta.includes('FROM agendamentos a') &&
+    consulta.includes('INNER JOIN negocios n') &&
+    consulta.includes('WHERE a.token_publico_hash = ?') &&
+    !consulta.includes('INNER JOIN servicos s')
+  );
+}
+
+function ehConsultaAgendamentoGerenciavel(sql) {
+  const consulta = normalizarSql(sql);
+
+  return (
+    consulta.includes('FROM agendamentos a') &&
+    consulta.includes('INNER JOIN servicos s') &&
+    consulta.includes('INNER JOIN profissionais p') &&
+    consulta.includes('WHERE a.token_publico_hash = ?')
+  );
+}
+
+function negocioPublico() {
+  return {
+    id: NEGOCIO_ID,
+    nome: 'Studio Teste',
+    slug_publico: 'studio-teste',
+    descricao: null,
+    telefone: '13999990000',
+    endereco: 'Rua Teste, 100',
+    cidade: 'Cubatao',
+    horario_abertura: '08:00:00',
+    horario_fechamento: '18:00:00',
+    intervalo_agendamento_minutos: 30,
+    dias_funcionamento: '[0,1,2,3,4,5,6]',
+    logo_url: null,
+    banner_url: null,
+  };
+}
+
+function servicoPublico() {
+  return {
+    id: SERVICO_ID,
+    nome: 'Corte',
+    descricao: null,
+    duracao_minutos: 60,
+    preco: '50.00',
+  };
+}
+
+function profissionalPublico() {
+  return {
+    id: PROFISSIONAL_ID,
+    nome: 'Ana',
+    especialidade: 'Cabelo',
+  };
+}
+
+function payloadAgendamento(dataHoraInicio) {
+  return {
+    servico_id: SERVICO_ID,
+    profissional_id: PROFISSIONAL_ID,
+    cliente_nome: 'Cliente Teste',
+    cliente_telefone: '13999990000',
+    cliente_email: 'cliente@teste.com',
+    data_hora_inicio: dataHoraInicio,
+    observacoes: null,
+  };
+}
+
+function agendamentoCriado(dataHoraInicio = '2099-07-01 08:30:00') {
+  return {
+    id: 99,
+    servico_id: SERVICO_ID,
+    profissional_id: PROFISSIONAL_ID,
+    cliente_nome: 'Cliente Teste',
+    cliente_telefone: '13999990000',
+    cliente_email: 'cliente@teste.com',
+    data_hora_inicio: dataHoraInicio,
+    data_hora_fim: '2099-07-01 09:30:00',
+    status: 'confirmado',
+    observacoes: null,
+  };
 }
 
 function agendamentoGerenciavel(status = 'concluido') {
@@ -37,8 +199,117 @@ function dadosAgendamento(status = 'concluido') {
     negocio_ativo: 1,
     horario_abertura: '08:00:00',
     horario_fechamento: '18:00:00',
+    intervalo_agendamento_minutos: 30,
     dias_funcionamento: '[1,2,3,4,5]',
   };
+}
+
+function criarPoolCriacaoPublica() {
+  const chamadas = [];
+  const connection = {
+    beginTransaction: async () => {},
+    commit: async () => {},
+    rollback: async () => {},
+    release: () => {},
+    execute: async (sql, params) => {
+      chamadas.push({ sql, params });
+
+      if (ehConsultaServico(sql)) {
+        assert.deepEqual(params, [SERVICO_ID, NEGOCIO_ID]);
+        return [[servicoPublico()]];
+      }
+
+      if (ehConsultaProfissional(sql)) {
+        assert.deepEqual(params, [PROFISSIONAL_ID, NEGOCIO_ID]);
+        return [[profissionalPublico()]];
+      }
+
+      if (ehConsultaConflitoCriacao(sql)) {
+        return [[]];
+      }
+
+      if (ehInsercaoAgendamento(sql)) {
+        return [{ insertId: 99 }];
+      }
+
+      if (ehConsultaAgendamentoCriado(sql)) {
+        assert.deepEqual(params, [99]);
+        return [[agendamentoCriado()]];
+      }
+
+      throw new Error(`Consulta inesperada: ${normalizarSql(sql)}`);
+    },
+  };
+  const pool = {
+    chamadas,
+    getConnection: async () => connection,
+    execute: async (sql, params) => {
+      chamadas.push({ sql, params });
+
+      if (ehConsultaNegocioPublico(sql)) {
+        assert.deepEqual(params, ['studio-teste']);
+        return [[negocioPublico()]];
+      }
+
+      throw new Error(`Consulta inesperada: ${normalizarSql(sql)}`);
+    },
+  };
+
+  return pool;
+}
+
+function criarPoolReagendamentoPublico() {
+  const chamadas = [];
+  const connection = {
+    beginTransaction: async () => {},
+    commit: async () => {},
+    rollback: async () => {},
+    release: () => {},
+    execute: async (sql, params) => {
+      chamadas.push({ sql, params });
+
+      if (ehConsultaAgendamentoPorHash(sql)) {
+        assert.deepEqual(params, [TOKEN_HASH_VALIDO]);
+        return [[dadosAgendamento('confirmado')]];
+      }
+
+      if (ehConsultaServico(sql)) {
+        assert.deepEqual(params, [SERVICO_ID, NEGOCIO_ID]);
+        return [[servicoPublico()]];
+      }
+
+      if (ehConsultaProfissional(sql)) {
+        assert.deepEqual(params, [PROFISSIONAL_ID, NEGOCIO_ID]);
+        return [[profissionalPublico()]];
+      }
+
+      if (ehConsultaConflitoReagendamento(sql)) {
+        return [[]];
+      }
+
+      if (ehAtualizacaoReagendamento(sql)) {
+        return [{ affectedRows: 1 }];
+      }
+
+      throw new Error(`Consulta inesperada: ${normalizarSql(sql)}`);
+    },
+  };
+  const pool = {
+    chamadas,
+    getConnection: async () => connection,
+    execute: async (sql, params) => {
+      chamadas.push({ sql, params });
+
+      if (ehConsultaAgendamentoGerenciavel(sql)) {
+        assert.deepEqual(params, [TOKEN_HASH_VALIDO]);
+        return [[agendamentoGerenciavel('confirmado')]];
+      }
+
+      throw new Error(`Consulta inesperada: ${normalizarSql(sql)}`);
+    },
+  };
+
+  return pool;
 }
 
 test('token publico invalido retorna erro 404 publico', async () => {
@@ -157,5 +428,66 @@ test('reagendarAgendamentoPublicoPorToken bloqueia agendamento concluido', async
         data_hora_inicio: '2099-07-02T10:00:00',
       }),
     (err) => err.status === 409 && err.publicMessage === 'Agendamento concluido nao pode ser reagendado.'
+  );
+});
+
+test('criarAgendamentoPublico rejeita horario fora da grade do negocio', async () => {
+  const pool = criarPoolCriacaoPublica();
+  const { criarAgendamentoPublico } = carregarPublicoServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      criarAgendamentoPublico(
+        'studio-teste',
+        payloadAgendamento('2099-07-01T08:15:00')
+      ),
+    (err) =>
+      err.status === 400 &&
+      err.publicMessage === 'Horario fora da grade de agendamento do negocio.'
+  );
+
+  assert.equal(
+    pool.chamadas.some(({ sql }) => ehConsultaConflitoCriacao(sql)),
+    false
+  );
+});
+
+test('criarAgendamentoPublico aceita horario alinhado a grade do negocio', async () => {
+  const pool = criarPoolCriacaoPublica();
+  const { criarAgendamentoPublico } = carregarPublicoServiceComPool(pool);
+
+  const agendamento = await criarAgendamentoPublico(
+    'studio-teste',
+    payloadAgendamento('2099-07-01T08:30:00')
+  );
+
+  assert.equal(agendamento.data_hora_inicio, '2099-07-01T08:30:00');
+  assert.equal(agendamento.data_hora_fim, '2099-07-01T09:30:00');
+  assert.equal(typeof agendamento.token_gerenciamento, 'string');
+  assert.equal(agendamento.token_gerenciamento.length, 64);
+  assert.equal(
+    pool.chamadas.some(({ sql }) => ehConsultaConflitoCriacao(sql)),
+    true
+  );
+});
+
+test('reagendarAgendamentoPublicoPorToken rejeita horario fora da grade do negocio', async () => {
+  const pool = criarPoolReagendamentoPublico();
+  const { reagendarAgendamentoPublicoPorToken } =
+    carregarPublicoServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      reagendarAgendamentoPublicoPorToken(TOKEN_VALIDO, {
+        data_hora_inicio: '2099-07-01T08:15:00',
+      }),
+    (err) =>
+      err.status === 400 &&
+      err.publicMessage === 'Horario fora da grade de agendamento do negocio.'
+  );
+
+  assert.equal(
+    pool.chamadas.some(({ sql }) => ehConsultaConflitoReagendamento(sql)),
+    false
   );
 });

@@ -202,6 +202,21 @@ function adicionarMinutos(data, minutos) {
   return new Date(data.getTime() + minutos * 60 * 1000);
 }
 
+function validarInicioNaGradeAgendamento(negocio, dataHoraInicio) {
+  const abertura = aplicarHorario(dataHoraInicio, negocio.horario_abertura);
+  const intervalo = Number(negocio.intervalo_agendamento_minutos) || 30;
+  const diferencaMs = dataHoraInicio.getTime() - abertura.getTime();
+  const minutoMs = 60 * 1000;
+
+  if (
+    diferencaMs < 0 ||
+    diferencaMs % minutoMs !== 0 ||
+    (diferencaMs / minutoMs) % intervalo !== 0
+  ) {
+    throw criarErro(400, 'Horario fora da grade de agendamento do negocio.');
+  }
+}
+
 function haSobreposicao(inicioA, fimA, inicioB, fimB) {
   return inicioA < fimB && fimA > inicioB;
 }
@@ -401,7 +416,7 @@ async function buscarDadosAgendamentoPorHash(
   const [agendamentos] = await executor.execute(
     `SELECT a.id, a.negocio_id, a.servico_id, a.profissional_id, a.status,
       n.ativo AS negocio_ativo, n.horario_abertura, n.horario_fechamento,
-      n.dias_funcionamento
+      n.intervalo_agendamento_minutos, n.dias_funcionamento
      FROM agendamentos a
      INNER JOIN negocios n ON n.id = a.negocio_id
      WHERE a.token_publico_hash = ?
@@ -522,6 +537,7 @@ async function reagendarAgendamentoPublicoPorToken(token, dados) {
 
     validarDiaFuncionamento(agendamento, dataHoraInicio);
     validarDentroDoHorario(agendamento, dataHoraInicio, dataHoraFim);
+    validarInicioNaGradeAgendamento(agendamento, dataHoraInicio);
 
     const [conflitos] = await connection.execute(
       `SELECT id
@@ -865,6 +881,7 @@ async function criarAgendamentoPublico(slugOuId, dados) {
       dadosValidados.dataHoraInicio,
       dataHoraFim
     );
+    validarInicioNaGradeAgendamento(negocio, dadosValidados.dataHoraInicio);
 
     const [conflitos] = await connection.execute(
       `SELECT id
