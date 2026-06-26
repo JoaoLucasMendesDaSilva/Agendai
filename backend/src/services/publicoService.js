@@ -752,8 +752,7 @@ async function listarHorariosDisponiveis(
   const diasFuncionamento = parseJsonArray(negocio.dias_funcionamento);
 
   if (
-    diasFuncionamento &&
-    diasFuncionamento.length > 0 &&
+    Array.isArray(diasFuncionamento) &&
     !diasFuncionamento.includes(data.getDay())
   ) {
     return {
@@ -832,11 +831,10 @@ function validarDiaFuncionamento(negocio, data) {
   const diasFuncionamento = parseJsonArray(negocio.dias_funcionamento);
 
   if (
-    diasFuncionamento &&
-    diasFuncionamento.length > 0 &&
+    Array.isArray(diasFuncionamento) &&
     !diasFuncionamento.includes(data.getDay())
   ) {
-    throw criarErro(400, 'Negócio não atende neste dia.');
+    throw criarErro(400, 'Negocio nao atende neste dia.');
   }
 }
 
