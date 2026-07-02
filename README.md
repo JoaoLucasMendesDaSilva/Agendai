@@ -101,6 +101,14 @@ Fluxo do cliente:
 
 O backend calcula o término pelo tempo do serviço, respeita o funcionamento do negócio e bloqueia sobreposição com agendamentos pendentes ou confirmados.
 
+### Gerenciamento público do agendamento
+
+- Após criar um agendamento, o cliente recebe um link de gerenciamento.
+- Rota do frontend: **/gerenciar-agendamento/:token**.
+- O token público permite consultar dados limitados do agendamento.
+- O cliente pode cancelar, confirmar presença, listar horários de reagendamento e reagendar agendamentos ativos.
+- Agendamentos cancelados ou concluídos não ficam livremente mutáveis pelo token público.
+
 ### Landing Page
 
 - Apresentação pública do Agendai.
@@ -210,7 +218,7 @@ tcc-agendamento/
 
 ## Requisitos
 
-- Node.js 18 ou superior.
+- Node.js 20.19.0 ou superior.
 - npm.
 - MySQL 8 ou compatível.
 - MySQL Workbench opcional.
@@ -267,10 +275,11 @@ Variáveis iniciadas por VITE_ ficam disponíveis no bundle público e não deve
 
 ## Banco de dados e migrations
 
-As duas migrations devem ser executadas nesta ordem:
+As três migrations devem ser executadas nesta ordem:
 
 1. **backend/database/migrations/001_create_schema.sql**
 2. **backend/database/migrations/002_add_business_branding.sql**
+3. **backend/database/migrations/003_add_public_appointment_token.sql**
 
 ### Migration 001
 
@@ -285,6 +294,14 @@ Adiciona em negocios:
 
 A migration 002 deve ser executada com o schema correto já selecionado.
 
+### Migration 003
+
+Adiciona em agendamentos:
+
+- token_publico_hash.
+
+Essa coluna armazena o hash do token usado no link público de gerenciamento do agendamento.
+
 ### Execução no MySQL Workbench
 
 1. Abra a conexão MySQL.
@@ -292,7 +309,8 @@ A migration 002 deve ser executada com o schema correto já selecionado.
 3. Confirme qual schema está configurado em DB_NAME.
 4. Selecione esse schema.
 5. Execute 002_add_business_branding.sql.
-6. Atualize a lista de tabelas.
+6. Execute 003_add_public_appointment_token.sql.
+7. Atualize a lista de tabelas.
 
 Verificação:
 
@@ -301,11 +319,13 @@ SHOW DATABASES;
 USE tcc_agendamento;
 SHOW TABLES;
 DESCRIBE negocios;
+DESCRIBE agendamentos;
 ~~~
 
 As colunas logo_url e banner_url devem aparecer em **DESCRIBE negocios**.
+A coluna token_publico_hash deve aparecer em **DESCRIBE agendamentos**.
 
-No Railway, o schema gerenciado pode se chamar **railway**. Se a aba Data mostrar **You have no tables**, confira se o schema selecionado é o mesmo configurado em DB_NAME. Não execute a migration 002 em outro schema.
+No Railway, o schema gerenciado pode se chamar **railway**. Se a aba Data mostrar **You have no tables**, confira se o schema selecionado é o mesmo configurado em DB_NAME. Não execute as migrations 002 e 003 em outro schema.
 
 ## Uploads de logo e banner
 
@@ -355,7 +375,7 @@ Sem volume persistente, logo e banner podem desaparecer. Uma evolução futura p
 
 ### 1. Banco
 
-Execute as migrations 001 e 002.
+Execute as migrations 001, 002 e 003.
 
 ### 2. Backend
 
@@ -447,6 +467,12 @@ GET  /api/publico/negocio/:slugOuId/servicos
 GET  /api/publico/negocio/:slugOuId/profissionais
 GET  /api/publico/negocio/:slugOuId/horarios-disponiveis
 POST /api/publico/negocio/:slugOuId/agendamentos
+
+GET    /api/publico/agendamentos/:token
+GET    /api/publico/agendamentos/:token/horarios-disponiveis
+PUT    /api/publico/agendamentos/:token/confirmacao
+PUT    /api/publico/agendamentos/:token/reagendamento
+DELETE /api/publico/agendamentos/:token
 ~~~
 
 ### Privadas
@@ -506,6 +532,7 @@ DELETE /api/agendamentos/:id
 ### Frontend na Vercel
 
 - Diretório raiz: **frontend**.
+- Runtime: Node.js 20.19.0 ou superior.
 - Instalação: **npm install**.
 - Build: **npm run build**.
 - Saída: **dist**.
@@ -517,6 +544,7 @@ Depois do deploy, valide diretamente uma rota interna, como /dashboard ou /agend
 ### Backend na Railway
 
 - Diretório raiz: **backend**.
+- Runtime: Node.js 20.19.0 ou superior.
 - Instalação: **npm install**.
 - Inicialização: **npm start**.
 - NODE_ENV configurado como production.
@@ -532,8 +560,8 @@ Execute todas as migrations no banco correto antes de publicar o backend atualiz
 ### MySQL na Railway
 
 - Configure DB_HOST, DB_PORT, DB_USER, DB_PASSWORD e DB_NAME.
-- Execute migrations 001 e 002.
-- Confirme a tabela negocios e as colunas da identidade visual.
+- Execute migrations 001, 002 e 003.
+- Confirme a tabela negocios, as colunas da identidade visual e a coluna token_publico_hash em agendamentos.
 - Não exponha credenciais em commits, prints ou documentação pública.
 
 ### Checklist pós-deploy
@@ -543,6 +571,7 @@ Execute todas as migrations no banco correto antes de publicar o backend atualiz
 - CORS aceita apenas os domínios configurados.
 - Dashboard carrega dados reais.
 - Link público abre sem login.
+- Link de gerenciamento público abre sem login e respeita o token.
 - Horários respeitam o funcionamento.
 - Conflitos são bloqueados.
 - QR Code e WhatsApp usam a URL pública correta.
@@ -564,14 +593,16 @@ Execute todas as migrations no banco correto antes de publicar o backend atualiz
 10. Confirmar a personalização pública.
 11. Escolher serviço, profissional, data e horário.
 12. Criar um agendamento.
-13. Repetir o horário e confirmar o bloqueio.
-14. Verificar o cliente em /clientes.
-15. Verificar o agendamento em /agenda.
-16. Alterar status e cancelar.
-17. Conferir métricas e gráfico.
-18. Gerar relatório PDF.
-19. Alternar tema claro e escuro.
-20. Testar a instalação PWA.
+13. Abrir o link de gerenciamento público.
+14. Confirmar presença, listar horários, reagendar e cancelar pelo token.
+15. Repetir o horário e confirmar o bloqueio.
+16. Verificar o cliente em /clientes.
+17. Verificar o agendamento em /agenda.
+18. Alterar status e cancelar no painel privado.
+19. Conferir métricas e gráfico.
+20. Gerar relatório PDF.
+21. Alternar tema claro e escuro.
+22. Testar a instalação PWA.
 
 ## Limitações atuais do MVP
 
@@ -579,7 +610,6 @@ Execute todas as migrations no banco correto antes de publicar o backend atualiz
 - Não envia e-mails.
 - Não integra com Google Calendar.
 - Não possui pagamentos.
-- Não possui reagendamento ou cancelamento pelo cliente.
 - Não possui bloqueio manual de horários e folgas.
 - Não possui testes automatizados completos.
 - O JWT é armazenado em localStorage.
@@ -590,16 +620,17 @@ Execute todas as migrations no banco correto antes de publicar o backend atualiz
 
 ## Próximas evoluções
 
+- Criar banco de testes MySQL descartável para testes automatizados do plano 003.
+- Controle de migrations ou pequeno runner para registrar scripts já aplicados.
+- Bloqueio manual de horários e folgas.
 - Notificações por WhatsApp API e e-mail.
+- Verificação de persistência de uploads no ambiente de produção.
+- Base de testes automatizados do frontend.
+- Paginação do plano 004 para listas com grande volume.
 - Integração com Google Calendar.
-- Reagendamento e cancelamento público.
-- Bloqueio de folgas e horários.
-- Pagamentos.
-- Métricas e filtros avançados.
-- Paginação para grandes volumes.
 - Armazenamento externo e otimização de imagens.
-- Testes automatizados.
 - Melhorias de segurança na persistência da sessão.
+- Pagamentos e Dashboard avançado apenas como ideias futuras fora do MVP do TCC.
 
 ## Estado atual para o TCC
 

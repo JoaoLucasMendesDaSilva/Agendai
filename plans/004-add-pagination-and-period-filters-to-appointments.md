@@ -13,6 +13,30 @@
 - **Depends on**: `plans/001-establish-backend-verification-baseline.md`
 - **Category**: perf
 - **Planned at**: commit `3072a78`, 2026-06-25
+- **Disposition**: REJECTED on 2026-07-02 because the current Dashboard and
+  Clientes pages require complete-history aggregates; applying this plan's
+  default limit would make displayed totals and exports incorrect.
+
+## Reconciliation outcome
+
+Do not execute this plan against the current application. Its first STOP
+condition is now confirmed:
+
+- `frontend/src/pages/Dashboard.jsx` loads `listarAgendamentos()` without a
+  period, uses the full array for all-time appointment/client metrics, and
+  filters that same array for PDF and XLSX exports.
+- `frontend/src/pages/Clientes.jsx` derives unique clients, recurrence,
+  first/last attendance, cancellations, estimated value, and complete history
+  from every appointment returned by the endpoint.
+- A default `limit` on `GET /api/agendamentos` would therefore present partial
+  data as complete business data. Raising the limit only postpones the same
+  correctness failure.
+
+Revisit performance after the MVP with a new plan that first defines dedicated
+server-side summary and client-history contracts. That work must preserve
+business isolation, provide explicit pagination metadata, and avoid identifying
+clients through an unstable display-name key. Do not retrofit those contracts
+into this plan; they are a materially different API/data-model decision.
 
 ## Why this matters
 

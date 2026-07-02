@@ -6,7 +6,7 @@
 > report; do not improvise. When done, update the status row for this plan in
 > `plans/README.md` unless a reviewer told you they maintain the index.
 >
-> **Drift check (run first)**: `git diff --stat 2fe0e87..HEAD -- backend/src/services/publicoService.js backend/src/services/negocioService.js frontend/src/pages/Negocio.jsx frontend/src/pages/AgendamentoPublico.jsx backend/test`
+> **Drift check (run first)**: `git diff --stat b02428b..HEAD -- backend/src/services/publicoService.js backend/src/services/negocioService.js frontend/src/pages/Negocio.jsx frontend/src/pages/AgendamentoPublico.jsx backend/test`
 > If any in-scope file changed since this plan was written, compare the
 > "Current state" excerpts against the live code before proceeding; on a
 > mismatch, treat it as a STOP condition.
@@ -18,7 +18,7 @@
 - **Risk**: MED
 - **Depends on**: `plans/001-establish-backend-verification-baseline.md`
 - **Category**: bug
-- **Planned at**: commit `2fe0e87`, 2026-06-26
+- **Planned at**: commit `b02428b`, 2026-06-26
 
 ## Why this matters
 

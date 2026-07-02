@@ -1,6 +1,7 @@
 const { getDatabasePool } = require('../config/database');
 
 const STATUS_PERMITIDOS = ['pendente', 'confirmado', 'cancelado', 'concluido'];
+const STATUS_ATIVOS = ['pendente', 'confirmado'];
 const CAMPOS_STATUS_PERMITIDOS = ['status'];
 
 function criarErro(status, mensagem, code) {
@@ -177,11 +178,66 @@ function validarPayloadStatus(dados) {
   return status;
 }
 
+function statusEhAtivo(status) {
+  return STATUS_ATIVOS.includes(status);
+}
+
+async function buscarAgendamentoParaAtualizacaoStatus(pool, id, negocioId) {
+  const [agendamentos] = await pool.execute(
+    `SELECT id, profissional_id, data_hora_inicio, data_hora_fim, status
+     FROM agendamentos
+     WHERE id = ? AND negocio_id = ?
+     LIMIT 1`,
+    [id, negocioId]
+  );
+
+  if (agendamentos.length === 0) {
+    throw criarErro(404, 'Agendamento nÃ£o encontrado.');
+  }
+
+  return agendamentos[0];
+}
+
+async function rejeitarConflitoStatusAtivo(pool, negocioId, agendamento) {
+  const [conflitos] = await pool.execute(
+    `SELECT id
+     FROM agendamentos
+     WHERE negocio_id = ?
+       AND profissional_id = ?
+       AND id <> ?
+       AND status IN ('pendente', 'confirmado')
+       AND data_hora_inicio < ?
+       AND data_hora_fim > ?
+     LIMIT 1`,
+    [
+      negocioId,
+      agendamento.profissional_id,
+      agendamento.id,
+      agendamento.data_hora_fim,
+      agendamento.data_hora_inicio,
+    ]
+  );
+
+  if (conflitos.length > 0) {
+    throw criarErro(409, 'Horario indisponivel para este profissional.');
+  }
+}
+
 async function atualizarStatusAgendamento(usuarioId, agendamentoId, dados) {
   const id = validarId(agendamentoId);
   const status = validarPayloadStatus(dados);
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const pool = getDatabasePool();
+
+  if (statusEhAtivo(status)) {
+    const agendamentoAtual = await buscarAgendamentoParaAtualizacaoStatus(
+      pool,
+      id,
+      negocioId
+    );
+    await rejeitarConflitoStatusAtivo(pool, negocioId, agendamentoAtual);
+  }
+
   const [resultado] = await pool.execute(
     'UPDATE agendamentos SET status = ? WHERE id = ? AND negocio_id = ?',
     [status, id, negocioId]

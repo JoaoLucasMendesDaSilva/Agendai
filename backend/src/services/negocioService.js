@@ -109,6 +109,10 @@ function normalizarDiasFuncionamento(valor) {
     throw criarErro(400, 'dias_funcionamento deve ser um array.');
   }
 
+  if (valor.length === 0) {
+    throw criarErro(400, 'Selecione ao menos um dia de funcionamento.');
+  }
+
   const diasUnicos = new Set(valor);
 
   if (diasUnicos.size !== valor.length) {
@@ -174,6 +178,10 @@ function criarSlugBase(nome) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+
+  if (/^\d+$/.test(slug)) {
+    return `negocio-${slug}`;
+  }
 
   return slug || 'negocio';
 }
