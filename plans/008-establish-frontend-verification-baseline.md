@@ -6,7 +6,7 @@
 > report; do not improvise. When done, update the status row for this plan in
 > `plans/README.md` unless a reviewer told you they maintain the index.
 >
-> **Drift check (run first)**: `git diff --stat 2fe0e87..HEAD -- frontend/package.json frontend/package-lock.json frontend/src frontend/test frontend/vitest.config.*`
+> **Drift check (run first)**: `git diff --stat 8e1e106..HEAD -- frontend/package.json frontend/package-lock.json frontend/src frontend/test frontend/vitest.config.*`
 > If any in-scope file changed since this plan was written, compare the
 > "Current state" excerpts against the live code before proceeding; on a
 > mismatch, treat it as a STOP condition.
@@ -18,7 +18,10 @@
 - **Risk**: LOW
 - **Depends on**: none
 - **Category**: tests
-- **Planned at**: commit `2fe0e87`, 2026-06-26
+- **Planned at**: commit `8e1e106`, 2026-06-26
+- **Disposition**: DONE in commit `7692321` on 2026-07-02; reviewer
+  independently verified 5 test files / 9 tests, the production build, clean
+  whitespace, and frontend-only scope.
 
 ## Why this matters
 
@@ -57,6 +60,20 @@ frontend/package.json:21
 ```md
 README.md:584
 - Não possui testes automatizados completos.
+```
+
+- Plan 006 has landed. `frontend/src/pages/Negocio.jsx` now blocks save when
+  no operating day is selected:
+
+```js
+frontend/src/pages/Negocio.jsx:274
+if (
+  !Array.isArray(form.dias_funcionamento) ||
+  form.dias_funcionamento.length === 0
+) {
+  setErro('Selecione ao menos um dia de funcionamento.');
+  return;
+}
 ```
 
 - Frontend code is plain React JavaScript, CSS imported from
@@ -146,10 +163,8 @@ Mock service modules; do not hit the real backend.
 
 ### Step 4: Add one regression test for business-day validation from plan 006
 
-If plan 006 has landed, add/keep a test that the business form cannot submit
-with no selected operating days. If plan 006 has not landed, write the test as
-`test.todo` with a comment referencing plan 006, or skip this step and record it
-in `plans/README.md`.
+Plan 006 has landed. Add a real test that the business form cannot submit with
+no selected operating days. Do not leave this as `test.todo`.
 
 **Verify**: `npm.cmd test` from `frontend/` -> exits 0.
 

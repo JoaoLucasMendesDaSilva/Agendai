@@ -6,7 +6,7 @@
 > report; do not improvise. When done, update the status row for this plan in
 > `plans/README.md` unless a reviewer told you they maintain the index.
 >
-> **Drift check (run first)**: `git diff --stat 2fe0e87..HEAD -- backend/src/services/negocioService.js backend/src/services/publicoService.js frontend/src/pages/Negocio.jsx backend/test`
+> **Drift check (run first)**: `git diff --stat 7d52395..HEAD -- backend/src/services/negocioService.js backend/src/services/publicoService.js frontend/src/pages/Negocio.jsx backend/test`
 > If any in-scope file changed since this plan was written, compare the
 > "Current state" excerpts against the live code before proceeding; on a
 > mismatch, treat it as a STOP condition.
@@ -18,7 +18,7 @@
 - **Risk**: LOW
 - **Depends on**: `plans/001-establish-backend-verification-baseline.md`
 - **Category**: bug
-- **Planned at**: commit `2fe0e87`, 2026-06-26
+- **Planned at**: commit `7d52395`, 2026-06-26
 
 ## Why this matters
 
@@ -32,7 +32,7 @@ business if that ID exists. This is a small API-boundary bug with a clean fix.
 - Slug generation can return numeric-only slugs:
 
 ```js
-backend/src/services/negocioService.js:170
+backend/src/services/negocioService.js:174
 function criarSlugBase(nome) {
   const slug = nome
     .normalize('NFD')
@@ -48,7 +48,7 @@ function criarSlugBase(nome) {
 - Public lookup chooses ID lookup whenever the path is numeric:
 
 ```js
-backend/src/services/publicoService.js:584
+backend/src/services/publicoService.js:600
 if (/^[1-9]\d*$/.test(valor)) {
   sql += 'id = ?';
   params.push(Number(valor));

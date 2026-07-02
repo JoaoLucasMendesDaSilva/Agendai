@@ -2,7 +2,7 @@
 
 > **Executor instructions**: Follow this plan step by step. Run every verification command and confirm the expected result before moving to the next step. If anything in the "STOP conditions" section occurs, stop and report; do not improvise. When done, update the status row for this plan in `plans/README.md` unless a reviewer told you they maintain the index.
 >
-> **Drift check (run first)**: `git diff --stat 3072a78..HEAD -- backend/src/services/publicoService.js backend/database/migrations backend/test backend/tests`
+> **Drift check (run first)**: `git diff --stat 7692321..HEAD -- backend/src/services/publicoService.js backend/database/migrations backend/test backend/tests`
 > If any in-scope file changed since this plan was written, compare the "Current state" excerpts against the live code before proceeding; on a mismatch, treat it as a STOP condition.
 
 ## Status
@@ -12,7 +12,11 @@
 - **Risk**: MED
 - **Depends on**: `plans/001-establish-backend-verification-baseline.md`
 - **Category**: bug
-- **Planned at**: commit `3072a78`, 2026-06-25
+- **Planned at**: commit `7692321`, refreshed 2026-07-02
+- **Disposition**: BLOCKED. The current machine has no Docker CLI, MySQL
+  client, compose definition, or explicit test-database environment variables.
+  Resume only after the operator provides or approves a disposable MySQL
+  schema whose identity is visibly distinct from development/Railway data.
 
 ## Why this matters
 
@@ -23,7 +27,7 @@ The MVP promise includes blocking conflicting appointments. The service checks f
 - Public appointment creation opens a transaction:
 
 ```js
-backend/src/services/publicoService.js:841
+backend/src/services/publicoService.js:862
 try {
   await connection.beginTransaction();
 ```
@@ -31,7 +35,7 @@ try {
 - It checks conflicts before insert:
 
 ```js
-backend/src/services/publicoService.js:866
+backend/src/services/publicoService.js:888
 const [conflitos] = await connection.execute(
   `SELECT id
    FROM agendamentos
@@ -46,7 +50,7 @@ const [conflitos] = await connection.execute(
 - It inserts after the check:
 
 ```js
-backend/src/services/publicoService.js:887
+backend/src/services/publicoService.js:909
 const [resultado] = await connection.execute(
   `INSERT INTO agendamentos (
     negocio_id, servico_id, profissional_id, cliente_nome, cliente_telefone,
@@ -63,6 +67,15 @@ INDEX idx_agendamentos_negocio_inicio (negocio_id, data_hora_inicio),
 INDEX idx_agendamentos_profissional_periodo (profissional_id, data_hora_inicio, data_hora_fim),
 INDEX idx_agendamentos_profissional_status_periodo (profissional_id, status, data_hora_inicio, data_hora_fim)
 ```
+
+- Public rescheduling now has the same row-lock limitation: its transaction
+  starts at `backend/src/services/publicoService.js:509` and its overlap query
+  uses `FOR UPDATE` at line 551. A future fix must continue covering creation
+  and rescheduling with one locking concept.
+
+- The backend unit baseline now lives in `backend/test/`, including
+  `publicoService.test.js`, but it uses mocks and does not prove MySQL lock
+  behavior under simultaneous transactions.
 
 - Repo constraints:
   - MySQL is required.
