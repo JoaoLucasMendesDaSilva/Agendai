@@ -19,8 +19,7 @@ Sistema web completo para gestão de serviços, profissionais, clientes e horár
 
 <br><br>
 
-[![Deploy](https://img.shields.io/badge/Acessar_Projeto-00C853?style=for-the-badge&logo=vercel&logoColor=white)](https://tcc-agendamento.vercel.app/)
-[![GitHub](https://img.shields.io/badge/Repositório-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/JoaoLucasMendesDaSilva/Agendai)
+[![Acessar Demo](https://img.shields.io/badge/Acessar_Demo-00C853?style=for-the-badge&logo=vercel&logoColor=white)](https://tcc-agendamento.vercel.app/)
 
 </div>
 
