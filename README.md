@@ -1,647 +1,402 @@
+<div align="center">
+
 # Agendai
 
-Agendai é um sistema de agendamento online para pequenos negócios, desenvolvido como Trabalho de Conclusão de Curso (TCC). A aplicação ajuda barbearias, salões, clínicas, estúdios e profissionais autônomos a organizar serviços, profissionais, clientes e horários em um único lugar.
+### Plataforma moderna de agendamentos para pequenos negócios
 
-O empreendedor administra o negócio por um painel privado. O cliente acessa um link público, escolhe serviço, profissional, data e horário e confirma o atendimento sem criar uma conta.
+Sistema web completo para gestão de serviços, profissionais, clientes e horários, desenvolvido como projeto de TCC no curso técnico em Desenvolvimento de Sistemas.
 
-## Status do projeto
+<br>
 
-O Agendai está em estado de **MVP funcional e deployado**:
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-20232A?style=for-the-badge&logo=vite&logoColor=646CFF)
+![Node.js](https://img.shields.io/badge/Node.js-20232A?style=for-the-badge&logo=node.js&logoColor=339933)
+![Express](https://img.shields.io/badge/Express-20232A?style=for-the-badge&logo=express&logoColor=FFFFFF)
+![MySQL](https://img.shields.io/badge/MySQL-20232A?style=for-the-badge&logo=mysql&logoColor=4479A1)
+![JWT](https://img.shields.io/badge/JWT-20232A?style=for-the-badge&logo=jsonwebtokens&logoColor=FFFFFF)
+![Vercel](https://img.shields.io/badge/Vercel-20232A?style=for-the-badge&logo=vercel&logoColor=FFFFFF)
+![Railway](https://img.shields.io/badge/Railway-20232A?style=for-the-badge&logo=railway&logoColor=FFFFFF)
 
-- frontend React hospedado na Vercel;
-- backend Express hospedado na Railway;
-- banco MySQL hospedado na Railway;
-- fluxo administrativo e agendamento público integrados;
-- interface responsiva, PWA instalável e suporte a tema escuro.
+<br><br>
 
-URLs privadas, senhas, tokens e credenciais reais não devem ser incluídos no repositório.
+[![Deploy](https://img.shields.io/badge/Acessar_Projeto-00C853?style=for-the-badge&logo=vercel&logoColor=white)](https://tcc-agendamento.vercel.app/)
+[![GitHub](https://img.shields.io/badge/Repositório-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/JoaoLucasMendesDaSilva/Agendai)
 
-## Funcionalidades implementadas
+</div>
 
-### Autenticação
+---
 
-- Cadastro de empreendedor.
-- Login com e-mail e senha.
-- Sessão protegida por JWT.
-- Validação da sessão com **GET /api/auth/me**.
-- Logout e proteção das páginas administrativas.
+## 📌 Sobre o projeto
 
-### Dashboard inteligente
+O **Agendai** é uma plataforma de agendamentos criada para ajudar pequenos negócios a organizarem seus atendimentos de forma simples, moderna e acessível.
 
-- Total de agendamentos.
-- Total de clientes únicos.
-- Total de serviços ativos.
-- Total de profissionais ativos.
-- Próximo agendamento.
+A aplicação permite que o empreendedor cadastre seu negócio, configure serviços, profissionais e horários, acompanhe seus agendamentos em uma área administrativa e compartilhe uma página pública para que clientes possam realizar agendamentos online.
+
+O projeto foi desenvolvido como **TCC do curso técnico em Desenvolvimento de Sistemas**, com foco em aplicar conceitos de desenvolvimento web, banco de dados, autenticação, responsividade, experiência do usuário e deploy em ambiente real.
+
+---
+
+## 🎯 Objetivo
+
+O objetivo do Agendai é oferecer uma solução prática para microempreendedores que precisam organizar seus horários, reduzir agendamentos manuais e facilitar o contato com seus clientes.
+
+Além disso, o projeto tem como objetivo demonstrar a construção de uma aplicação completa, envolvendo:
+
+- Front-end responsivo;
+- Back-end com API REST;
+- Banco de dados relacional;
+- Autenticação de usuários;
+- Upload de imagens;
+- Integração com WhatsApp;
+- Geração de relatórios;
+- Deploy do front-end e back-end.
+
+---
+
+## ✨ Funcionalidades
+
+### Área administrativa
+
+- Cadastro e login de usuários;
+- Autenticação com JWT;
+- Dashboard com métricas reais;
+- Gestão de clientes;
+- Gestão de serviços;
+- Gestão de profissionais;
+- Agenda administrativa;
+- Filtros por status dos agendamentos;
+- Alteração de status dos agendamentos;
+- Relatórios em PDF;
+- Modo escuro;
+- Personalização visual com logo e banner;
+- Link público do negócio;
+- QR Code para divulgação;
+- Interface responsiva.
+
+### Página pública
+
+- Página pública de agendamento;
+- Exibição dos dados do negócio;
+- Exibição de logo e banner personalizados;
+- Seleção de serviço;
+- Seleção de profissional;
+- Seleção de horário disponível;
+- Formulário com dados do cliente;
+- Confirmação de agendamento;
+- Integração com WhatsApp.
+
+### Recursos extras
+
+- PWA;
+- Service Worker;
+- Manifest;
+- Layout mobile-first;
+- Deploy em produção;
+- Comunicação entre front-end e back-end via API.
+
+---
+
+## 🛠️ Tecnologias utilizadas
+
+### Front-end
+
+- React
+- Vite
+- JavaScript
+- CSS
+- Chart.js
+- jsPDF
+- PWA
+
+### Back-end
+
+- Node.js
+- Express
+- JWT
+- Bcrypt
+- Multer
+- MySQL
+
+### Banco de dados
+
+- MySQL
+- Migrations SQL
+
+### Deploy
+
+- Vercel
+- Railway
+
+---
+
+## 🧩 Estrutura do projeto
+
+```bash
+Agendai/
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── middlewares/
+│   │   └── config/
+│   ├── migrations/
+│   └── package.json
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── contexts/
+│   │   └── styles.css
+│   ├── public/
+│   └── package.json
+│
+└── README.md
+```
+
+---
+
+## 📱 Responsividade
+
+O Agendai foi desenvolvido com foco em uma experiência responsiva, funcionando em diferentes tamanhos de tela.
+
+A interface foi pensada para uso em:
+
+- Celulares;
+- Tablets;
+- Notebooks;
+- Desktops.
+
+A página pública de agendamento possui foco mobile-first, considerando que a maioria dos clientes pode acessar o link pelo celular.
+
+---
+
+## 🌙 Modo escuro
+
+O sistema possui suporte a **modo claro e modo escuro**, com alternância de tema e persistência da preferência do usuário.
+
+O modo escuro foi aplicado nas principais áreas do sistema, incluindo:
+
+- Dashboard;
+- Agenda;
+- Clientes;
+- Serviços;
+- Profissionais;
+- Meu Negócio;
+- Login;
+- Cadastro;
+- Página pública.
+
+---
+
+## 📊 Dashboard
+
+O dashboard apresenta métricas reais do negócio, como:
+
+- Total de agendamentos;
+- Clientes únicos;
+- Serviços ativos;
+- Profissionais ativos;
+- Próximo agendamento;
 - Gráfico de agendamentos da semana.
-- Seleção de período e geração de relatório PDF com dados reais.
 
-### Meu Negócio
+Esses dados ajudam o empreendedor a acompanhar a movimentação do seu negócio de forma mais clara e organizada.
 
-- Cadastro e edição dos dados do negócio.
-- Nome, descrição, telefone, endereço e cidade.
-- Horários e dias de funcionamento.
-- Slug e link público de agendamento.
-- Cópia do link público.
-- QR Code com opção de download.
-- Compartilhamento do link pelo WhatsApp.
-- Upload e substituição de logo.
-- Upload e substituição de banner/capa.
-- Preview das imagens antes de salvar.
+---
 
-### Serviços
+## 📄 Relatórios em PDF
 
-- Cadastro, listagem e edição.
-- Duração e preço.
-- Desativação lógica com **ativo = false**.
-- Apenas serviços ativos aparecem no fluxo público.
+O sistema permite gerar relatórios em PDF com base em um período selecionado.
 
-### Profissionais
+O relatório contém informações como:
 
-- Cadastro, listagem e edição.
-- Especialidade, telefone e e-mail.
-- Desativação lógica com **ativo = false**.
-- Apenas profissionais ativos aparecem no fluxo público.
+- Nome do negócio;
+- Período selecionado;
+- Total de agendamentos;
+- Total de clientes únicos;
+- Serviços ativos;
+- Profissionais ativos;
+- Serviço mais agendado;
+- Profissional mais agendado;
+- Lista resumida dos agendamentos do período.
 
-### Clientes
+---
 
-- Lista construída a partir dos agendamentos existentes.
-- Identificação prioritária por telefone, seguida por e-mail e nome.
-- Busca por nome, telefone ou e-mail.
-- Total de clientes, clientes recorrentes e novos clientes.
-- Histórico resumido de agendamentos por cliente.
+## 🔗 Página pública de agendamento
 
-### Agenda privada
+Cada negócio possui uma página pública de agendamento que pode ser compartilhada com os clientes.
 
-- Agendamentos agrupados por data.
-- Filtros por todos, hoje e status.
-- Dados de cliente, serviço, profissional, horário e observações.
-- Alteração de status.
-- Cancelamento lógico por mudança de status.
-- Isolamento dos dados pelo negócio autenticado.
+Nessa página, o cliente pode:
 
-### Página pública personalizada
+- Visualizar informações do negócio;
+- Escolher um serviço;
+- Selecionar um profissional;
+- Escolher um horário disponível;
+- Preencher seus dados;
+- Confirmar o agendamento.
 
-Rota:
+---
 
-~~~txt
-/agendar/:slugOuId
-~~~
+## 📷 Identidade visual
 
-A página utiliza nome, descrição, logo, banner, telefone, cidade, endereço, horários e dias de funcionamento do negócio. Também apresenta um indicador visual de aberto ou fechado.
+O Agendai permite que o empreendedor personalize a aparência pública do seu negócio por meio de:
 
-Fluxo do cliente:
+- Upload de logo;
+- Upload de banner;
+- Exibição da identidade visual na área privada;
+- Exibição da identidade visual na página pública.
 
-1. Escolher serviço.
-2. Escolher profissional.
-3. Escolher data.
-4. Escolher horário disponível.
-5. Informar nome, telefone, e-mail opcional e observações opcionais.
-6. Confirmar o agendamento.
+---
 
-O backend calcula o término pelo tempo do serviço, respeita o funcionamento do negócio e bloqueia sobreposição com agendamentos pendentes ou confirmados.
+## 🚀 Como executar o projeto
 
-### Gerenciamento público do agendamento
+### Pré-requisitos
 
-- Após criar um agendamento, o cliente recebe um link de gerenciamento.
-- Rota do frontend: **/gerenciar-agendamento/:token**.
-- O token público permite consultar dados limitados do agendamento.
-- O cliente pode cancelar, confirmar presença, listar horários de reagendamento e reagendar agendamentos ativos.
-- Agendamentos cancelados ou concluídos não ficam livremente mutáveis pelo token público.
+Antes de começar, é necessário ter instalado:
 
-### Landing Page
+- Node.js
+- MySQL
+- Git
 
-- Apresentação pública do Agendai.
-- Benefícios, etapas de funcionamento e planos demonstrativos.
-- Chamadas para cadastro e login.
-- Layout responsivo alinhado à identidade visual do sistema.
+---
 
-### Experiência visual
+## 🔧 Configuração do back-end
 
-- Layout mobile-first.
-- Sidebar animada e recolhível.
-- Cards, badges, inputs e botões padronizados.
-- Ícones com lucide-react.
-- Microinterações em CSS.
-- Dark Mode persistido no navegador.
-- Ilustração no painel de Login e Cadastro.
-- Empty states e mensagens de carregamento, erro e sucesso.
+Acesse a pasta do back-end:
 
-### PWA instalável
+```bash
+cd backend
+```
 
-- Manifesto web.
-- Service worker para assets estáticos.
-- Ícones de 192 px e 512 px.
-- Instalação em Android, iPhone e Desktop.
-- Botão de instalação quando o navegador oferece beforeinstallprompt.
-- Execução em modo standalone.
+Instale as dependências:
 
-O PWA não armazena respostas da API. Sem conexão, dados dinâmicos e agendamentos não ficam disponíveis.
+```bash
+npm install
+```
 
-## Arquitetura
+Crie o arquivo `.env` com as variáveis necessárias:
 
-~~~txt
-Cliente
-  |
-  v
-Frontend React/Vite (Vercel)
-  |
-  | HTTPS / JSON / JWT
-  v
-Backend Node.js/Express (Railway)
-  |
-  v
-MySQL (Railway)
-~~~
-
-### Frontend
-
-- React 19.
-- Vite.
-- CSS puro.
-- Chart.js.
-- jsPDF.
-- lucide-react.
-- qrcode.react.
-- Deploy na Vercel.
-
-### Backend
-
-- Node.js.
-- Express.
-- mysql2/promise.
-- JWT e bcrypt.
-- Helmet.
-- CORS.
-- express-rate-limit.
-- Multer para uploads.
-- Deploy na Railway.
-
-### Banco
-
-- MySQL com InnoDB.
-- Charset utf8mb4.
-- Chaves estrangeiras, índices e constraints.
-- Hospedagem no Railway.
-
-## Estrutura do projeto
-
-~~~txt
-tcc-agendamento/
-  backend/
-    database/
-      migrations/
-        001_create_schema.sql
-        002_add_business_branding.sql
-    src/
-      config/
-      controllers/
-      middlewares/
-      routes/
-      services/
-      utils/
-  frontend/
-    public/
-      icons/
-      manifest.webmanifest
-      sw.js
-    src/
-      assets/
-      components/
-      contexts/
-      pages/
-      services/
-    vercel.json
-  .env.example
-  README.md
-~~~
-
-## Requisitos
-
-- Node.js 20.19.0 ou superior.
-- npm.
-- MySQL 8 ou compatível.
-- MySQL Workbench opcional.
-
-## Variáveis de ambiente
-
-### Backend
-
-O backend lê o arquivo **.env** na raiz do projeto. Use **.env.example** como referência:
-
-~~~env
-PORT=3001
-NODE_ENV=development
-TZ=America/Sao_Paulo
-TRUST_PROXY_HOPS=0
-CORS_ORIGIN=http://localhost:5173
-JWT_SECRET=substitua_por_um_segredo_forte
-JWT_EXPIRES_IN=1d
-UPLOAD_DIR=
-
+```env
+PORT=3000
 DB_HOST=localhost
-DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=sua_senha
-DB_NAME=tcc_agendamento
-~~~
+DB_NAME=agendai
+JWT_SECRET=sua_chave_secreta
+```
 
-Observações:
+Execute as migrations do banco de dados:
 
-- JWT_SECRET deve ser forte e exclusivo.
-- TZ deve permanecer como **America/Sao_Paulo** para que validações de dias e horários sejam consistentes.
-- TRUST_PROXY_HOPS deve ser **0** localmente e normalmente **1** no Railway.
-- CORS_ORIGIN aceita múltiplas origens separadas por vírgula.
-- Não use wildcard de CORS em produção.
-- UPLOAD_DIR é opcional localmente; sem ele, os arquivos ficam em **backend/uploads**.
-- Em produção, UPLOAD_DIR deve apontar para um volume persistente.
-- Nunca versione o arquivo .env.
+```bash
+# Execute os arquivos SQL da pasta migrations no seu banco MySQL
+```
 
-### Frontend
+Inicie o servidor:
 
-Crie **frontend/.env** a partir de **frontend/.env.example**:
-
-~~~env
-VITE_API_URL=http://localhost:3001
-~~~
-
-Na Vercel, use a URL HTTPS pública do backend:
-
-~~~env
-VITE_API_URL=https://sua-api.exemplo
-~~~
-
-Variáveis iniciadas por VITE_ ficam disponíveis no bundle público e não devem conter segredos.
-
-## Banco de dados e migrations
-
-As três migrations devem ser executadas nesta ordem:
-
-1. **backend/database/migrations/001_create_schema.sql**
-2. **backend/database/migrations/002_add_business_branding.sql**
-3. **backend/database/migrations/003_add_public_appointment_token.sql**
-
-### Migration 001
-
-Cria o banco, charset, tabelas usuarios, negocios, servicos, profissionais e agendamentos, além de chaves estrangeiras, índices e constraints.
-
-### Migration 002
-
-Adiciona em negocios:
-
-- logo_url;
-- banner_url.
-
-A migration 002 deve ser executada com o schema correto já selecionado.
-
-### Migration 003
-
-Adiciona em agendamentos:
-
-- token_publico_hash.
-
-Essa coluna armazena o hash do token usado no link público de gerenciamento do agendamento.
-
-### Execução no MySQL Workbench
-
-1. Abra a conexão MySQL.
-2. Execute 001_create_schema.sql.
-3. Confirme qual schema está configurado em DB_NAME.
-4. Selecione esse schema.
-5. Execute 002_add_business_branding.sql.
-6. Execute 003_add_public_appointment_token.sql.
-7. Atualize a lista de tabelas.
-
-Verificação:
-
-~~~sql
-SHOW DATABASES;
-USE tcc_agendamento;
-SHOW TABLES;
-DESCRIBE negocios;
-DESCRIBE agendamentos;
-~~~
-
-As colunas logo_url e banner_url devem aparecer em **DESCRIBE negocios**.
-A coluna token_publico_hash deve aparecer em **DESCRIBE agendamentos**.
-
-No Railway, o schema gerenciado pode se chamar **railway**. Se a aba Data mostrar **You have no tables**, confira se o schema selecionado é o mesmo configurado em DB_NAME. Não execute as migrations 002 e 003 em outro schema.
-
-## Uploads de logo e banner
-
-Rota privada:
-
-~~~txt
-PUT /api/negocio/:id/identidade-visual
-~~~
-
-O request usa multipart/form-data com os campos logo e banner.
-
-### Formatos aceitos
-
-- PNG.
-- JPG/JPEG.
-- WEBP.
-
-### Limites
-
-- Logo: até 5 MB.
-- Banner: até 10 MB.
-- No máximo uma logo e um banner por request.
-
-O backend verifica o tipo declarado, a assinatura binária, gera nomes aleatórios e não aceita SVG ou executáveis.
-
-### Persistência no Railway
-
-O armazenamento atual é local no backend. O sistema de arquivos comum do container pode ser perdido em reinicializações e novos deploys.
-
-Para produção:
-
-1. Crie um volume persistente no serviço do backend.
-2. Monte o volume em um caminho estável, por exemplo **/data/uploads**.
-3. Configure:
-
-~~~env
-UPLOAD_DIR=/data/uploads
-~~~
-
-4. Faça um upload de teste.
-5. Reinicie ou publique novamente o serviço.
-6. Confirme que a imagem continua disponível.
-
-Sem volume persistente, logo e banner podem desaparecer. Uma evolução futura possível é usar Cloudinary ou S3.
-
-## Como executar localmente
-
-### 1. Banco
-
-Execute as migrations 001, 002 e 003.
-
-### 2. Backend
-
-Na raiz do projeto, configure .env. Depois:
-
-~~~bash
-cd backend
-npm install
+```bash
 npm run dev
-~~~
+```
 
-API local:
+---
 
-~~~txt
-http://localhost:3001
-~~~
+## 💻 Configuração do front-end
 
-Testes básicos:
+Acesse a pasta do front-end:
 
-~~~txt
-GET http://localhost:3001/api/health
-GET http://localhost:3001/api/db-health
-~~~
-
-A rota db-health funciona somente em desenvolvimento. Em produção, retorna 404 sem testar publicamente o banco.
-
-### 3. Frontend
-
-~~~bash
+```bash
 cd frontend
+```
+
+Instale as dependências:
+
+```bash
 npm install
+```
+
+Crie o arquivo `.env` com a URL da API:
+
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+Inicie o front-end:
+
+```bash
 npm run dev
-~~~
+```
 
-Frontend local:
+---
 
-~~~txt
-http://localhost:5173
-~~~
+## 🌐 Deploy
 
-Build de produção:
+O projeto está disponível em produção:
 
-~~~bash
-npm run build
-~~~
+```text
+https://tcc-agendamento.vercel.app/
+```
 
-## Instalação do PWA
+O front-end foi publicado na **Vercel** e o back-end na **Railway**.
 
-A instalação exige HTTPS em produção. Localhost também é aceito para desenvolvimento.
+---
 
-### Android
+## 📌 Status do projeto
 
-1. Abra o Agendai no Chrome.
-2. Faça login para visualizar o botão **Instalar aplicativo**, quando disponível.
-3. Toque no botão ou abra o menu do Chrome.
-4. Selecione **Instalar app** ou **Adicionar à tela inicial**.
-5. Confirme.
+```text
+Em desenvolvimento
+```
 
-### iPhone e iPad
+O Agendai já possui as principais funcionalidades implementadas, mas continua sendo evoluído com melhorias de interface, ajustes técnicos, novas integrações e refinamentos para a apresentação final do TCC.
 
-O iOS não utiliza beforeinstallprompt.
+---
 
-1. Abra o Agendai no Safari.
-2. Toque em Compartilhar.
-3. Selecione **Adicionar à Tela de Início**.
-4. Confirme em **Adicionar**.
+## 🧠 Aprendizados
 
-### Desktop
+Durante o desenvolvimento do Agendai, foram trabalhados conceitos importantes como:
 
-No Chrome ou Edge:
+- Organização de projeto Full Stack;
+- Criação de API REST;
+- Integração entre front-end e back-end;
+- Autenticação com JWT;
+- Manipulação de banco de dados MySQL;
+- Upload de arquivos;
+- Geração de relatórios;
+- Responsividade;
+- Deploy em produção;
+- Experiência do usuário;
+- Estruturação de um sistema real.
 
-1. Abra o Agendai.
-2. Use o ícone de instalação da barra de endereço, quando exibido.
-3. Como alternativa, abra o menu e selecione **Instalar Agendai**.
-4. Confirme.
+---
 
-## Rotas principais da API
+## 📈 Melhorias futuras
 
-### Públicas
+Algumas melhorias planejadas para o projeto:
 
-~~~txt
-GET  /api/health
+- Integração com Google Calendar;
+- Melhorias na persistência de imagens;
+- Página de perfil do cliente;
+- Notificações automáticas;
+- Melhorias nos relatórios;
+- Testes automatizados;
+- Melhorias de performance;
+- Melhor documentação da API;
+- Melhorias de acessibilidade.
 
-POST /api/auth/cadastro
-POST /api/auth/login
+---
 
-GET  /api/publico/negocio/:slugOuId
-GET  /api/publico/negocio/:slugOuId/servicos
-GET  /api/publico/negocio/:slugOuId/profissionais
-GET  /api/publico/negocio/:slugOuId/horarios-disponiveis
-POST /api/publico/negocio/:slugOuId/agendamentos
+## 👨‍💻 Autor
 
-GET    /api/publico/agendamentos/:token
-GET    /api/publico/agendamentos/:token/horarios-disponiveis
-PUT    /api/publico/agendamentos/:token/confirmacao
-PUT    /api/publico/agendamentos/:token/reagendamento
-DELETE /api/publico/agendamentos/:token
-~~~
+<div align="center">
 
-### Privadas
+**João Lucas Mendes da Silva**
 
-Exigem o header:
+Técnico em Desenvolvimento de Sistemas  
+Futuro Engenheiro de Dados / Engenheiro de IA
 
-~~~txt
-Authorization: Bearer <token>
-~~~
+<br>
 
-~~~txt
-GET /api/auth/me
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/joaolucas18/)
+[![Instagram](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram)](https://www.instagram.com/_ojotinhaa/?theme=dark)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github)](https://github.com/JoaoLucasMendesDaSilva)
 
-GET  /api/negocio
-POST /api/negocio
-PUT  /api/negocio/:id
-PUT  /api/negocio/:id/identidade-visual
-
-GET    /api/servicos
-POST   /api/servicos
-GET    /api/servicos/:id
-PUT    /api/servicos/:id
-DELETE /api/servicos/:id
-
-GET    /api/profissionais
-POST   /api/profissionais
-GET    /api/profissionais/:id
-PUT    /api/profissionais/:id
-DELETE /api/profissionais/:id
-
-GET    /api/agendamentos
-GET    /api/agendamentos/hoje
-GET    /api/agendamentos/:id
-PUT    /api/agendamentos/:id/status
-DELETE /api/agendamentos/:id
-~~~
-
-## Segurança aplicada
-
-- Senhas protegidas com bcrypt.
-- JWT configurado por variável de ambiente.
-- Rotas privadas protegidas por middleware.
-- Usuário autenticado consultado no banco.
-- Respostas públicas não incluem senha_hash.
-- Queries parametrizadas com mysql2/promise.
-- Isolamento por usuario_id e negocio_id.
-- Soft delete de serviços e profissionais.
-- Validação de IDs, e-mails, horários e payloads.
-- Transação na criação de agendamento.
-- Verificação de sobreposição de horários.
-- Helmet, limite de JSON, CORS e rate limit.
-- Limites e validação binária nos uploads.
-- .env, node_modules, dist e uploads locais ignorados pelo Git.
-
-## Deploy
-
-### Frontend na Vercel
-
-- Diretório raiz: **frontend**.
-- Runtime: Node.js 20.19.0 ou superior.
-- Instalação: **npm install**.
-- Build: **npm run build**.
-- Saída: **dist**.
-- Variável: VITE_API_URL.
-- Rewrite SPA fornecido por **frontend/vercel.json**.
-
-Depois do deploy, valide diretamente uma rota interna, como /dashboard ou /agendar/:slugOuId.
-
-### Backend na Railway
-
-- Diretório raiz: **backend**.
-- Runtime: Node.js 20.19.0 ou superior.
-- Instalação: **npm install**.
-- Inicialização: **npm start**.
-- NODE_ENV configurado como production.
-- TZ configurado como **America/Sao_Paulo**.
-- TRUST_PROXY_HOPS configurado conforme a cadeia de proxies do ambiente; no Railway, comece com **1** e valide o IP reconhecido pelo rate limit.
-- CORS_ORIGIN com o domínio da Vercel.
-- JWT_SECRET forte.
-- Credenciais MySQL.
-- Volume persistente e UPLOAD_DIR.
-
-Execute todas as migrations no banco correto antes de publicar o backend atualizado.
-
-### MySQL na Railway
-
-- Configure DB_HOST, DB_PORT, DB_USER, DB_PASSWORD e DB_NAME.
-- Execute migrations 001, 002 e 003.
-- Confirme a tabela negocios, as colunas da identidade visual e a coluna token_publico_hash em agendamentos.
-- Não exponha credenciais em commits, prints ou documentação pública.
-
-### Checklist pós-deploy
-
-- GET /api/health responde.
-- Cadastro e login funcionam.
-- CORS aceita apenas os domínios configurados.
-- Dashboard carrega dados reais.
-- Link público abre sem login.
-- Link de gerenciamento público abre sem login e respeita o token.
-- Horários respeitam o funcionamento.
-- Conflitos são bloqueados.
-- QR Code e WhatsApp usam a URL pública correta.
-- Logo e banner permanecem após redeploy.
-- PWA pode ser instalado.
-- Dark Mode permanece após recarregar.
-
-## Teste manual do fluxo completo
-
-1. Criar conta em /cadastro.
-2. Fazer login.
-3. Cadastrar o negócio.
-4. Enviar logo e banner.
-5. Copiar o link e validar o QR Code.
-6. Compartilhar pelo WhatsApp.
-7. Criar serviços.
-8. Criar profissionais.
-9. Abrir /agendar/:slugOuId sem login.
-10. Confirmar a personalização pública.
-11. Escolher serviço, profissional, data e horário.
-12. Criar um agendamento.
-13. Abrir o link de gerenciamento público.
-14. Confirmar presença, listar horários, reagendar e cancelar pelo token.
-15. Repetir o horário e confirmar o bloqueio.
-16. Verificar o cliente em /clientes.
-17. Verificar o agendamento em /agenda.
-18. Alterar status e cancelar no painel privado.
-19. Conferir métricas e gráfico.
-20. Gerar relatório PDF.
-21. Alternar tema claro e escuro.
-22. Testar a instalação PWA.
-
-## Limitações atuais do MVP
-
-- Não envia notificações automáticas por WhatsApp; existe apenas compartilhamento do link.
-- Não envia e-mails.
-- Não integra com Google Calendar.
-- Não possui pagamentos.
-- Não possui bloqueio manual de horários e folgas.
-- Não possui testes automatizados completos.
-- O JWT é armazenado em localStorage.
-- Uploads dependem de volume persistente no Railway.
-- O PWA não sincroniza dados offline.
-- O relatório PDF é gerado no frontend e resume períodos muito extensos.
-- O sistema considera um negócio por empreendedor.
-
-## Próximas evoluções
-
-- Criar banco de testes MySQL descartável para testes automatizados do plano 003.
-- Controle de migrations ou pequeno runner para registrar scripts já aplicados.
-- Bloqueio manual de horários e folgas.
-- Notificações por WhatsApp API e e-mail.
-- Verificação de persistência de uploads no ambiente de produção.
-- Base de testes automatizados do frontend.
-- Paginação do plano 004 para listas com grande volume.
-- Integração com Google Calendar.
-- Armazenamento externo e otimização de imagens.
-- Melhorias de segurança na persistência da sessão.
-- Pagamentos e Dashboard avançado apenas como ideias futuras fora do MVP do TCC.
-
-## Estado atual para o TCC
-
-O MVP cobre o ciclo principal:
-
-1. O empreendedor cria uma conta.
-2. Configura o negócio e a identidade visual.
-3. Cadastra serviços e profissionais.
-4. Divulga link, QR Code ou WhatsApp.
-5. O cliente agenda sem criar conta.
-6. O sistema evita conflitos.
-7. O empreendedor acompanha agenda, clientes, indicadores e relatórios.
-
-O projeto permite demonstrar frontend, backend, banco relacional, autenticação, segurança básica, responsividade, PWA e aplicação prática para pequenos negócios.
+</div>
