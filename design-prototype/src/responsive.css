@@ -1,0 +1,32 @@
+.public-booking .business-hero {
+  background-image: linear-gradient(90deg, rgba(9, 62, 42, .97) 0%, rgba(9, 62, 42, .9) 46%, rgba(9, 62, 42, .58) 100%), url('/assets/barbershop-cover.png');
+  background-position: center;
+  background-size: cover;
+}
+
+@media (max-width: 1020px) {
+  .professionals-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .business-aside { position: static; grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 760px) {
+  .client-profile { display: grid; gap: 12px; }
+  .catalog-grid,
+  .professionals-grid { grid-template-columns: 1fr; }
+  .catalog-card { grid-template-columns: 44px minmax(0, 1fr); }
+  .catalog-actions { grid-column: 1 / -1; justify-content: flex-end; }
+  .business-aside { grid-template-columns: 1fr; }
+  .hours-row { grid-template-columns: 1fr 82px 82px; }
+  .hours-row span { display: none; }
+  .hours-row button { grid-column: 3; }
+  .public-booking .business-hero { grid-template-columns: auto 1fr; }
+  .business-hours { grid-column: 1 / -1; }
+  .booking-grid { grid-template-columns: 1fr; width: calc(100% - 24px); }
+  .auth-demo { grid-template-columns: 1fr; }
+  .auth-brand-panel { display: none; }
+  .auth-form-panel { min-height: calc(100vh - 70px); }
+  .landing-demo .landing-nav > div { display: none; }
+  .landing-demo .landing-hero { grid-template-columns: 1fr; text-align: center; }
+  .landing-demo .landing-copy { justify-items: center; }
+  .landing-demo .landing-product { width: 100%; max-width: 620px; margin: 10px auto 0; transform: none; }
+}

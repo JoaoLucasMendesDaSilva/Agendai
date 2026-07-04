@@ -1,0 +1,12 @@
+import { ArrowRight, CheckCircle2, ChevronLeft, Eye, LockKeyhole, Mail, ShieldCheck, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { Brand } from '../components/Brand';
+
+export function AuthScreen({ onEnter, onBack }) {
+  const [register, setRegister] = useState(false);
+  const [show, setShow] = useState(false);
+  return <main className="auth-demo">
+    <section className="auth-brand-panel"><Brand /><div className="auth-message"><span><Sparkles size={17} /> Gestão simples, resultado profissional</span><h1>Sua agenda organizada antes do primeiro cliente chegar.</h1><p>Centralize clientes, serviços, equipe e horários em uma experiência feita para a rotina de quem atende.</p></div><div className="auth-proof">{['Agendamentos sem conflito', 'Página pública personalizada', 'Visão clara da operação'].map((item) => <span key={item}><CheckCircle2 size={16} />{item}</span>)}</div></section>
+    <section className="auth-form-panel"><button className="auth-back" onClick={onBack}><ChevronLeft size={16} /> Voltar à demonstração</button><div className="auth-form-wrap"><div className="auth-form-heading"><span><ShieldCheck size={17} /> Acesso seguro</span><h2>{register ? 'Crie sua conta profissional' : 'Entre no seu painel'}</h2><p>{register ? 'Configure seu negócio e publique sua agenda.' : 'Continue de onde parou e acompanhe seu dia.'}</p></div><form onSubmit={(event) => { event.preventDefault(); onEnter(); }}>{register && <label>Nome completo<input placeholder="Como podemos chamar você?" /></label>}<label>E-mail<div className="input-with-icon"><Mail size={17} /><input type="email" defaultValue="joao@barbeariasuprema.com.br" /></div></label><label>Senha<div className="input-with-icon"><LockKeyhole size={17} /><input type={show ? 'text' : 'password'} defaultValue="agendai2026" /><button type="button" onClick={() => setShow(!show)} aria-label="Mostrar senha"><Eye size={17} /></button></div></label>{!register && <div className="auth-options"><label><input type="checkbox" /> Lembrar de mim</label><button type="button">Esqueci minha senha</button></div>}<button className="button primary full auth-submit">{register ? 'Criar minha conta' : 'Entrar no painel'}<ArrowRight size={17} /></button></form><p className="auth-switch">{register ? 'Já possui uma conta?' : 'Ainda não possui uma conta?'} <button onClick={() => setRegister(!register)}>{register ? 'Entrar' : 'Criar conta'}</button></p></div></section>
+  </main>;
+}

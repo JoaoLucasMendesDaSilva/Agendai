@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agendai — Comparação visual</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 24px; color: #14201e; background: #e9efed; font-family: Arial, sans-serif; }
+      h1 { margin: 0 0 20px; font-size: 24px; }
+      section { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 28px; }
+      article { overflow: hidden; border-radius: 12px; background: white; box-shadow: 0 4px 14px rgba(17,54,42,.1); }
+      h2 { margin: 0; border-bottom: 1px solid #dfe7e3; padding: 12px 15px; font-size: 13px; }
+      img { display: block; width: 100%; height: auto; }
+    </style>
+  </head>
+  <body>
+    <h1>Comparação visual — referências e protótipo</h1>
+    <section>
+      <article><h2>Referência · Dashboard</h2><img src="/qa/reference-dashboard.png" alt="Referência visual do dashboard" /></article>
+      <article><h2>Protótipo · Dashboard</h2><img src="/qa/implementation-dashboard.png" alt="Dashboard implementado no protótipo" /></article>
+    </section>
+    <section>
+      <article><h2>Referência · Agendamento público</h2><img src="/qa/reference-public.png" alt="Referência visual do agendamento público" /></article>
+      <article><h2>Protótipo · Agendamento público</h2><img src="/qa/implementation-public.png" alt="Agendamento público implementado no protótipo" /></article>
+    </section>
+  </body>
+</html>
