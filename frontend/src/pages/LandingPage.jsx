@@ -109,42 +109,6 @@ const passos = [
   ['Acompanhe', 'Gerencie agenda, clientes e indicadores em um só painel.'],
 ];
 
-const planos = [
-  {
-    nome: 'Gratuito',
-    precoMensal: 'R$ 0,00',
-    precoAnual: 'R$ 0,00/ano',
-    etapa: 'MVP demonstrável',
-    descricao: 'Ideal para pequenos negócios que estão começando e querem organizar os primeiros agendamentos sem custo.',
-    itens: ['Até 50 agendamentos por mês', '1 profissional', 'Lembretes por e-mail', 'Link público', 'QR Code', 'Agenda simples'],
-  },
-  {
-    nome: 'Básico',
-    precoMensal: 'R$ 19,90',
-    precoAnual: 'R$ 179,00/ano',
-    etapa: 'Cenário de evolução',
-    descricao: 'Para negócios que já possuem uma rotina de atendimentos e precisam de mais capacidade de agendamento.',
-    itens: ['Até 200 agendamentos por mês', '1 profissional', 'Lembretes por e-mail', 'Gestão de serviços', 'Gestão de clientes', 'Relatórios simples'],
-  },
-  {
-    nome: 'Profissional',
-    precoMensal: 'R$ 39,90',
-    precoAnual: 'R$ 359,00/ano',
-    etapa: 'Exemplo principal',
-    descricao: 'Para negócios que querem automatizar a comunicação, acompanhar resultados e crescer com mais controle.',
-    itens: ['Agendamentos ilimitados', 'Até 5 profissionais', 'Lembretes por WhatsApp e e-mail', 'Relatórios', 'Personalização visual', 'Gestão de clientes recorrentes'],
-    destaque: true,
-  },
-  {
-    nome: 'Rede',
-    precoMensal: 'R$ 99,90',
-    precoAnual: 'R$ 899,00/ano',
-    etapa: 'Futuro fora do MVP',
-    descricao: 'Para equipes, redes e negócios com mais de uma unidade que precisariam de controle centralizado.',
-    itens: ['Tudo do Plano Profissional', 'Múltiplas unidades', 'Painel centralizado', 'Suporte prioritário', 'Relatórios gerenciais'],
-  },
-];
-
 const perguntas = [
   {
     pergunta: 'O cliente precisa criar uma conta para agendar?',
@@ -299,7 +263,6 @@ function LandingPage({ navigate }) {
 
       <section className="landing-section landing-action-section" id="em-acao">
         <div className="landing-section-heading landing-heading-centered">
-          <p className="landing-kicker">Veja o Agendai em ação</p>
           <h2>Do link compartilhado à agenda organizada.</h2>
           <p>Uma jornada curta para o cliente e controle completo para quem atende.</p>
         </div>
@@ -342,7 +305,6 @@ function LandingPage({ navigate }) {
 
       <section className="landing-section" id="funcionalidades">
         <div className="landing-section-heading">
-          <p className="landing-kicker">Tudo em um só lugar</p>
           <h2>Recursos reais para uma rotina mais profissional.</h2>
           <p>Do primeiro contato ao relatório do mês, o Agendai mantém a operação clara e acessível.</p>
         </div>
@@ -361,7 +323,6 @@ function LandingPage({ navigate }) {
 
       <section className="landing-section landing-audience-section">
         <div className="landing-section-heading landing-heading-centered">
-          <p className="landing-kicker">Ideal para</p>
           <h2>Quem vive de atendimento merece uma agenda à altura.</h2>
         </div>
         <div className="landing-audience-grid">
@@ -376,7 +337,6 @@ function LandingPage({ navigate }) {
 
       <section className="landing-section landing-process-section" id="como-funciona">
         <div className="landing-section-heading">
-          <p className="landing-kicker">Como funciona</p>
           <h2>Quatro passos entre você e uma agenda mais leve.</h2>
         </div>
         <div className="landing-steps">
@@ -396,54 +356,8 @@ function LandingPage({ navigate }) {
         <span><CheckCircle2 aria-hidden="true" size={18} /> Mais controle do negócio</span>
       </section>
 
-      <section className="landing-section landing-plans-section" id="planos">
-        <div className="landing-section-heading landing-heading-centered">
-          <p className="landing-kicker">Planos demonstrativos</p>
-          <h2>Um plano para cada fase do seu negócio.</h2>
-          <p>Valores mensais e anuais apresentados como estudo de viabilidade para uma evolução comercial futura.</p>
-        </div>
-        <div className="landing-plan-notice">
-          <CalendarCheck2 aria-hidden="true" size={22} strokeWidth={2} />
-          <div>
-            <strong>Sem cobrança real no MVP</strong>
-            <span>Pagamento, assinatura e checkout não são implementados nesta versão do TCC; os valores abaixo são demonstrativos.</span>
-          </div>
-        </div>
-        <div className="landing-plan-grid">
-          {planos.map((plano) => (
-            <article
-              className={`landing-plan-card ${plano.destaque ? 'is-highlighted' : ''}`}
-              key={plano.nome}
-            >
-              <div className="landing-plan-heading">
-                <div>
-                  <h3>{plano.nome}</h3>
-                  <p className="landing-plan-price">
-                    <strong>{plano.precoMensal}</strong>
-                    <span>/mês</span>
-                  </p>
-                  <span className="landing-plan-annual">{plano.precoAnual}</span>
-                  <span className="landing-plan-stage">{plano.etapa}</span>
-                </div>
-                {plano.destaque && <span className="plan-label">Destaque</span>}
-              </div>
-              <p>{plano.descricao}</p>
-              <ul>
-                {plano.itens.map((item) => (
-                  <li key={item}>
-                    <CheckCircle2 aria-hidden="true" size={17} strokeWidth={2} />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
-      </section>
-
       <section className="landing-section landing-faq-section" id="faq">
         <div className="landing-section-heading">
-          <p className="landing-kicker">Perguntas frequentes</p>
           <h2>O que você precisa saber antes de começar.</h2>
         </div>
         <div className="landing-faq-list">
@@ -473,7 +387,6 @@ function LandingPage({ navigate }) {
 
       <section className="landing-final-cta">
         <div>
-          <p className="landing-kicker">Comece agora</p>
           <h2>Seu próximo agendamento pode começar por aqui.</h2>
           <p>Crie sua conta, configure o negócio e compartilhe uma experiência profissional com seus clientes.</p>
         </div>

@@ -14,7 +14,7 @@ function AuthLayout({ children, mode = 'login', onLogoClick }) {
           <div className="auth-visual-proof" aria-label="Resumo do Agendai">
             <span>Agenda online</span>
             <span>Sem conflito</span>
-            <span>Painel simples</span>
+            <span>Gestão profissional</span>
           </div>
           <div className="auth-illustration-wrap">
             <img
@@ -31,7 +31,7 @@ function AuthLayout({ children, mode = 'login', onLogoClick }) {
             </h2>
             <p>
               {isCadastro
-                ? 'Crie sua conta e prepare o Agendai para receber seus primeiros agendamentos.'
+                ? 'Crie sua conta, configure seu negócio e comece a receber agendamentos.'
                 : 'Entre para acompanhar agenda, clientes e horários com clareza.'}
             </p>
           </div>

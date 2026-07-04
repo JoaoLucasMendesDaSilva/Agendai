@@ -1,0 +1,649 @@
+/* Professional external surfaces: marketing, authentication and public booking */
+
+/* Landing page */
+
+.landing-page {
+  padding: 14px;
+  color: var(--gray-900);
+  background: var(--page-bg);
+}
+
+.landing-nav,
+.landing-hero,
+.landing-section,
+.landing-trust-strip,
+.landing-value-strip,
+.landing-final-cta,
+.landing-footer {
+  width: min(100%, 1240px);
+}
+
+.landing-nav {
+  top: 10px;
+  z-index: 20;
+  min-height: 64px;
+  border: 1px solid var(--gray-300);
+  border-radius: 14px;
+  background: var(--overlay-bg);
+  box-shadow: none;
+}
+
+.landing-nav-links button,
+.landing-nav-link {
+  color: var(--gray-700);
+}
+
+.landing-hero {
+  gap: clamp(30px, 5vw, 76px);
+  min-height: auto;
+  padding: clamp(58px, 9vw, 112px) 0 clamp(54px, 8vw, 96px);
+}
+
+.landing-hero-copy {
+  max-width: 650px;
+}
+
+.landing-kicker {
+  width: fit-content;
+  border-radius: 999px;
+  padding: 7px 11px;
+  color: var(--green-800);
+  background: var(--green-100);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.landing-hero h1 {
+  max-width: 13ch;
+  margin-top: 18px;
+  font-size: clamp(2.35rem, 5.8vw, 4.75rem);
+  line-height: 1.03;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.landing-lead {
+  max-width: 62ch;
+  margin-top: 22px;
+  color: var(--gray-700);
+  font-size: clamp(1rem, 1.6vw, 1.14rem);
+  line-height: 1.7;
+}
+
+.landing-hero-actions {
+  margin-top: 28px;
+}
+
+.landing-proof {
+  gap: 10px 18px;
+  margin-top: 24px;
+}
+
+.landing-proof span {
+  color: var(--gray-700);
+  font-size: 0.76rem;
+}
+
+.landing-hero-visual {
+  border: 1px solid var(--gray-300);
+  border-radius: 16px;
+  background: var(--panel-bg);
+  box-shadow: 0 8px 8px color-mix(in srgb, var(--gray-900) 7%, transparent);
+}
+
+.landing-visual-toolbar {
+  border-bottom-color: var(--gray-300);
+}
+
+.landing-mockup-card,
+.landing-feature-card,
+.landing-step-card,
+.landing-final-cta {
+  border-color: var(--gray-300);
+  box-shadow: none;
+}
+
+.landing-trust-strip {
+  border: 1px solid var(--gray-300);
+  border-radius: 12px;
+  background: var(--panel-bg);
+}
+
+.landing-section {
+  padding-block: clamp(62px, 8vw, 104px);
+}
+
+.landing-section-heading {
+  max-width: 760px;
+}
+
+.landing-section-heading h2,
+.landing-final-cta h2 {
+  font-size: clamp(1.9rem, 4vw, 3.25rem);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.landing-section-heading > p:last-child {
+  margin-top: 14px;
+  color: var(--gray-700);
+  line-height: 1.7;
+}
+
+.landing-product-demo {
+  border: 1px solid var(--gray-300);
+  border-radius: 16px;
+  background: var(--panel-bg);
+  box-shadow: none;
+}
+
+.landing-demo-sidebar,
+.landing-demo-public {
+  background: var(--panel-bg-soft);
+}
+
+.landing-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 245px), 1fr));
+  gap: 12px;
+}
+
+.landing-feature-card {
+  min-height: 190px;
+  border: 1px solid var(--gray-300);
+  border-radius: 14px;
+  padding: 20px;
+  background: var(--panel-bg);
+}
+
+.landing-feature-card:hover {
+  border-color: color-mix(in srgb, var(--green-700) 30%, var(--gray-300));
+  box-shadow: none;
+  transform: translateY(-2px);
+}
+
+.landing-feature-card h3,
+.landing-audience-card h3,
+.landing-step-card h3 {
+  color: var(--gray-900);
+}
+
+.landing-feature-card p,
+.landing-audience-card p,
+.landing-step-card p {
+  color: var(--gray-700);
+}
+
+.landing-audience-section {
+  border-radius: 16px;
+  background: var(--green-900);
+}
+
+.landing-audience-section h2,
+.landing-audience-section .landing-audience-card h3 {
+  color: #ffffff;
+}
+
+.landing-audience-section .landing-audience-card p {
+  color: color-mix(in srgb, #ffffff 76%, transparent);
+}
+
+.landing-audience-card {
+  border-color: color-mix(in srgb, #ffffff 18%, transparent);
+  background: color-mix(in srgb, #ffffff 7%, transparent);
+  box-shadow: none;
+}
+
+.landing-audience-card:hover {
+  border-color: color-mix(in srgb, #ffffff 34%, transparent);
+  box-shadow: none;
+}
+
+.landing-step-card {
+  border: 0;
+  border-top: 1px solid var(--gray-300);
+  border-radius: 0;
+  padding: 20px 0;
+  background: transparent;
+}
+
+.landing-step-card > span {
+  color: var(--green-700);
+  background: transparent;
+}
+
+.landing-value-strip {
+  border-radius: 14px;
+  background: var(--green-100);
+}
+
+.landing-faq-list {
+  max-width: 860px;
+}
+
+.landing-faq-item {
+  border-color: var(--gray-300);
+  background: var(--panel-bg);
+}
+
+.landing-final-cta {
+  border: 0;
+  border-radius: 16px;
+  color: #ffffff;
+  background: var(--green-900);
+}
+
+.landing-final-cta h2,
+.landing-final-cta p {
+  color: #ffffff;
+}
+
+.landing-final-cta p {
+  opacity: 0.78;
+}
+
+.landing-final-cta .button-primary {
+  color: var(--green-900);
+  background: #ffffff;
+}
+
+.landing-footer {
+  border-top-color: var(--gray-300);
+}
+
+/* Authentication */
+
+.auth-page {
+  min-height: 100vh;
+  padding: 14px;
+  background: var(--page-bg);
+}
+
+.auth-card {
+  width: min(100%, 1080px);
+  min-height: min(720px, calc(100vh - 28px));
+  overflow: hidden;
+  border: 1px solid var(--gray-300);
+  border-radius: 16px;
+  background: var(--panel-bg);
+  box-shadow: none;
+}
+
+.auth-form-panel {
+  display: grid;
+  align-content: center;
+  padding: clamp(24px, 5vw, 54px);
+}
+
+.auth-panel {
+  width: min(100%, 440px);
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.auth-panel h1 {
+  margin-top: 10px;
+  font-size: 1.8rem;
+  letter-spacing: -0.03em;
+}
+
+.auth-panel .eyebrow {
+  margin-top: 28px;
+}
+
+.auth-panel-header {
+  min-height: 42px;
+}
+
+.auth-secure-chip {
+  border: 1px solid var(--gray-300);
+  color: var(--green-800);
+  background: var(--green-50);
+}
+
+.auth-login-summary {
+  border-color: var(--gray-300);
+  border-radius: 12px;
+  background: var(--panel-bg-soft);
+}
+
+.auth-panel .form {
+  margin-top: 24px;
+}
+
+.auth-input-shell {
+  border-color: var(--gray-300);
+  border-radius: 10px;
+  background: var(--input-bg);
+}
+
+.auth-input-shell input::placeholder {
+  color: var(--gray-500);
+  opacity: 1;
+}
+
+.auth-submit-button {
+  min-height: 48px;
+}
+
+.auth-visual-panel {
+  color: #ffffff;
+  background: var(--green-900);
+}
+
+.auth-visual-panel .brand-name,
+.auth-visual-panel .brand-mark,
+.auth-visual-copy h2 {
+  color: #ffffff;
+}
+
+.auth-visual-copy p {
+  color: color-mix(in srgb, #ffffff 76%, transparent);
+}
+
+.auth-visual-proof span {
+  border-color: color-mix(in srgb, #ffffff 20%, transparent);
+  color: #ffffff;
+  background: color-mix(in srgb, #ffffff 8%, transparent);
+}
+
+.auth-illustration-wrap {
+  border-radius: 14px;
+  background: color-mix(in srgb, #ffffff 8%, transparent);
+}
+
+/* Public booking */
+
+.public-booking-page {
+  min-height: 100vh;
+  padding: 12px;
+  background: var(--page-bg);
+}
+
+.public-booking-card {
+  width: min(100%, 1240px);
+  border: 1px solid var(--gray-300);
+  border-radius: 16px;
+  background: var(--panel-bg);
+  box-shadow: none;
+  animation: none;
+}
+
+.public-booking-topbar {
+  display: flex;
+  min-height: 62px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--gray-300);
+  padding: 0 18px;
+  background: var(--panel-bg);
+}
+
+.public-booking-topbar > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--green-800);
+  font-size: 0.64rem;
+  font-weight: 600;
+}
+
+.public-business-banner {
+  max-height: 280px;
+}
+
+.public-booking-header {
+  gap: 16px;
+  padding: clamp(22px, 4vw, 40px);
+  color: var(--gray-900);
+  background: var(--panel-bg);
+}
+
+.public-booking-header .eyebrow {
+  color: var(--green-800);
+  background: var(--green-100);
+}
+
+.public-booking-header h1 {
+  color: var(--gray-900);
+  font-size: clamp(1.65rem, 3vw, 2.45rem);
+  letter-spacing: -0.03em;
+}
+
+.public-booking-header p,
+.public-booking-header span {
+  color: var(--gray-700);
+}
+
+.business-avatar {
+  border-color: var(--gray-300);
+  color: var(--green-800);
+  background: var(--green-100);
+}
+
+.business-open-badge.is-open {
+  color: var(--green-800);
+  background: var(--green-100);
+}
+
+.public-business-meta {
+  border-top: 1px solid var(--gray-300);
+  padding-top: 15px;
+}
+
+.public-business-meta svg {
+  color: var(--green-700);
+}
+
+.business-hours-note {
+  border-color: var(--gray-300);
+  background: var(--panel-bg-soft);
+}
+
+.booking-steps {
+  border-top: 1px solid var(--gray-300);
+  border-bottom: 1px solid var(--gray-300);
+  padding: 14px clamp(16px, 4vw, 40px);
+  background: var(--panel-bg);
+}
+
+.booking-step {
+  color: var(--gray-500);
+}
+
+.booking-step span {
+  border-color: var(--gray-300);
+  background: var(--panel-bg);
+}
+
+.booking-step.is-active,
+.booking-step.is-complete {
+  color: var(--green-800);
+}
+
+.booking-step.is-active span,
+.booking-step.is-complete span {
+  border-color: var(--green-700);
+  color: #ffffff;
+  background: var(--green-700);
+}
+
+.booking-progress {
+  background: var(--gray-100);
+}
+
+.booking-progress span {
+  background: var(--green-700);
+}
+
+.public-booking-content {
+  gap: 18px;
+  padding: clamp(16px, 4vw, 36px);
+  background: var(--page-bg-soft);
+}
+
+.booking-intro-card {
+  border: 1px solid var(--gray-300);
+  border-radius: 14px;
+  background: var(--panel-bg);
+  box-shadow: none;
+}
+
+.booking-section {
+  border: 1px solid var(--gray-300);
+  border-radius: 14px;
+  padding: clamp(16px, 3vw, 24px);
+  background: var(--panel-bg);
+  box-shadow: none;
+}
+
+.booking-section:hover {
+  border-color: var(--gray-300);
+  box-shadow: none;
+  transform: none;
+}
+
+.booking-section h2 {
+  font-size: 1rem;
+}
+
+.step-label {
+  color: var(--green-800);
+  font-size: 0.64rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.choice-list {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+
+.choice-card {
+  min-height: 102px;
+  border-color: var(--gray-300);
+  border-radius: 12px;
+  background: var(--panel-bg);
+  box-shadow: none;
+}
+
+.choice-card:hover {
+  border-color: color-mix(in srgb, var(--green-700) 40%, var(--gray-300));
+  box-shadow: none;
+  transform: none;
+}
+
+.choice-card.is-selected,
+.time-button.is-selected {
+  border-color: var(--green-700);
+  color: var(--green-800);
+  background: var(--green-50);
+  box-shadow: inset 0 0 0 1px var(--green-700);
+}
+
+.time-grid {
+  grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
+}
+
+.time-button {
+  min-height: 46px;
+  border-color: var(--gray-300);
+  border-radius: 10px;
+  background: var(--panel-bg);
+  box-shadow: none;
+}
+
+.booking-review-card,
+.booking-selection-summary {
+  border: 1px solid var(--gray-300);
+  border-radius: 12px;
+  background: var(--panel-bg-soft);
+  box-shadow: none;
+}
+
+.booking-selection-summary {
+  top: 82px;
+}
+
+.booking-summary-note {
+  color: var(--green-800);
+  background: var(--green-100);
+}
+
+.confirmation-card {
+  border-color: color-mix(in srgb, var(--green-700) 45%, var(--gray-300));
+}
+
+.confirmation-icon {
+  color: var(--green-800);
+  background: var(--green-100);
+}
+
+.manage-booking-card {
+  width: min(100%, 860px);
+}
+
+.manage-booking-card .public-booking-header {
+  border-bottom: 1px solid var(--gray-300);
+}
+
+.manage-booking-content {
+  min-height: 360px;
+}
+
+.manage-booking-content .confirmation-card {
+  margin: 0;
+}
+
+@media (min-width: 720px) {
+  .landing-page,
+  .auth-page,
+  .public-booking-page {
+    padding: 20px;
+  }
+
+  .landing-feature-grid .landing-feature-card:first-child,
+  .landing-feature-grid .landing-feature-card:nth-child(4) {
+    grid-column: span 2;
+  }
+
+  .auth-card {
+    grid-template-columns: minmax(390px, 1fr) minmax(330px, 0.78fr);
+  }
+
+  .public-booking-topbar {
+    padding-inline: 28px;
+  }
+}
+
+@media (min-width: 1040px) {
+  .landing-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 0.86fr);
+    min-height: calc(100vh - 104px);
+  }
+
+  .landing-feature-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .landing-product-demo {
+    grid-template-columns: 170px minmax(0, 1fr) 260px;
+  }
+
+  .booking-workspace {
+    grid-template-columns: minmax(0, 1fr) minmax(270px, 0.38fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-feature-card,
+  .choice-card,
+  .time-button {
+    transition: none;
+  }
+}

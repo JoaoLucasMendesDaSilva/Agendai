@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { LockKeyhole, Mail, Phone, ShieldCheck, UserRound } from 'lucide-react';
 import AuthLayout from '../components/AuthLayout';
 import BrandLogo from '../components/BrandLogo';
 import { useAuth } from '../contexts/AuthContext';
@@ -47,64 +48,86 @@ function Cadastro({ navigate }) {
   return (
     <AuthLayout mode="cadastro" onLogoClick={() => navigate('/')}>
       <section className="auth-panel" aria-labelledby="cadastro-title">
-        <BrandLogo onClick={() => navigate('/')} />
+        <div className="auth-panel-header">
+          <BrandLogo onClick={() => navigate('/')} />
+          <span className="auth-secure-chip">
+            <ShieldCheck aria-hidden="true" size={16} strokeWidth={2} />
+            Dados protegidos
+          </span>
+        </div>
         <p className="eyebrow">Primeiro acesso</p>
-        <h1 id="cadastro-title">Cadastro</h1>
-        <p className="panel-text">
-          Crie a conta do empreendedor para acessar o painel privado.
+        <h1 id="cadastro-title">Crie sua conta</h1>
+        <p className="panel-text auth-intro-text">
+          Comece a organizar seu negócio e ofereça agendamento online aos seus clientes.
         </p>
 
         <form className="form" onSubmit={handleSubmit}>
           <label>
             Nome
-            <input
-              autoComplete="name"
-              onChange={(event) => atualizarCampo('nome', event.target.value)}
-              required
-              type="text"
-              value={form.nome}
-            />
+            <span className="auth-input-shell">
+              <UserRound aria-hidden="true" size={18} />
+              <input
+                autoComplete="name"
+                onChange={(event) => atualizarCampo('nome', event.target.value)}
+                placeholder="Seu nome completo"
+                required
+                type="text"
+                value={form.nome}
+              />
+            </span>
           </label>
 
           <label>
             E-mail
-            <input
-              autoComplete="email"
-              inputMode="email"
-              onChange={(event) => atualizarCampo('email', event.target.value)}
-              required
-              type="email"
-              value={form.email}
-            />
+            <span className="auth-input-shell">
+              <Mail aria-hidden="true" size={18} />
+              <input
+                autoComplete="email"
+                inputMode="email"
+                onChange={(event) => atualizarCampo('email', event.target.value)}
+                placeholder="seuemail@exemplo.com"
+                required
+                type="email"
+                value={form.email}
+              />
+            </span>
           </label>
 
           <label>
             Telefone
-            <input
-              autoComplete="tel"
-              inputMode="tel"
-              onChange={(event) => atualizarCampo('telefone', event.target.value)}
-              type="tel"
-              value={form.telefone}
-            />
+            <span className="auth-input-shell">
+              <Phone aria-hidden="true" size={18} />
+              <input
+                autoComplete="tel"
+                inputMode="tel"
+                onChange={(event) => atualizarCampo('telefone', event.target.value)}
+                placeholder="(13) 99999-9999"
+                type="tel"
+                value={form.telefone}
+              />
+            </span>
           </label>
 
           <label>
             Senha
-            <input
-              autoComplete="new-password"
-              minLength={8}
-              onChange={(event) => atualizarCampo('senha', event.target.value)}
-              required
-              type="password"
-              value={form.senha}
-            />
+            <span className="auth-input-shell">
+              <LockKeyhole aria-hidden="true" size={18} />
+              <input
+                autoComplete="new-password"
+                minLength={8}
+                onChange={(event) => atualizarCampo('senha', event.target.value)}
+                placeholder="Mínimo de 8 caracteres"
+                required
+                type="password"
+                value={form.senha}
+              />
+            </span>
           </label>
 
           {erro && <p className="message message-error">{erro}</p>}
           {sucesso && <p className="message message-success">{sucesso}</p>}
 
-          <button className="button button-primary" disabled={carregando} type="submit">
+          <button className="button button-primary auth-submit-button" disabled={carregando} type="submit">
             {carregando ? 'Criando conta...' : 'Criar conta'}
           </button>
         </form>

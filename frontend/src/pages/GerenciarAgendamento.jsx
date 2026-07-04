@@ -1,5 +1,12 @@
-import { CalendarCheck, CalendarX } from 'lucide-react';
+import {
+  CalendarCheck,
+  CalendarX,
+  CheckCircle2,
+  RefreshCw,
+  ShieldCheck,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
+import BrandLogo from '../components/BrandLogo';
 import {
   buscarAgendamentoPublico,
   cancelarAgendamentoPublico,
@@ -193,15 +200,18 @@ function GerenciarAgendamento({ token }) {
   }
 
   return (
-    <main className="page public-booking-page">
-      <section className="public-booking-card">
+    <main className="page public-booking-page manage-booking-page">
+      <section className="public-booking-card manage-booking-card">
+        <div className="public-booking-topbar">
+          <BrandLogo />
+          <span><ShieldCheck aria-hidden="true" size={15} /> Link protegido</span>
+        </div>
         <header className="public-booking-header">
-          <p className="eyebrow">Agendai</p>
           <h1>Gerenciar agendamento</h1>
           <p>Consulte, confirme, reagende ou cancele seu horário.</p>
         </header>
 
-        <div className="public-booking-content">
+        <div className="public-booking-content manage-booking-content">
           {carregando && (
             <p className="message message-info" aria-live="polite">
               Carregando agendamento...
@@ -340,6 +350,7 @@ function GerenciarAgendamento({ token }) {
                     onClick={confirmarPresenca}
                     type="button"
                   >
+                    <CheckCircle2 aria-hidden="true" size={17} />
                     {confirmando ? 'Confirmando...' : 'Confirmar presença'}
                   </button>
                 )}
@@ -353,6 +364,7 @@ function GerenciarAgendamento({ token }) {
                     onClick={alternarReagendamento}
                     type="button"
                   >
+                    <RefreshCw aria-hidden="true" size={17} />
                     {exibindoReagendamento ? 'Fechar reagendamento' : 'Reagendar'}
                   </button>
                 )}

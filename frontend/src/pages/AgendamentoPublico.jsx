@@ -7,8 +7,10 @@ import {
   MapPin,
   Phone,
   Scissors,
+  ShieldCheck,
   Users,
 } from 'lucide-react';
+import BrandLogo from '../components/BrandLogo';
 import {
   buscarNegocioPublico,
   criarAgendamentoPublico,
@@ -273,6 +275,10 @@ function AgendamentoPublico({ slugOuId }) {
     return (
       <main className="page public-booking-page">
         <section className="public-booking-card" aria-live="polite">
+          <div className="public-booking-topbar">
+            <BrandLogo />
+            <span><ShieldCheck aria-hidden="true" size={15} /> Ambiente seguro</span>
+          </div>
           <div className="public-booking-header">
             <p className="eyebrow">Agendamento online</p>
             <h1>Carregando negócio</h1>
@@ -291,6 +297,10 @@ function AgendamentoPublico({ slugOuId }) {
     return (
       <main className="page public-booking-page">
         <section className="public-booking-card">
+          <div className="public-booking-topbar">
+            <BrandLogo />
+            <span><ShieldCheck aria-hidden="true" size={15} /> Ambiente seguro</span>
+          </div>
           <div className="public-booking-header">
             <p className="eyebrow">Agendamento online</p>
             <h1>
@@ -326,6 +336,10 @@ function AgendamentoPublico({ slugOuId }) {
   return (
     <main className="page public-booking-page">
       <section className="public-booking-card">
+        <div className="public-booking-topbar">
+          <BrandLogo />
+          <span><ShieldCheck aria-hidden="true" size={15} /> Ambiente seguro</span>
+        </div>
         {bannerUrl && (
           <div className="public-business-banner">
             <img src={bannerUrl} alt={`Capa de ${negocio?.nome || 'negócio'}`} />
