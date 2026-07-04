@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import {
   CalendarDays,
+  ChevronDown,
   Download,
   LayoutDashboard,
   LogOut,
+  Menu,
   Moon,
   Scissors,
   Store,
   Sun,
-  Users,
+  UserRound,
+  UsersRound,
+  X,
 } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import { useTheme } from '../contexts/ThemeContext';
@@ -17,10 +21,10 @@ import { resolverAssetUrl } from '../services/api';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', path: '/dashboard', Icon: LayoutDashboard },
-  { label: 'Meu Negócio', path: '/negocio', Icon: Store },
+  { label: 'Meu negócio', path: '/negocio', Icon: Store },
   { label: 'Serviços', path: '/servicos', Icon: Scissors },
-  { label: 'Profissionais', path: '/profissionais', Icon: Users },
-  { label: 'Clientes', path: '/clientes', Icon: Users },
+  { label: 'Profissionais', path: '/profissionais', Icon: UsersRound },
+  { label: 'Clientes', path: '/clientes', Icon: UserRound },
   { label: 'Agenda', path: '/agenda', Icon: CalendarDays },
 ];
 
@@ -33,11 +37,10 @@ function DashboardShell({
 }) {
   const { isDark, toggleTheme } = useTheme();
   const [installPrompt, setInstallPrompt] = useState(null);
-  const [logoNegocio, setLogoNegocio] = useState('');
+  const [negocio, setNegocio] = useState(null);
+  const [perfilAberto, setPerfilAberto] = useState(false);
   const [pwaInstalado, setPwaInstalado] = useState(() => {
-    if (typeof window === 'undefined') {
-      return false;
-    }
+    if (typeof window === 'undefined') return false;
 
     return (
       window.matchMedia('(display-mode: standalone)').matches ||
@@ -45,26 +48,30 @@ function DashboardShell({
     );
   });
   const [menuAberto, setMenuAberto] = useState(() => {
-    if (typeof window === 'undefined') {
-      return true;
-    }
-
+    if (typeof window === 'undefined') return true;
     return window.innerWidth >= 1040;
   });
+
+  const logoNegocio = resolverAssetUrl(negocio?.logo_url);
+  const nomeNegocio = negocio?.nome || 'Meu negócio';
+  const destinoPublico = negocio?.slug_publico
+    ? `/agendar/${negocio.slug_publico}`
+    : '/negocio';
 
   useEffect(() => {
     let ativo = true;
 
     buscarNegocio()
       .then((resposta) => {
-        if (ativo) {
-          setLogoNegocio(resolverAssetUrl(resposta.negocio?.logo_url));
-        }
+        if (ativo) setNegocio(resposta.negocio || null);
       })
       .catch(() => {});
 
     function atualizarMarca(event) {
-      setLogoNegocio(resolverAssetUrl(event.detail?.logoUrl));
+      setNegocio((atual) => ({
+        ...(atual || {}),
+        logo_url: event.detail?.logoUrl || atual?.logo_url || '',
+      }));
     }
 
     window.addEventListener('agendai:brand-updated', atualizarMarca);
@@ -95,10 +102,6 @@ function DashboardShell({
     };
   }, []);
 
-  function alternarMenu() {
-    setMenuAberto((aberto) => !aberto);
-  }
-
   function fecharMenuMobile() {
     if (typeof window !== 'undefined' && window.innerWidth < 1040) {
       setMenuAberto(false);
@@ -106,27 +109,28 @@ function DashboardShell({
   }
 
   function navegarPara(path) {
+    setPerfilAberto(false);
     navigate(path);
     fecharMenuMobile();
   }
 
   async function instalarAplicativo() {
-    if (!installPrompt) {
-      return;
-    }
+    if (!installPrompt) return;
 
     await installPrompt.prompt();
     const escolha = await installPrompt.userChoice;
 
-    if (escolha.outcome === 'accepted') {
-      setPwaInstalado(true);
-    }
-
+    if (escolha.outcome === 'accepted') setPwaInstalado(true);
     setInstallPrompt(null);
   }
 
+  function sair() {
+    setPerfilAberto(false);
+    onLogout();
+  }
+
   return (
-    <main className={`app-shell ${menuAberto ? 'is-menu-open' : 'is-sidebar-collapsed'}`}>
+    <main className={`app-shell ${menuAberto ? 'is-menu-open' : ''}`}>
       <button
         aria-label="Fechar menu"
         className="sidebar-overlay"
@@ -135,46 +139,50 @@ function DashboardShell({
       />
 
       <aside className="sidebar">
-        <div className="sidebar-brand">
+        <div className="sidebar-head">
           <BrandLogo onClick={() => navegarPara('/')} />
+          <button
+            aria-label="Fechar menu"
+            className="shell-icon-button sidebar-close-button"
+            onClick={() => setMenuAberto(false)}
+            type="button"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="sidebar-nav" aria-label="Navegação principal">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.Icon;
-
-            return (
-              <button
-                aria-label={item.label}
-                className={`sidebar-link ${
-                  currentPath === item.path ? 'is-active' : ''
-                }`}
-                key={item.path}
-                onClick={() => navegarPara(item.path)}
-                type="button"
-                title={item.label}
-              >
-                <span className="sidebar-icon" aria-hidden="true">
-                  <Icon size={19} strokeWidth={2} />
-                </span>
-                <span className="sidebar-label">{item.label}</span>
-              </button>
-            );
-          })}
+          {NAV_ITEMS.map(({ label, path, Icon }) => (
+            <button
+              aria-current={currentPath === path ? 'page' : undefined}
+              className={`sidebar-link ${currentPath === path ? 'is-active' : ''}`}
+              key={path}
+              onClick={() => navegarPara(path)}
+              type="button"
+            >
+              <Icon aria-hidden="true" size={19} strokeWidth={2} />
+              <span className="sidebar-label">{label}</span>
+            </button>
+          ))}
         </nav>
 
-        <button
-          aria-label="Sair"
-          className="sidebar-link sidebar-logout"
-          onClick={onLogout}
-          type="button"
-          title="Sair"
-        >
-          <span className="sidebar-icon" aria-hidden="true">
-            <LogOut size={19} strokeWidth={2} />
-          </span>
-          <span className="sidebar-label">Sair</span>
-        </button>
+        <section className="sidebar-public-card" aria-label="Página pública">
+          <CalendarDays aria-hidden="true" size={19} />
+          <strong>Link público ativo</strong>
+          <p>Seus clientes podem agendar a qualquer hora.</p>
+          <button onClick={() => navegarPara(destinoPublico)} type="button">
+            Ver página pública
+          </button>
+        </section>
+
+        <div className="sidebar-footer">
+          <span className="system-online-dot" aria-hidden="true" />
+          <span>Sistema operacional</span>
+          <button aria-label="Sair" onClick={sair} type="button">
+            <LogOut aria-hidden="true" size={17} />
+            <span>Sair</span>
+          </button>
+        </div>
       </aside>
 
       <section className="workspace">
@@ -182,14 +190,15 @@ function DashboardShell({
           <button
             aria-expanded={menuAberto}
             aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
-            className={`menu-button ${menuAberto ? 'is-open' : ''}`}
-            onClick={alternarMenu}
+            className="shell-icon-button menu-button"
+            onClick={() => setMenuAberto((aberto) => !aberto)}
             type="button"
           >
-            <span />
-            <span />
-            <span />
+            <Menu aria-hidden="true" size={21} />
           </button>
+
+          <span className="topbar-mobile-brand"><BrandLogo compact /></span>
+
           <div className="topbar-actions">
             {installPrompt && !pwaInstalado && (
               <button
@@ -197,37 +206,50 @@ function DashboardShell({
                 onClick={instalarAplicativo}
                 type="button"
               >
-                <Download aria-hidden="true" size={17} strokeWidth={2} />
+                <Download aria-hidden="true" size={17} />
                 <span>Instalar aplicativo</span>
               </button>
             )}
-          <button
-            aria-label={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
-            className="theme-toggle"
-            onClick={toggleTheme}
-            type="button"
-          >
-            {isDark ? (
-              <Sun aria-hidden="true" size={18} strokeWidth={2} />
-            ) : (
-              <Moon aria-hidden="true" size={18} strokeWidth={2} />
-            )}
-            <span>{isDark ? 'Claro' : 'Escuro'}</span>
-          </button>
-          <div className="topbar-user">
-            <span className="notification-dot" aria-hidden="true" />
-            <span className={`avatar ${logoNegocio ? 'has-image' : ''}`} aria-hidden="true">
-              {logoNegocio ? (
-                <img src={logoNegocio} alt="" />
-              ) : (
-                usuario?.nome?.charAt(0)?.toUpperCase() || 'U'
+
+            <button
+              aria-label={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
+              className="shell-icon-button theme-toggle"
+              onClick={toggleTheme}
+              type="button"
+            >
+              {isDark ? <Sun aria-hidden="true" size={18} /> : <Moon aria-hidden="true" size={18} />}
+            </button>
+
+            <div className="topbar-profile-wrap">
+              <button
+                aria-expanded={perfilAberto}
+                className="topbar-user"
+                onClick={() => setPerfilAberto((aberto) => !aberto)}
+                type="button"
+              >
+                <span className={`avatar ${logoNegocio ? 'has-image' : ''}`} aria-hidden="true">
+                  {logoNegocio ? <img src={logoNegocio} alt="" /> : nomeNegocio.charAt(0).toUpperCase()}
+                </span>
+                <span className="topbar-user-copy">
+                  <strong>{nomeNegocio}</strong>
+                  <small>{usuario?.nome || 'Empreendedor'}</small>
+                </span>
+                <ChevronDown aria-hidden="true" size={15} />
+              </button>
+
+              {perfilAberto && (
+                <div className="profile-menu">
+                  <button onClick={() => navegarPara('/negocio')} type="button">
+                    <Store aria-hidden="true" size={17} />
+                    Configurar negócio
+                  </button>
+                  <button onClick={sair} type="button">
+                    <LogOut aria-hidden="true" size={17} />
+                    Sair da conta
+                  </button>
+                </div>
               )}
-            </span>
-            <div>
-              <strong>{usuario?.nome || 'Usuário'}</strong>
-              <small>Empreendedor</small>
             </div>
-          </div>
           </div>
         </header>
 
