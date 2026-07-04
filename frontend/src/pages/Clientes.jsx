@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CalendarDays, Search, UserCheck, Users } from 'lucide-react';
+import {
+  CalendarDays,
+  ChevronRight,
+  Mail,
+  Phone,
+  Search,
+  UserCheck,
+  Users,
+} from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
+import PageHeader from '../components/ui/PageHeader';
 import { useAuth } from '../contexts/AuthContext';
 import { listarAgendamentos } from '../services/agendamentosService';
 import { listarServicos } from '../services/servicosService';
@@ -196,6 +205,21 @@ function Clientes({ navigate }) {
     [clienteAtivo, precosDisponiveis, servicos],
   );
 
+  useEffect(() => {
+    if (clientes.length === 0) {
+      setClienteSelecionado(null);
+      return;
+    }
+
+    const selecaoAindaExiste = clientes.some(
+      (cliente) => cliente.chave === clienteSelecionado,
+    );
+
+    if (!selecaoAindaExiste) {
+      setClienteSelecionado(clientes[0].chave);
+    }
+  }, [clienteSelecionado, clientes]);
+
   function handleLogout() {
     logout();
     navigate('/login', { replace: true });
@@ -208,15 +232,15 @@ function Clientes({ navigate }) {
       onLogout={handleLogout}
       usuario={usuario}
     >
-      <header className="page-title">
-        <div>
-          <p className="eyebrow">Painel do empreendedor</p>
-          <h1>Clientes</h1>
-          <p className="panel-text">
-            Consulte clientes reais gerados pelos agendamentos do seu negócio.
-          </p>
-        </div>
-      </header>
+      <PageHeader
+        title="Clientes"
+        description="Conheça quem volta, acompanhe preferências e consulte o histórico de atendimentos."
+        actions={
+          <button className="button button-primary button-small" onClick={() => navigate('/agenda')} type="button">
+            <CalendarDays aria-hidden="true" size={17} /> Abrir agenda
+          </button>
+        }
+      />
 
       {erro && <p className="message message-error">{erro}</p>}
 
@@ -260,26 +284,23 @@ function Clientes({ navigate }) {
       </section>
 
       <section className="clients-grid">
-        <article className="dashboard-panel" aria-labelledby="clientes-title">
-          <div className="panel-heading">
+        <article className="dashboard-panel clients-main-panel" aria-labelledby="clientes-title">
+          <div className="clients-toolbar">
             <div>
               <h2 id="clientes-title">Lista de clientes</h2>
-              <p className="panel-text">
-                Busque por nome, telefone ou e-mail.
-              </p>
+              <p className="panel-text">{clientesFiltrados.length} cliente{clientesFiltrados.length === 1 ? '' : 's'} encontrado{clientesFiltrados.length === 1 ? '' : 's'}</p>
             </div>
+            <label className="search-field">
+              <Search aria-hidden="true" size={18} strokeWidth={2} />
+              <span className="sr-only">Buscar cliente</span>
+              <input
+                onChange={(event) => setBusca(event.target.value)}
+                placeholder="Buscar por nome, telefone ou e-mail"
+                type="search"
+                value={busca}
+              />
+            </label>
           </div>
-
-          <label className="search-field">
-            <Search aria-hidden="true" size={18} strokeWidth={2} />
-            <span className="sr-only">Buscar cliente</span>
-            <input
-              onChange={(event) => setBusca(event.target.value)}
-              placeholder="Buscar cliente"
-              type="search"
-              value={busca}
-            />
-          </label>
 
           {carregando && (
             <p className="message message-info" aria-live="polite">
@@ -316,7 +337,17 @@ function Clientes({ navigate }) {
             </div>
           )}
 
-          <div className="entity-list clients-list">
+          {clientesFiltrados.length > 0 && (
+            <div className="client-table-head" aria-hidden="true">
+              <span>Cliente</span>
+              <span>Contato</span>
+              <span>Agendamentos</span>
+              <span>Último atendimento</span>
+              <span />
+            </div>
+          )}
+
+          <div className="entity-list clients-list" role="list">
             {clientesFiltrados.map((cliente) => (
               <button
                 className={`client-card ${
@@ -324,6 +355,7 @@ function Clientes({ navigate }) {
                 }`}
                 key={cliente.chave}
                 onClick={() => setClienteSelecionado(cliente.chave)}
+                role="listitem"
                 type="button"
               >
                 <div className="client-card-header">
@@ -332,26 +364,16 @@ function Clientes({ navigate }) {
                   </span>
                   <div>
                     <strong>{cliente.nome}</strong>
-                    <small>
-                      {cliente.totalAgendamentos} agendamento
-                      {cliente.totalAgendamentos === 1 ? '' : 's'}
-                    </small>
+                    {cliente.totalAgendamentos > 1 && <small className="client-recurrent-badge">Recorrente</small>}
                   </div>
                 </div>
-                <dl className="details-list client-card-details">
-                  <div>
-                    <dt>Telefone</dt>
-                    <dd>{cliente.telefone || 'Não informado'}</dd>
-                  </div>
-                  <div>
-                    <dt>E-mail</dt>
-                    <dd>{cliente.email || 'Não informado'}</dd>
-                  </div>
-                  <div>
-                    <dt>Último atendimento</dt>
-                    <dd>{formatarData(cliente.ultimoAtendimento)}</dd>
-                  </div>
-                </dl>
+                <span className="client-card-contact">
+                  <small>{cliente.telefone || 'Telefone não informado'}</small>
+                  <small>{cliente.email || 'E-mail não informado'}</small>
+                </span>
+                <strong className="client-card-total">{cliente.totalAgendamentos}</strong>
+                <span className="client-card-last">{formatarData(cliente.ultimoAtendimento)}</span>
+                <ChevronRight className="client-card-arrow" aria-hidden="true" size={18} />
               </button>
             ))}
           </div>
@@ -362,7 +384,7 @@ function Clientes({ navigate }) {
             <div>
               <h2>Perfil do cliente</h2>
               <p className="panel-text">
-                Clique em um cliente para consultar seus dados e histórico.
+                Dados, preferências e histórico de atendimento.
               </p>
             </div>
           </div>
@@ -387,23 +409,24 @@ function Clientes({ navigate }) {
                 </span>
                 <div>
                   <strong>{clienteAtivo.nome}</strong>
-                  <small>
-                    {clienteAtivo.totalAgendamentos} agendamento
-                    {clienteAtivo.totalAgendamentos === 1 ? '' : 's'} no total
-                  </small>
+                  {clienteAtivo.totalAgendamentos > 1 && <small className="client-recurrent-badge">Cliente recorrente</small>}
                 </div>
               </div>
 
               <dl className="details-list client-profile-contact">
                 <div>
-                  <dt>Telefone</dt>
+                  <dt><Phone aria-hidden="true" size={15} /> Telefone</dt>
                   <dd>{clienteAtivo.telefone || 'Não informado'}</dd>
                 </div>
                 <div>
-                  <dt>E-mail</dt>
+                  <dt><Mail aria-hidden="true" size={15} /> E-mail</dt>
                   <dd>{clienteAtivo.email || 'Não informado'}</dd>
                 </div>
               </dl>
+
+              <button className="button button-primary client-agenda-button" onClick={() => navigate('/agenda')} type="button">
+                <CalendarDays aria-hidden="true" size={17} /> Consultar agenda
+              </button>
 
               <div className="client-profile-metrics">
                 <div className="client-profile-metric">
@@ -434,11 +457,15 @@ function Clientes({ navigate }) {
               <section className="client-top-services" aria-labelledby="top-services-title">
                 <h3 id="top-services-title">Serviços mais usados</h3>
                 <div>
-                  {perfilCliente.servicosMaisUsados.map((servico) => (
-                    <span key={servico.nome}>
-                      {servico.nome} <strong>{servico.total}x</strong>
-                    </span>
-                  ))}
+                  {perfilCliente.servicosMaisUsados.length > 0 ? (
+                    perfilCliente.servicosMaisUsados.map((servico) => (
+                      <span key={servico.nome}>
+                        {servico.nome} <strong>{servico.total}x</strong>
+                      </span>
+                    ))
+                  ) : (
+                    <p className="panel-text">Ainda não há serviços registrados.</p>
+                  )}
                 </div>
               </section>
 

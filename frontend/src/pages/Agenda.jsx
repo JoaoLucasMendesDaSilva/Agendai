@@ -1,14 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  CalendarClock,
+  CalendarCheck2,
   CalendarDays,
   CalendarX,
+  CheckCircle2,
+  Clock3,
   Mail,
   Phone,
   Scissors,
+  Search,
   User,
 } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
+import PageHeader from '../components/ui/PageHeader';
+import PanelSkeleton from '../components/ui/PanelSkeleton';
 import { useAuth } from '../contexts/AuthContext';
 import {
   atualizarStatusAgendamento,
@@ -48,16 +53,6 @@ function formatarHorario(valor) {
     hour: '2-digit',
     minute: '2-digit',
   });
-}
-
-function formatarData(valor) {
-  const data = valor instanceof Date ? valor : obterData(valor);
-
-  if (!data) {
-    return 'Data não informada';
-  }
-
-  return data.toLocaleDateString('pt-BR');
 }
 
 function obterInicioDoDia(data) {
@@ -101,21 +96,52 @@ function normalizarMensagem(texto) {
     .toLowerCase();
 }
 
-function filtrarAgendamentos(agendamentos, filtro) {
-  if (filtro === 'todos') {
-    return agendamentos;
-  }
+function filtrarAgendamentos(agendamentos, filtro, busca) {
+  const termo = normalizarMensagem(busca).trim();
+  let resultado = agendamentos;
 
   if (filtro === 'hoje') {
     const hoje = new Date();
 
-    return agendamentos.filter((agendamento) => {
+    resultado = agendamentos.filter((agendamento) => {
       const data = obterData(agendamento.data_hora_inicio);
       return data && mesmaData(data, hoje);
     });
+  } else if (filtro !== 'todos') {
+    resultado = agendamentos.filter(
+      (agendamento) => agendamento.status === filtro,
+    );
   }
 
-  return agendamentos.filter((agendamento) => agendamento.status === filtro);
+  if (!termo) {
+    return resultado;
+  }
+
+  return resultado.filter((agendamento) =>
+    normalizarMensagem(
+      `${agendamento.cliente_nome} ${agendamento.cliente_telefone} ${agendamento.cliente_email} ${agendamento.servico_nome} ${agendamento.profissional_nome}`,
+    ).includes(termo),
+  );
+}
+
+function formatarDataExtensa(data) {
+  if (!data) return '';
+
+  return data.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function calcularDuracao(inicio, fim) {
+  const dataInicio = obterData(inicio);
+  const dataFim = obterData(fim);
+
+  if (!dataInicio || !dataFim) return '';
+
+  const minutos = Math.max(0, Math.round((dataFim - dataInicio) / 60000));
+  return `${minutos} min`;
 }
 
 function agruparPorData(agendamentos) {
@@ -156,6 +182,7 @@ function Agenda({ navigate }) {
   const montadoRef = useRef(false);
   const [agendamentos, setAgendamentos] = useState([]);
   const [filtro, setFiltro] = useState('todos');
+  const [busca, setBusca] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [salvandoId, setSalvandoId] = useState(null);
   const [erro, setErro] = useState('');
@@ -167,9 +194,23 @@ function Agenda({ navigate }) {
     erroNormalizado.includes('cadastre um neg');
 
   const agendamentosFiltrados = useMemo(
-    () => filtrarAgendamentos(agendamentos, filtro),
-    [agendamentos, filtro],
+    () => filtrarAgendamentos(agendamentos, filtro, busca),
+    [agendamentos, busca, filtro],
   );
+
+  const resumoAgenda = useMemo(() => {
+    const hoje = new Date();
+
+    return {
+      hoje: agendamentos.filter((agendamento) => {
+        const data = obterData(agendamento.data_hora_inicio);
+        return data && mesmaData(data, hoje);
+      }).length,
+      confirmados: agendamentos.filter((item) => item.status === 'confirmado').length,
+      pendentes: agendamentos.filter((item) => item.status === 'pendente').length,
+      concluidos: agendamentos.filter((item) => item.status === 'concluido').length,
+    };
+  }, [agendamentos]);
 
   const gruposAgenda = useMemo(
     () => agruparPorData(agendamentosFiltrados),
@@ -273,49 +314,70 @@ function Agenda({ navigate }) {
       onLogout={handleLogout}
       usuario={usuario}
     >
-      <header className="page-title">
-        <div>
-          <p className="eyebrow">Painel do empreendedor</p>
-          <h1>Agenda</h1>
-          <p className="panel-text">
-            Acompanhe os horários do seu negócio em uma agenda profissional de
-            atendimentos.
-          </p>
-        </div>
-      </header>
+      <PageHeader
+        title="Agenda"
+        description="Gerencie os atendimentos e mantenha o dia do seu negócio fluindo."
+        meta={
+          <span className="dashboard-date-chip">
+            <CalendarDays aria-hidden="true" size={17} />
+            {formatarDataExtensa(new Date())}
+          </span>
+        }
+      />
+
+      <section className="agenda-overview-grid" aria-label="Resumo da agenda">
+        {[
+          { label: 'Agendamentos hoje', valor: resumoAgenda.hoje, Icon: CalendarDays, tone: 'blue' },
+          { label: 'Confirmados', valor: resumoAgenda.confirmados, Icon: CalendarCheck2, tone: 'green' },
+          { label: 'Pendentes', valor: resumoAgenda.pendentes, Icon: Clock3, tone: 'yellow' },
+          { label: 'Concluídos', valor: resumoAgenda.concluidos, Icon: CheckCircle2, tone: 'violet' },
+        ].map(({ label, valor, Icon, tone }) => (
+          <article className="agenda-overview-item" key={label}>
+            <span className={`agenda-overview-icon tone-${tone}`} aria-hidden="true">
+              <Icon size={20} strokeWidth={2} />
+            </span>
+            <div>
+              <small>{label}</small>
+              <strong>{carregando ? '—' : valor}</strong>
+            </div>
+          </article>
+        ))}
+      </section>
 
       <section
         className="dashboard-panel agenda-panel"
         aria-labelledby="agenda-title"
       >
-        <div className="panel-heading">
-          <div>
-            <h2 id="agenda-title">Agendamentos</h2>
-            <p className="panel-text">
-              Filtre por período ou status para organizar a rotina do dia.
-            </p>
+        <div className="agenda-toolbar">
+          <div className="agenda-filter-row" aria-label="Filtro de agendamentos">
+            {FILTROS.map((item) => (
+              <button
+                aria-pressed={filtro === item.valor}
+                className={`agenda-filter-button ${
+                  filtro === item.valor ? 'is-active' : ''
+                }`}
+                key={item.valor}
+                onClick={() => setFiltro(item.valor)}
+                type="button"
+              >
+                {item.label}
+              </button>
+            ))}
           </div>
-        </div>
-
-        <div className="agenda-filter-row" aria-label="Filtro de agendamentos">
-          {FILTROS.map((item) => (
-            <button
-              className={`agenda-filter-button ${
-                filtro === item.valor ? 'is-active' : ''
-              }`}
-              key={item.valor}
-              onClick={() => setFiltro(item.valor)}
-              type="button"
-            >
-              {item.label}
-            </button>
-          ))}
+          <label className="agenda-search-field">
+            <Search aria-hidden="true" size={17} />
+            <span className="sr-only">Buscar agendamento</span>
+            <input
+              onChange={(event) => setBusca(event.target.value)}
+              placeholder="Buscar cliente, serviço ou telefone"
+              type="search"
+              value={busca}
+            />
+          </label>
         </div>
 
         {carregando && (
-          <p className="message message-info" aria-live="polite">
-            Carregando agendamentos...
-          </p>
+          <div aria-live="polite"><PanelSkeleton lines={4} /></div>
         )}
 
         {!carregando && erro && <p className="message message-error">{erro}</p>}
@@ -351,22 +413,29 @@ function Agenda({ navigate }) {
               </span>
               <div>
                 <strong>
-                  {filtro === 'todos'
+                  {busca
+                    ? 'Nenhum agendamento corresponde à busca'
+                    : filtro === 'todos'
                     ? 'Sua agenda ainda está vazia'
                     : 'Nenhum agendamento neste filtro'}
                 </strong>
                 <p>
-                  {filtro === 'todos'
+                  {busca
+                    ? 'Revise o nome, telefone, serviço ou profissional informado.'
+                    : filtro === 'todos'
                     ? 'Quando um cliente usar seu link público, o atendimento aparecerá aqui.'
                     : 'Tente outro filtro para consultar os demais atendimentos.'}
                 </p>
-                {filtro !== 'todos' && (
+                {(filtro !== 'todos' || busca) && (
                   <button
                     className="button button-secondary button-small"
-                    onClick={() => setFiltro('todos')}
+                    onClick={() => {
+                      setFiltro('todos');
+                      setBusca('');
+                    }}
                     type="button"
                   >
-                    Ver todos
+                    Limpar filtros
                   </button>
                 )}
               </div>
@@ -377,16 +446,11 @@ function Agenda({ navigate }) {
           {gruposAgenda.map((grupo) => (
             <section className="agenda-date-group" key={grupo.chave}>
               <div className="agenda-date-heading">
-                <span aria-hidden="true">
-                  <CalendarClock size={18} strokeWidth={2} />
-                </span>
                 <div>
                   <h3>{grupo.label}</h3>
-                  <p>
-                    {grupo.itens.length} atendimento
-                    {grupo.itens.length === 1 ? '' : 's'}
-                  </p>
+                  <p>{formatarDataExtensa(grupo.data)}</p>
                 </div>
+                <span>{grupo.itens.length} atendimento{grupo.itens.length === 1 ? '' : 's'}</span>
               </div>
 
               <div className="agenda-card-list">
@@ -394,75 +458,62 @@ function Agenda({ navigate }) {
                   <article className="agenda-card-pro" key={agendamento.id}>
                     <div className="agenda-card-time">
                       <strong>{formatarHorario(agendamento.data_hora_inicio)}</strong>
-                      <span>{formatarData(agendamento.data_hora_inicio)}</span>
+                      <span>{calcularDuracao(agendamento.data_hora_inicio, agendamento.data_hora_fim)}</span>
                     </div>
 
-                    <div className="agenda-card-content">
-                      <div className="agenda-card-header">
-                        <div>
-                          <h4>{agendamento.cliente_nome}</h4>
-                          <p>{agendamento.servico_nome}</p>
-                        </div>
-                        <span className={`status-badge status-${agendamento.status}`}>
-                          {STATUS_LABELS[agendamento.status] || agendamento.status}
-                        </span>
-                      </div>
-
-                      <div className="agenda-info-grid">
-                        <span>
-                          <User aria-hidden="true" size={16} strokeWidth={2} />
-                          {agendamento.profissional_nome}
-                        </span>
-                        <span>
-                          <Phone aria-hidden="true" size={16} strokeWidth={2} />
-                          {agendamento.cliente_telefone}
-                        </span>
+                    <div className="agenda-client-cell">
+                      <span className="agenda-client-avatar" aria-hidden="true">
+                        {agendamento.cliente_nome?.charAt(0).toUpperCase() || 'C'}
+                      </span>
+                      <div>
+                        <strong>{agendamento.cliente_nome}</strong>
+                        <span><Phone aria-hidden="true" size={14} />{agendamento.cliente_telefone}</span>
                         {agendamento.cliente_email && (
-                          <span>
-                            <Mail aria-hidden="true" size={16} strokeWidth={2} />
-                            {agendamento.cliente_email}
-                          </span>
+                          <span><Mail aria-hidden="true" size={14} />{agendamento.cliente_email}</span>
                         )}
-                        <span>
-                          <Scissors aria-hidden="true" size={16} strokeWidth={2} />
-                          {agendamento.servico_nome}
-                        </span>
                       </div>
+                    </div>
 
-                      {agendamento.observacoes && (
-                        <p className="agenda-observations">
-                          <strong>Observações:</strong> {agendamento.observacoes}
-                        </p>
-                      )}
+                    <div className="agenda-service-cell">
+                      <strong><Scissors aria-hidden="true" size={15} />{agendamento.servico_nome}</strong>
+                      <span><User aria-hidden="true" size={15} />{agendamento.profissional_nome}</span>
+                    </div>
 
-                      <div className="agenda-actions">
-                        <label>
-                          Status
-                          <select
-                            disabled={salvandoId === agendamento.id}
-                            onChange={(event) =>
-                              alterarStatus(agendamento, event.target.value)
-                            }
-                            value={agendamento.status}
-                          >
-                            {STATUS.map((status) => (
-                              <option key={status} value={status}>
-                                {STATUS_LABELS[status]}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
+                    <span className={`status-badge status-${agendamento.status}`}>
+                      {STATUS_LABELS[agendamento.status] || agendamento.status}
+                    </span>
 
+                    <div className="agenda-actions">
+                      <label>
+                        <span className="sr-only">Alterar status de {agendamento.cliente_nome}</span>
+                        <select
+                          disabled={salvandoId === agendamento.id}
+                          onChange={(event) => alterarStatus(agendamento, event.target.value)}
+                          value={agendamento.status}
+                        >
+                          {STATUS.map((status) => (
+                            <option key={status} value={status}>{STATUS_LABELS[status]}</option>
+                          ))}
+                        </select>
+                      </label>
+
+                      {agendamento.status !== 'cancelado' && (
                         <button
-                          className="button button-danger"
+                          className="agenda-cancel-button"
                           disabled={salvandoId === agendamento.id}
                           onClick={() => cancelar(agendamento)}
                           type="button"
                         >
                           {salvandoId === agendamento.id ? 'Salvando...' : 'Cancelar'}
                         </button>
-                      </div>
+                      )}
                     </div>
+
+                    {agendamento.observacoes && (
+                      <p className="agenda-observations">
+                        <strong>Observações:</strong> {agendamento.observacoes}
+                      </p>
+                    )}
                   </article>
                 ))}
               </div>

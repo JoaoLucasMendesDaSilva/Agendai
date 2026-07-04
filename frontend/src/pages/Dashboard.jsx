@@ -4,7 +4,8 @@ import { jsPDF } from 'jspdf';
 import {
   CalendarCheck,
   CalendarDays,
-  FileText,
+  ChevronRight,
+  Clock3,
   Scissors,
   Store,
   Users,
@@ -62,6 +63,47 @@ function formatarDataHora(data) {
   }
 
   return `${formatarData(data)} ${formatarHorario(data)}`;
+}
+
+function formatarDataLonga(data) {
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    weekday: 'long',
+  }).format(data);
+}
+
+function obterAgendamentosHoje(agendamentos) {
+  const hoje = new Date();
+
+  return agendamentos
+    .map((agendamento) => ({
+      ...agendamento,
+      dataInicio: obterData(agendamento),
+    }))
+    .filter(
+      (agendamento) =>
+        agendamento.dataInicio &&
+        agendamento.dataInicio.toDateString() === hoje.toDateString(),
+    )
+    .sort((a, b) => a.dataInicio - b.dataInicio);
+}
+
+function montarRankingServicos(agendamentos) {
+  const contagem = new Map();
+
+  agendamentos.forEach((agendamento) => {
+    const nome = agendamento.servico_nome;
+
+    if (nome) {
+      contagem.set(nome, (contagem.get(nome) || 0) + 1);
+    }
+  });
+
+  return Array.from(contagem.entries())
+    .map(([nome, total]) => ({ nome, total }))
+    .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome))
+    .slice(0, 4);
 }
 
 function formatarAtualizacao(data) {
@@ -315,6 +357,16 @@ function Dashboard({ navigate }) {
   const resumoSemana = useMemo(
     () => resumirSemana(dadosSemana),
     [dadosSemana],
+  );
+
+  const agendamentosHoje = useMemo(
+    () => obterAgendamentosHoje(agendamentos),
+    [agendamentos],
+  );
+
+  const rankingServicos = useMemo(
+    () => montarRankingServicos(agendamentos),
+    [agendamentos],
   );
 
   useEffect(() => {
@@ -628,30 +680,42 @@ function Dashboard({ navigate }) {
       usuario={usuario}
     >
       <PageHeader
-        eyebrow="Visão geral do seu negócio"
-        title="Dashboard"
-        description="Comece pelo próximo atendimento e acompanhe os dados essenciais do negócio."
+        title={`Olá, ${usuario?.nome?.trim().split(/\s+/)[0] || 'empreendedor'}.`}
+        description={`Acompanhe o que acontece ${negocio?.nome ? `na ${negocio.nome}` : 'no seu negócio'} hoje.`}
         meta={
-          <span className="status-badge dashboard-freshness" aria-live="polite">
-            {carregando ? 'Atualizando' : formatarAtualizacao(atualizadoEm)}
-          </span>
+          <div className="dashboard-header-meta">
+            <span className="dashboard-date-chip">
+              <CalendarDays aria-hidden="true" size={17} />
+              {formatarDataLonga(new Date())}
+            </span>
+            <span className="dashboard-freshness" aria-live="polite">
+              {carregando ? 'Atualizando dados' : formatarAtualizacao(atualizadoEm)}
+            </span>
+          </div>
         }
       />
 
       {erro && <p className="message message-error">{erro}</p>}
 
+      <section className="metrics-grid dashboard-metrics" aria-label="Indicadores do negócio">
+        {metricas.map((metrica) => (
+          <MetricCard key={metrica.titulo} loading={carregando} {...metrica} />
+        ))}
+      </section>
+
       <section className="dashboard-grid daily-dashboard-grid" aria-label="Atendimento do dia">
         <Panel
+          className="next-appointment-panel"
           title="Próximo agendamento"
           titleId="next-title"
-          description="Próximo horário pendente ou confirmado na agenda."
+          description="O próximo compromisso pendente ou confirmado."
           actions={
             <button
-              className="button button-secondary button-small"
+              className="panel-link-button"
               onClick={() => navigate('/agenda')}
               type="button"
             >
-              Ver agenda
+              Abrir agenda <ChevronRight aria-hidden="true" size={16} />
             </button>
           }
         >
@@ -660,21 +724,20 @@ function Dashboard({ navigate }) {
 
           {!carregando && proximoAgendamento && (
             <div className="next-appointment-card">
-              <span className="empty-icon" aria-hidden="true">
-                <CalendarDays size={24} strokeWidth={2} />
+              <span className="next-appointment-avatar" aria-hidden="true">
+                {proximoAgendamento.cliente_nome?.charAt(0).toUpperCase() || 'C'}
               </span>
-              <div>
+              <div className="next-appointment-person">
                 <strong>{proximoAgendamento.cliente_nome}</strong>
-                <dl className="next-appointment-details">
-                  <div>
-                    <dt>Data</dt>
-                    <dd>{formatarData(proximoAgendamento.dataInicio)}</dd>
-                  </div>
-                  <div>
-                    <dt>Horário</dt>
-                    <dd>{formatarHorario(proximoAgendamento.dataInicio)}</dd>
-                  </div>
-                </dl>
+                <span>{proximoAgendamento.servico_nome || 'Serviço não informado'}</span>
+                <small>com {proximoAgendamento.profissional_nome || 'profissional não informado'}</small>
+              </div>
+              <div className="next-appointment-time">
+                <strong>{formatarHorario(proximoAgendamento.dataInicio)}</strong>
+                <span>{formatarData(proximoAgendamento.dataInicio)}</span>
+                <em className={`status-badge status-${proximoAgendamento.status}`}>
+                  {proximoAgendamento.status === 'confirmado' ? 'Confirmado' : 'Pendente'}
+                </em>
               </div>
             </div>
           )}
@@ -688,9 +751,10 @@ function Dashboard({ navigate }) {
         </Panel>
 
         <Panel
+          className="weekly-chart-panel"
           title="Agendamentos da semana"
           titleId="week-title"
-          description="Quantidade de agendamentos por dia na semana atual."
+          description="Volume diário da semana atual."
         >
           <p className="chart-summary">{resumoSemana}</p>
           <div className="dashboard-chart">
@@ -708,45 +772,104 @@ function Dashboard({ navigate }) {
         </Panel>
       </section>
 
-      <section className="shortcut-strip" aria-label="Atalhos do sistema">
-        <button
-          className="quick-action"
-          onClick={() => navigate('/negocio')}
-          type="button"
+      <section className="dashboard-secondary-grid" aria-label="Resumo operacional">
+        <Panel
+          className="today-agenda-panel"
+          title="Agenda de hoje"
+          titleId="today-agenda-title"
+          actions={
+            <button className="panel-link-button" onClick={() => navigate('/agenda')} type="button">
+              Ver tudo <ChevronRight aria-hidden="true" size={16} />
+            </button>
+          }
         >
-          <span className="quick-icon" aria-hidden="true">
-            <Store size={20} strokeWidth={2} />
-          </span>
-          <strong>Meu negócio</strong>
-          <small>Dados e link público</small>
-        </button>
-        <button
-          className="quick-action"
-          onClick={() => navigate('/servicos')}
-          type="button"
+          {carregando && <PanelSkeleton lines={3} />}
+          {!carregando && agendamentosHoje.length === 0 && (
+            <EmptyState Icone={CalendarDays} title="Nenhum atendimento hoje">
+              A agenda está livre para esta data.
+            </EmptyState>
+          )}
+          {!carregando && agendamentosHoje.length > 0 && (
+            <div className="today-schedule-list">
+              {agendamentosHoje.slice(0, 5).map((agendamento) => (
+                <div className="today-schedule-row" key={agendamento.id}>
+                  <time>{formatarHorario(agendamento.dataInicio)}</time>
+                  <span className="today-schedule-marker" aria-hidden="true" />
+                  <div>
+                    <strong>{agendamento.cliente_nome}</strong>
+                    <small>{agendamento.servico_nome}</small>
+                  </div>
+                  <span className={`status-badge status-${agendamento.status}`}>
+                    {agendamento.status === 'concluido'
+                      ? 'Concluído'
+                      : agendamento.status === 'cancelado'
+                        ? 'Cancelado'
+                        : agendamento.status === 'confirmado'
+                          ? 'Confirmado'
+                          : 'Pendente'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </Panel>
+
+        <Panel
+          className="service-ranking-panel"
+          title="Serviços em destaque"
+          titleId="service-ranking-title"
+          actions={
+            <button className="panel-link-button" onClick={() => navigate('/servicos')} type="button">
+              Gerenciar <ChevronRight aria-hidden="true" size={16} />
+            </button>
+          }
         >
-          <span className="quick-icon" aria-hidden="true">
-            <Scissors size={20} strokeWidth={2} />
-          </span>
-          <strong>Serviços</strong>
-          <small>Preços e duração</small>
-        </button>
-        <button
-          className="quick-action"
-          onClick={() => navigate('/profissionais')}
-          type="button"
-        >
-          <span className="quick-icon" aria-hidden="true">
-            <Users size={20} strokeWidth={2} />
-          </span>
-          <strong>Profissionais</strong>
-          <small>Equipe de atendimento</small>
-        </button>
+          {carregando && <PanelSkeleton lines={3} />}
+          {!carregando && rankingServicos.length === 0 && (
+            <EmptyState Icone={Scissors} title="Sem dados de serviços">
+              O ranking será preenchido conforme os clientes agendarem.
+            </EmptyState>
+          )}
+          {!carregando && rankingServicos.length > 0 && (
+            <ol className="service-ranking-list">
+              {rankingServicos.map((servico, indice) => (
+                <li key={servico.nome}>
+                  <span>{indice + 1}</span>
+                  <div>
+                    <div>
+                      <strong>{servico.nome}</strong>
+                      <small>{servico.total} agendamento{servico.total === 1 ? '' : 's'}</small>
+                    </div>
+                    <i aria-hidden="true">
+                      <span
+                        style={{
+                          width: `${Math.max(
+                            12,
+                            (servico.total / rankingServicos[0].total) * 100,
+                          )}%`,
+                        }}
+                      />
+                    </i>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Panel>
       </section>
 
-      <section className="metrics-grid" aria-label="Indicadores do negócio">
-        {metricas.map((metrica) => (
-          <MetricCard key={metrica.titulo} loading={carregando} {...metrica} />
+      <section className="shortcut-strip" aria-label="Atalhos do sistema">
+        {[
+          { path: '/negocio', label: 'Meu negócio', detail: 'Dados e link público', Icon: Store },
+          { path: '/servicos', label: 'Serviços', detail: 'Preços e duração', Icon: Scissors },
+          { path: '/profissionais', label: 'Profissionais', detail: 'Equipe de atendimento', Icon: Users },
+        ].map(({ path, label, detail, Icon }) => (
+          <button className="quick-action" key={path} onClick={() => navigate(path)} type="button">
+            <span className="quick-icon" aria-hidden="true"><Icon size={20} strokeWidth={2} /></span>
+            <strong>{label}</strong>
+            <small>{detail}</small>
+            <ChevronRight className="quick-action-arrow" aria-hidden="true" size={17} />
+          </button>
         ))}
       </section>
 
@@ -757,7 +880,7 @@ function Dashboard({ navigate }) {
         description="Use quando precisar apresentar ou analisar um período específico."
         icon={
           <span className="summary-icon" aria-hidden="true">
-            <FileText size={24} strokeWidth={2} />
+            <Clock3 size={22} strokeWidth={2} />
           </span>
         }
       >
