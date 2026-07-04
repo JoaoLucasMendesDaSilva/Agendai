@@ -1,7 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { Download, ImageUp, MessageCircle, Store } from 'lucide-react';
+import {
+  CheckCircle2,
+  Copy,
+  Download,
+  ExternalLink,
+  ImageUp,
+  MapPin,
+  MessageCircle,
+  Store,
+} from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import DashboardShell from '../components/DashboardShell';
+import PageHeader from '../components/ui/PageHeader';
 import { useAuth } from '../contexts/AuthContext';
 import {
   atualizarIdentidadeVisual,
@@ -381,18 +391,37 @@ function Negocio({ navigate }) {
       onLogout={handleLogout}
       usuario={usuario}
     >
-      <header className="page-title">
-        <div>
-          <p className="eyebrow">Painel do empreendedor</p>
-          <h1>Meu negócio</h1>
-          <p className="panel-text">
-            Configure os dados que aparecem para seus clientes.
-          </p>
-        </div>
-      </header>
+      <PageHeader
+        title="Meu negócio"
+        description="Configure a identidade, os horários e a experiência pública do seu negócio."
+        actions={
+          negocio?.slug_publico ? (
+            <button
+              className="button button-secondary button-small"
+              onClick={() => navigate(`/agendar/${negocio.slug_publico}`)}
+              type="button"
+            >
+              <ExternalLink aria-hidden="true" size={17} /> Ver página pública
+            </button>
+          ) : null
+        }
+      />
 
-      <section className="management-grid" aria-labelledby="negocio-title">
-        <div className="dashboard-panel management-form-card">
+      <section className="management-sync-strip business-sync-strip" aria-label="Status da página pública">
+        <span className="management-sync-icon" aria-hidden="true">
+          {!carregando && negocio ? <CheckCircle2 size={19} /> : <Store size={19} />}
+        </span>
+        <div>
+          <strong>{carregando ? 'Carregando configuração' : negocio ? 'Página pública configurada' : 'Configuração inicial pendente'}</strong>
+          <p>{carregando ? 'Consultando os dados atuais do negócio.' : negocio ? 'Dados e identidade são sincronizados com o agendamento público.' : 'Preencha os dados abaixo para liberar o catálogo e a agenda.'}</p>
+        </div>
+        <span className={`status-badge ${carregando ? 'status-pendente' : negocio ? 'status-confirmado' : 'status-pendente'}`}>
+          {carregando ? 'Atualizando' : negocio ? 'Ativo' : 'Pendente'}
+        </span>
+      </section>
+
+      <section className="management-grid business-management-grid" aria-labelledby="negocio-title">
+        <div className="dashboard-panel management-form-card business-form-panel">
           <div className="panel-heading">
             <div>
               <h2 id="negocio-title">
@@ -417,9 +446,9 @@ function Negocio({ navigate }) {
 
           {!carregando && (
             <>
-              <form className="form" onSubmit={handleSubmit}>
+              <form className="form business-data-form" onSubmit={handleSubmit}>
               <fieldset className="form-section">
-                <legend>Dados do negócio</legend>
+                <legend>Informações do negócio</legend>
 
                 <label>
                   Nome do negócio
@@ -572,14 +601,19 @@ function Negocio({ navigate }) {
           )}
         </div>
 
-        <aside className="dashboard-panel management-summary">
-          <span className="summary-icon" aria-hidden="true">
-            <Store size={24} strokeWidth={2} />
-          </span>
-          <h2>Status do negócio</h2>
+        <aside className="dashboard-panel management-summary business-public-panel">
+          <div className="business-public-heading">
+            <span className="summary-icon" aria-hidden="true">
+              <ExternalLink size={22} strokeWidth={2} />
+            </span>
+            <div>
+              <h2>Sua página pública</h2>
+              {negocio && <span className="status-badge status-confirmado">Online</span>}
+            </div>
+          </div>
           <p className="panel-text">
             {negocio
-              ? 'Seu negócio já está configurado para receber agendamentos.'
+              ? 'Compartilhe o link ou QR Code para receber agendamentos.'
               : 'Cadastre seu negócio para liberar serviços, profissionais e agenda.'}
           </p>
 
@@ -588,6 +622,10 @@ function Negocio({ navigate }) {
               <div>
                 <dt>Nome</dt>
                 <dd>{negocio.nome}</dd>
+              </div>
+              <div>
+                <dt><MapPin aria-hidden="true" size={14} /> Localização</dt>
+                <dd>{negocio.cidade || 'Não informada'}</dd>
               </div>
               <div>
                 <dt>Link público</dt>
@@ -600,7 +638,7 @@ function Negocio({ navigate }) {
                         onClick={copiarLinkPublico}
                         type="button"
                       >
-                        Copiar link
+                        <Copy aria-hidden="true" size={15} /> Copiar link
                       </button>
                       <button
                         className="button button-secondary button-small whatsapp-share-button"
@@ -658,10 +696,6 @@ function Negocio({ navigate }) {
                     </button>
                   </div>
                 </dd>
-              </div>
-              <div>
-                <dt>Cidade</dt>
-                <dd>{negocio.cidade || 'Não informada'}</dd>
               </div>
             </dl>
           )}

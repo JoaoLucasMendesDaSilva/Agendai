@@ -1,0 +1,443 @@
+/* Professional management surfaces: Serviços, Profissionais and Meu negócio */
+
+.management-sync-strip {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px 12px;
+  border: 1px solid var(--gray-300);
+  border-radius: 14px;
+  padding: 14px;
+  background: var(--panel-bg);
+}
+
+.management-sync-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--green-800);
+  background: var(--green-100);
+}
+
+.management-sync-strip strong,
+.management-sync-strip p {
+  display: block;
+}
+
+.management-sync-strip strong {
+  color: var(--gray-900);
+  font-size: 0.76rem;
+}
+
+.management-sync-strip p {
+  margin-top: 2px;
+  color: var(--gray-500);
+  font-size: 0.64rem;
+  line-height: 1.45;
+}
+
+.management-sync-strip > .status-badge {
+  grid-column: 2;
+  font-size: 0.6rem;
+}
+
+.catalog-management-grid,
+.business-management-grid {
+  gap: 16px;
+}
+
+.catalog-form-panel,
+.catalog-list-panel,
+.business-form-panel,
+.business-public-panel {
+  width: 100%;
+  box-shadow: none;
+}
+
+.catalog-form-panel .form,
+.business-data-form {
+  margin-top: 20px;
+}
+
+.catalog-form-panel input,
+.catalog-form-panel textarea,
+.business-form-panel input,
+.business-form-panel textarea {
+  background: var(--input-bg);
+}
+
+.catalog-list {
+  margin-top: 18px;
+}
+
+.catalog-entity-card {
+  gap: 14px;
+  border: 1px solid var(--gray-300);
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--panel-bg);
+  box-shadow: none;
+}
+
+.catalog-entity-card:hover {
+  border-color: color-mix(in srgb, var(--green-700) 34%, var(--gray-300));
+  box-shadow: none;
+  transform: none;
+}
+
+.catalog-entity-card .entity-card-header {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+}
+
+.catalog-entity-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--green-800);
+  background: var(--green-100);
+}
+
+.catalog-entity-copy,
+.professional-title {
+  min-width: 0;
+}
+
+.catalog-entity-copy h3,
+.professional-title h3 {
+  font-size: 0.78rem;
+}
+
+.catalog-entity-copy p,
+.professional-title p {
+  margin-top: 3px;
+  color: var(--gray-500);
+  font-size: 0.64rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.catalog-entity-card .status-badge {
+  font-size: 0.56rem;
+}
+
+.catalog-entity-card .meta-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.catalog-entity-card .meta-list div {
+  border: 0;
+  padding: 10px 12px;
+}
+
+.catalog-entity-card .meta-list div + div {
+  border-left: 1px solid var(--gray-300);
+}
+
+.catalog-entity-card .meta-list dt {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--gray-500);
+  font-size: 0.58rem;
+}
+
+.catalog-entity-card .meta-list dd {
+  margin-top: 3px;
+  color: var(--gray-900);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.catalog-entity-card .entity-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.catalog-entity-card .entity-actions .button {
+  width: auto;
+  min-height: 36px;
+  padding: 7px 10px;
+  font-size: 0.62rem;
+}
+
+.professional-card .entity-card-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.professional-card .professional-title {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+}
+
+.professional-card .entity-avatar {
+  width: 44px;
+  height: 44px;
+}
+
+/* Meu negócio */
+
+.business-sync-strip .management-sync-icon {
+  color: var(--green-800);
+}
+
+.business-form-panel > .panel-heading {
+  border-bottom: 1px solid var(--gray-300);
+  padding-bottom: 16px;
+}
+
+.business-data-form {
+  gap: 0;
+}
+
+.business-data-form .form-section,
+.business-form-panel .brand-form .form-section {
+  gap: 15px;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.business-data-form .form-section + .form-section {
+  margin-top: 24px;
+  border-top: 1px solid var(--gray-300);
+  padding-top: 22px;
+}
+
+.business-data-form .form-section legend,
+.business-form-panel .brand-form legend {
+  padding: 0;
+  color: var(--gray-900);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.business-data-form > .button {
+  width: 100%;
+  margin-top: 22px;
+}
+
+.business-form-panel .brand-form {
+  gap: 16px;
+  margin-top: 28px;
+  border-top: 1px solid var(--gray-300);
+  padding-top: 24px;
+}
+
+.business-form-panel .brand-upload-grid {
+  gap: 14px;
+}
+
+.business-form-panel .brand-preview {
+  min-height: 130px;
+  border: 1px dashed color-mix(in srgb, var(--green-700) 45%, var(--gray-300));
+  border-radius: 12px;
+  background: var(--green-50);
+  box-shadow: none;
+}
+
+.business-form-panel .brand-upload-field:hover .brand-preview {
+  border-color: var(--green-700);
+  box-shadow: none;
+  transform: none;
+}
+
+.business-form-panel .brand-preview-logo {
+  width: 130px;
+  justify-self: start;
+}
+
+.day-selector {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.day-pill span {
+  min-height: 42px;
+  border-radius: 10px;
+  font-size: 0.65rem;
+}
+
+.business-public-panel {
+  align-self: start;
+  gap: 16px;
+}
+
+.business-public-heading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.business-public-heading .summary-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+}
+
+.business-public-heading > div {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.business-public-heading h2 {
+  font-size: 0.86rem;
+}
+
+.business-public-panel .compact-details {
+  margin-top: 0;
+}
+
+.business-public-panel .compact-details > div {
+  border-top: 1px solid var(--gray-300);
+  padding-top: 13px;
+}
+
+.business-public-panel .compact-details dt {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--gray-500);
+  font-size: 0.62rem;
+}
+
+.business-public-panel .compact-details dd {
+  margin-top: 4px;
+  color: var(--gray-900);
+  font-size: 0.72rem;
+}
+
+.business-public-panel .public-link-box {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
+  padding: 10px;
+  background: var(--panel-bg-soft);
+}
+
+.business-public-panel .public-link-text {
+  min-width: 0;
+  color: var(--gray-700);
+  font-size: 0.62rem;
+  overflow-wrap: anywhere;
+}
+
+.business-public-panel .public-link-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
+.business-public-panel .public-link-actions .button {
+  width: 100%;
+  min-height: 38px;
+  font-size: 0.6rem;
+}
+
+.business-public-panel .qr-code-box {
+  align-items: center;
+}
+
+.business-public-panel .qr-code-frame {
+  width: min(100%, 204px);
+  margin-inline: auto;
+  border: 1px solid var(--gray-300);
+  border-radius: 12px;
+  padding: 10px;
+  background: #ffffff;
+}
+
+.business-public-panel .qr-code-frame canvas {
+  width: 100% !important;
+  height: auto !important;
+}
+
+.business-public-panel .qr-code-download {
+  width: 100%;
+}
+
+@media (min-width: 560px) {
+  .management-sync-strip {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+  }
+
+  .management-sync-strip > .status-badge {
+    grid-column: auto;
+  }
+
+  .day-selector {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .business-public-panel .public-link-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 760px) {
+  .catalog-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .catalog-list-panel .dashboard-empty {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1040px) {
+  .catalog-management-grid {
+    grid-template-columns: minmax(320px, 0.68fr) minmax(0, 1.32fr);
+    align-items: start;
+  }
+
+  .catalog-form-panel {
+    position: sticky;
+    top: 82px;
+  }
+
+  .business-management-grid {
+    grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+    align-items: start;
+  }
+
+  .business-public-panel {
+    position: sticky;
+    top: 82px;
+  }
+}
+
+@media (min-width: 1040px) and (max-width: 1180px) {
+  .catalog-management-grid,
+  .business-management-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-form-panel,
+  .business-public-panel {
+    position: static;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-entity-card {
+    transition: none;
+  }
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Scissors } from 'lucide-react';
+import { Clock3, Pencil, Plus, Power, Scissors } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
+import PageHeader from '../components/ui/PageHeader';
 import { useAuth } from '../contexts/AuthContext';
 import {
   atualizarServico,
@@ -107,6 +108,14 @@ function Servicos({ navigate }) {
     setErro('');
   }
 
+  function prepararNovoServico() {
+    cancelarEdicao();
+    document.getElementById('servicos-form-title')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setErro('');
@@ -180,18 +189,29 @@ function Servicos({ navigate }) {
       onLogout={handleLogout}
       usuario={usuario}
     >
-      <header className="page-title">
-        <div>
-          <p className="eyebrow">Painel do empreendedor</p>
-          <h1>Serviços</h1>
-          <p className="panel-text">
-            Organize os serviços disponíveis para agendamento.
-          </p>
-        </div>
-      </header>
+      <PageHeader
+        title="Serviços"
+        description="Organize seu catálogo com preços, duração e disponibilidade claros."
+        actions={
+          <button className="button button-primary button-small" onClick={prepararNovoServico} type="button">
+            <Plus aria-hidden="true" size={17} /> Novo serviço
+          </button>
+        }
+      />
 
-      <section className="management-grid">
-        <div className="dashboard-panel management-form-card">
+      <section className="management-sync-strip" aria-label="Resumo dos serviços">
+        <span className="management-sync-icon" aria-hidden="true"><Scissors size={19} /></span>
+        <div>
+          <strong>{carregando ? 'Carregando catálogo' : erro ? 'Catálogo indisponível' : `${servicos.length} serviço${servicos.length === 1 ? '' : 's'} ativo${servicos.length === 1 ? '' : 's'}`}</strong>
+          <p>Alterações salvas aparecem automaticamente na página pública.</p>
+        </div>
+        <span className={`status-badge ${erro ? 'status-cancelado' : carregando ? 'status-pendente' : 'status-confirmado'}`}>
+          {erro ? 'Atenção' : carregando ? 'Atualizando' : 'Sincronizado'}
+        </span>
+      </section>
+
+      <section className="management-grid catalog-management-grid">
+        <div className="dashboard-panel management-form-card catalog-form-panel">
           <div className="panel-heading">
             <div>
               <h2 id="servicos-form-title">
@@ -242,6 +262,7 @@ function Servicos({ navigate }) {
                     atualizarCampo('nome', event.target.value)
                   }
                   required
+                  placeholder="Ex.: Corte degradê"
                   type="text"
                   value={form.nome}
                 />
@@ -254,6 +275,7 @@ function Servicos({ navigate }) {
                     atualizarCampo('descricao', event.target.value)
                   }
                   rows="3"
+                  placeholder="Explique brevemente o que está incluído"
                   value={form.descricao}
                 />
               </label>
@@ -310,7 +332,7 @@ function Servicos({ navigate }) {
           )}
         </div>
 
-        <div className="dashboard-panel management-list-card">
+        <div className="dashboard-panel management-list-card catalog-list-panel">
           <div className="panel-heading">
             <div>
               <h2 id="servicos-list-title">Serviços cadastrados</h2>
@@ -335,11 +357,12 @@ function Servicos({ navigate }) {
             </div>
           )}
 
-          <div className="entity-list">
+          <div className="entity-list catalog-list">
             {servicos.map((servico) => (
-              <article className="entity-card" key={servico.id}>
+              <article className="entity-card catalog-entity-card" key={servico.id}>
                 <div className="entity-card-header">
-                  <div>
+                  <span className="catalog-entity-icon" aria-hidden="true"><Scissors size={19} /></span>
+                  <div className="catalog-entity-copy">
                     <h3>{servico.nome}</h3>
                     <p>{servico.descricao || 'Sem descrição informada.'}</p>
                   </div>
@@ -348,7 +371,7 @@ function Servicos({ navigate }) {
 
                 <dl className="meta-list">
                   <div>
-                    <dt>Duração</dt>
+                    <dt><Clock3 aria-hidden="true" size={14} /> Duração</dt>
                     <dd>{servico.duracao_minutos} min</dd>
                   </div>
                   <div>
@@ -363,14 +386,14 @@ function Servicos({ navigate }) {
                     onClick={() => iniciarEdicao(servico)}
                     type="button"
                   >
-                    Editar
+                    <Pencil aria-hidden="true" size={15} /> Editar
                   </button>
                   <button
                     className="button button-danger button-small"
                     onClick={() => handleDesativar(servico)}
                     type="button"
                   >
-                    Desativar
+                    <Power aria-hidden="true" size={15} /> Desativar
                   </button>
                 </div>
               </article>

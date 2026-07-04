@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Users } from 'lucide-react';
+import { Mail, Pencil, Phone, Plus, Power, Users } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
+import PageHeader from '../components/ui/PageHeader';
 import { useAuth } from '../contexts/AuthContext';
 import {
   atualizarProfissional,
@@ -100,6 +101,14 @@ function Profissionais({ navigate }) {
     setErro('');
   }
 
+  function prepararNovoProfissional() {
+    cancelarEdicao();
+    document.getElementById('profissionais-form-title')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setErro('');
@@ -174,18 +183,29 @@ function Profissionais({ navigate }) {
       onLogout={handleLogout}
       usuario={usuario}
     >
-      <header className="page-title">
-        <div>
-          <p className="eyebrow">Painel do empreendedor</p>
-          <h1>Profissionais</h1>
-          <p className="panel-text">
-            Gerencie quem atende os agendamentos do seu negócio.
-          </p>
-        </div>
-      </header>
+      <PageHeader
+        title="Profissionais"
+        description="Gerencie a equipe, especialidades e contatos usados nos agendamentos."
+        actions={
+          <button className="button button-primary button-small" onClick={prepararNovoProfissional} type="button">
+            <Plus aria-hidden="true" size={17} /> Novo profissional
+          </button>
+        }
+      />
 
-      <section className="management-grid">
-        <div className="dashboard-panel management-form-card">
+      <section className="management-sync-strip" aria-label="Resumo dos profissionais">
+        <span className="management-sync-icon" aria-hidden="true"><Users size={19} /></span>
+        <div>
+          <strong>{carregando ? 'Carregando equipe' : erro ? 'Equipe indisponível' : `${profissionais.length} ${profissionais.length === 1 ? 'profissional ativo' : 'profissionais ativos'}`}</strong>
+          <p>A equipe ativa fica disponível automaticamente para seus clientes.</p>
+        </div>
+        <span className={`status-badge ${erro ? 'status-cancelado' : carregando ? 'status-pendente' : 'status-confirmado'}`}>
+          {erro ? 'Atenção' : carregando ? 'Atualizando' : 'Sincronizado'}
+        </span>
+      </section>
+
+      <section className="management-grid catalog-management-grid">
+        <div className="dashboard-panel management-form-card catalog-form-panel">
           <div className="panel-heading">
             <div>
               <h2 id="profissionais-form-title">
@@ -236,6 +256,7 @@ function Profissionais({ navigate }) {
                     atualizarCampo('nome', event.target.value)
                   }
                   required
+                  placeholder="Nome completo"
                   type="text"
                   value={form.nome}
                 />
@@ -247,6 +268,7 @@ function Profissionais({ navigate }) {
                   onChange={(event) =>
                     atualizarCampo('especialidade', event.target.value)
                   }
+                  placeholder="Ex.: Barbeiro especialista"
                   type="text"
                   value={form.especialidade}
                 />
@@ -301,7 +323,7 @@ function Profissionais({ navigate }) {
           )}
         </div>
 
-        <div className="dashboard-panel management-list-card">
+        <div className="dashboard-panel management-list-card catalog-list-panel">
           <div className="panel-heading">
             <div>
               <h2 id="profissionais-list-title">Profissionais cadastrados</h2>
@@ -328,9 +350,9 @@ function Profissionais({ navigate }) {
               </div>
             )}
 
-          <div className="entity-list">
+          <div className="entity-list catalog-list professional-catalog-list">
             {profissionais.map((profissional) => (
-              <article className="entity-card professional-card" key={profissional.id}>
+              <article className="entity-card professional-card catalog-entity-card" key={profissional.id}>
                 <div className="entity-card-header">
                   <div className="professional-title">
                     <span className="entity-avatar" aria-hidden="true">
@@ -346,11 +368,11 @@ function Profissionais({ navigate }) {
 
                 <dl className="meta-list">
                   <div>
-                    <dt>Telefone</dt>
+                    <dt><Phone aria-hidden="true" size={14} /> Telefone</dt>
                     <dd>{profissional.telefone || 'Não informado'}</dd>
                   </div>
                   <div>
-                    <dt>E-mail</dt>
+                    <dt><Mail aria-hidden="true" size={14} /> E-mail</dt>
                     <dd>{profissional.email || 'Não informado'}</dd>
                   </div>
                 </dl>
@@ -361,14 +383,14 @@ function Profissionais({ navigate }) {
                     onClick={() => iniciarEdicao(profissional)}
                     type="button"
                   >
-                    Editar
+                    <Pencil aria-hidden="true" size={15} /> Editar
                   </button>
                   <button
                     className="button button-danger button-small"
                     onClick={() => handleDesativar(profissional)}
                     type="button"
                   >
-                    Desativar
+                    <Power aria-hidden="true" size={15} /> Desativar
                   </button>
                 </div>
               </article>

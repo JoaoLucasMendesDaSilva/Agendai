@@ -1,6 +1,7 @@
 import './styles.css';
 import './professional-shell.css';
 import './professional-pages.css';
+import './professional-management.css';
 import { useEffect, useState } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
 import Agenda from './pages/Agenda';
