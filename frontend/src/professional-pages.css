@@ -43,7 +43,7 @@
 
 .dashboard-freshness {
   color: var(--gray-500);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   white-space: nowrap;
 }
 
@@ -63,7 +63,7 @@
 
 .metric-card p {
   color: var(--gray-500);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
@@ -76,7 +76,7 @@
   display: block;
   margin-top: 3px;
   color: var(--gray-500);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   line-height: 1.4;
 }
 
@@ -111,7 +111,7 @@
 
 .operational-panel-heading .panel-text {
   margin-top: 3px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 .panel-link-button {
@@ -123,7 +123,7 @@
   padding: 0;
   color: var(--green-800);
   background: transparent;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
@@ -179,7 +179,7 @@
 .next-appointment-time span {
   display: block;
   color: var(--gray-500);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   overflow-wrap: anywhere;
 }
 
@@ -203,7 +203,7 @@
 
 .weekly-chart-panel .chart-summary {
   color: var(--gray-500);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
@@ -227,7 +227,7 @@
 
 .today-schedule-row time {
   color: var(--gray-900);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -245,17 +245,17 @@
 
 .today-schedule-row strong {
   color: var(--gray-900);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 .today-schedule-row small {
   margin-top: 2px;
   color: var(--gray-500);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
 }
 
 .today-schedule-row .status-badge {
-  font-size: 0.58rem;
+  font-size: 0.75rem;
 }
 
 .service-ranking-list {
@@ -280,7 +280,7 @@
   border-radius: 8px;
   color: var(--green-800);
   background: var(--green-100);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -292,7 +292,7 @@
 
 .service-ranking-list strong,
 .service-ranking-list small {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
 }
 
 .service-ranking-list strong {
@@ -412,7 +412,7 @@
 
 .agenda-overview-item small {
   color: var(--gray-500);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   line-height: 1.35;
 }
 
@@ -455,7 +455,7 @@
   border-radius: 10px;
   padding: 7px 11px;
   background: transparent;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   box-shadow: none;
 }
 
@@ -502,7 +502,7 @@
   color: var(--gray-900);
   background: transparent;
   box-shadow: none;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 .agenda-search-field input:focus,
@@ -542,7 +542,7 @@
 }
 
 .agenda-date-heading p {
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   text-transform: capitalize;
 }
 
@@ -553,7 +553,7 @@
   padding: 5px 9px;
   color: var(--gray-500);
   background: var(--gray-100);
-  font-size: 0.58rem;
+  font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -594,7 +594,7 @@
 }
 
 .agenda-card-time span {
-  font-size: 0.6rem;
+  font-size: 0.75rem;
 }
 
 .agenda-client-cell,
@@ -627,14 +627,14 @@
 .agenda-client-cell strong,
 .agenda-service-cell strong {
   color: var(--gray-900);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 .agenda-client-cell span,
 .agenda-service-cell span {
   margin-top: 2px;
   color: var(--gray-500);
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   overflow-wrap: anywhere;
 }
 
@@ -645,7 +645,7 @@
 .agenda-card-pro > .status-badge {
   grid-column: 2;
   width: fit-content;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
 }
 
 .agenda-actions {
@@ -659,7 +659,7 @@
   min-height: 38px;
   border-radius: 10px;
   padding: 7px 28px 7px 9px;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 
 .agenda-cancel-button {
@@ -668,7 +668,7 @@
   padding: 0 8px;
   color: var(--red-600);
   background: transparent;
-  font-size: 0.63rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -680,7 +680,7 @@
   border-radius: 8px;
   padding: 9px 11px;
   background: var(--gray-100);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 
 /* Clientes */
@@ -754,7 +754,7 @@
 
 .client-card-header strong,
 .client-history-header strong {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 .client-recurrent-badge {
@@ -765,7 +765,7 @@
   padding: 3px 7px;
   color: var(--green-800) !important;
   background: var(--green-100);
-  font-size: 0.54rem !important;
+  font-size: 0.75rem !important;
   font-weight: 600;
 }
 
@@ -776,14 +776,14 @@
 .client-card-contact small {
   display: block;
   color: var(--gray-500);
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   overflow-wrap: anywhere;
 }
 
 .client-card-total,
 .client-card-last {
   color: var(--gray-700);
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 
 .client-card-total::after {
@@ -824,7 +824,7 @@
 .client-profile-contact dd {
   margin-top: 3px;
   color: var(--gray-700);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 .client-agenda-button {
@@ -854,7 +854,7 @@
 
 .client-profile-metric span,
 .client-profile-metric small {
-  font-size: 0.6rem;
+  font-size: 0.75rem;
 }
 
 .client-profile-metric strong {
@@ -862,7 +862,7 @@
 }
 
 .client-top-services > div > span {
-  font-size: 0.66rem;
+  font-size: 0.75rem;
 }
 
 .history-item {
@@ -875,7 +875,7 @@
 
 .history-item strong,
 .history-item span {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
 }
 
 @media (min-width: 560px) {
@@ -1008,7 +1008,7 @@
     padding: 10px 16px;
     color: var(--gray-500);
     background: var(--panel-bg-soft);
-    font-size: 0.58rem;
+    font-size: 0.75rem;
     font-weight: 600;
   }
 

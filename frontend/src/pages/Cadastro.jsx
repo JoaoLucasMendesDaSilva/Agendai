@@ -124,8 +124,8 @@ function Cadastro({ navigate }) {
             </span>
           </label>
 
-          {erro && <p className="message message-error">{erro}</p>}
-          {sucesso && <p className="message message-success">{sucesso}</p>}
+          {erro && <p className="message message-error" role="alert">{erro}</p>}
+          {sucesso && <p className="message message-success" role="status">{sucesso}</p>}
 
           <button className="button button-primary auth-submit-button" disabled={carregando} type="submit">
             {carregando ? 'Criando conta...' : 'Criar conta'}

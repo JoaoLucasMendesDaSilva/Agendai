@@ -1,47 +1,3 @@
-:root {
-  --page-bg: #f5f7f6;
-  --page-bg-soft: #f8faf9;
-  --panel-bg: #ffffff;
-  --panel-bg-soft: #f8faf9;
-  --input-bg: #ffffff;
-  --overlay-bg: rgba(255, 255, 255, 0.94);
-  --green-900: #093e2a;
-  --green-800: #0d6f3b;
-  --green-700: #178a4b;
-  --green-100: #e8f6ed;
-  --green-50: #f2fbf5;
-  --gray-900: #14201e;
-  --gray-700: #344541;
-  --gray-500: #6c7b77;
-  --gray-300: #dfe7e3;
-  --gray-100: #f0f4f2;
-  --shadow-soft: 0 8px 22px rgba(25, 57, 47, 0.06);
-  --shadow-card: 0 4px 8px rgba(25, 57, 47, 0.05);
-  --radius: 14px;
-  --shell-sidebar-width: 246px;
-}
-
-[data-theme="dark"] {
-  --page-bg: #0c1312;
-  --page-bg-soft: #101a18;
-  --panel-bg: #121c1a;
-  --panel-bg-soft: #16221f;
-  --input-bg: #121c1a;
-  --overlay-bg: rgba(18, 28, 26, 0.94);
-  --green-900: #c7f7d8;
-  --green-800: #75d99a;
-  --green-700: #39b96e;
-  --green-100: #173c26;
-  --green-50: #142f20;
-  --gray-900: #f2f7f4;
-  --gray-700: #d5e1dc;
-  --gray-500: #93a8a0;
-  --gray-300: #273934;
-  --gray-100: #17221f;
-  --shadow-soft: 0 8px 22px rgba(0, 0, 0, 0.2);
-  --shadow-card: 0 4px 8px rgba(0, 0, 0, 0.16);
-}
-
 body {
   background: var(--page-bg);
 }
@@ -75,7 +31,7 @@ body {
 .app-shell {
   display: block;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
   background: var(--page-bg);
 }
 
@@ -190,7 +146,7 @@ body {
 
 .sidebar-public-card p {
   color: var(--gray-500);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   line-height: 1.55;
 }
 
@@ -200,7 +156,7 @@ body {
   padding: 0;
   color: var(--green-800);
   background: transparent;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -213,7 +169,7 @@ body {
   margin-top: 17px;
   padding: 12px 8px 0;
   color: var(--gray-500);
-  font-size: 0.66rem;
+  font-size: 0.75rem;
 }
 
 .system-online-dot {
@@ -234,7 +190,7 @@ body {
   padding: 9px 0 0;
   color: var(--gray-500);
   background: transparent;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   cursor: pointer;
 }
 
@@ -280,7 +236,7 @@ body {
   color: #ffffff;
   background: var(--green-700);
   box-shadow: none;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
@@ -338,13 +294,13 @@ body {
 
 .topbar-user-copy strong {
   max-width: 170px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .topbar-user-copy small {
   max-width: 170px;
   color: var(--gray-500);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
 }
 
 .avatar {
@@ -353,7 +309,7 @@ body {
   border: 1px solid color-mix(in srgb, var(--green-700) 22%, var(--gray-300));
   color: var(--green-800);
   background: var(--green-100);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 .avatar.has-image {
@@ -391,7 +347,7 @@ body {
   padding: 0 10px;
   color: var(--gray-700);
   background: transparent;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-align: left;
   cursor: pointer;
 }

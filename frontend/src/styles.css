@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
-
 :root {
   color: var(--gray-900);
   background: var(--page-bg);
@@ -7,60 +5,61 @@
   font-weight: 400;
   line-height: 1.5;
   color-scheme: light;
-  --page-bg: #f7f9fb;
-  --page-bg-soft: #fbfcfd;
+  --page-bg: #f5f7f6;
+  --page-bg-soft: #f8faf9;
   --panel-bg: #ffffff;
-  --panel-bg-soft: #fbfdfc;
+  --panel-bg-soft: #f8faf9;
   --input-bg: #ffffff;
   --overlay-bg: rgba(255, 255, 255, 0.9);
-  --green-900: #075047;
-  --green-800: #006b5a;
-  --green-700: #00816f;
-  --green-100: #e5f5ef;
-  --green-50: #f0fbf7;
+  --green-900: #093e2a;
+  --green-800: #0d6f3b;
+  --green-700: #178a4b;
+  --green-100: #e8f6ed;
+  --green-50: #f2fbf5;
   --yellow-100: #fff4cc;
   --yellow-600: #c88900;
   --blue-100: #e8f2ff;
   --blue-600: #2368b3;
   --red-100: #ffe7e7;
   --red-600: #c93b3b;
-  --gray-900: #101727;
-  --gray-700: #344054;
-  --gray-500: #667085;
-  --gray-300: #dfe5ec;
-  --gray-100: #f3f6f9;
+  --gray-900: #14201e;
+  --gray-700: #344541;
+  --gray-500: #5f706b;
+  --gray-300: #dfe7e3;
+  --gray-100: #f0f4f2;
   --white: #ffffff;
-  --shadow-soft: 0 16px 42px rgba(16, 24, 40, 0.07);
-  --shadow-card: 0 10px 26px rgba(16, 24, 40, 0.055);
-  --radius: 16px;
+  --shadow-soft: 0 8px 22px rgba(25, 57, 47, 0.06);
+  --shadow-card: 0 4px 8px rgba(25, 57, 47, 0.05);
+  --radius: 14px;
+  --shell-sidebar-width: 246px;
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --page-bg: #071211;
-  --page-bg-soft: #0b1716;
-  --panel-bg: #101c1b;
-  --panel-bg-soft: #132322;
-  --input-bg: #0c1817;
-  --overlay-bg: rgba(16, 28, 27, 0.9);
-  --green-900: #d8fff4;
-  --green-800: #7be0c9;
-  --green-700: #31b99f;
-  --green-100: #123c34;
-  --green-50: #0f2b26;
+  --page-bg: #0c1312;
+  --page-bg-soft: #101a18;
+  --panel-bg: #121c1a;
+  --panel-bg-soft: #16221f;
+  --input-bg: #121c1a;
+  --overlay-bg: rgba(18, 28, 26, 0.94);
+  --green-900: #c7f7d8;
+  --green-800: #75d99a;
+  --green-700: #39b96e;
+  --green-100: #173c26;
+  --green-50: #142f20;
   --yellow-100: #3a2d0f;
   --yellow-600: #f6c65b;
   --blue-100: #112c4b;
   --blue-600: #88bfff;
   --red-100: #3a171a;
   --red-600: #ff8a8a;
-  --gray-900: #f4f7fb;
-  --gray-700: #d5dde7;
-  --gray-500: #a6b1c0;
-  --gray-300: #2d3a47;
-  --gray-100: #111f24;
-  --shadow-soft: 0 18px 48px rgba(0, 0, 0, 0.36);
-  --shadow-card: 0 14px 32px rgba(0, 0, 0, 0.26);
+  --gray-900: #f2f7f4;
+  --gray-700: #d5e1dc;
+  --gray-500: #93a8a0;
+  --gray-300: #273934;
+  --gray-100: #17221f;
+  --shadow-soft: 0 8px 22px rgba(0, 0, 0, 0.2);
+  --shadow-card: 0 4px 8px rgba(0, 0, 0, 0.16);
 }
 
 * {
@@ -71,10 +70,78 @@ body {
   margin: 0;
   min-width: 320px;
   font-weight: 400;
-  overflow-x: hidden;
   background:
     radial-gradient(circle at top left, rgba(0, 127, 111, 0.08), transparent 32%),
     var(--page-bg);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--gray-500);
+  opacity: 1;
+}
+
+.route-loading {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  color: var(--gray-700);
+  background: var(--page-bg);
+}
+
+.route-loading p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.route-loading-mark {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--green-100);
+  border-top-color: var(--green-700);
+  border-radius: 50%;
+  animation: route-loading-spin 700ms linear infinite;
+}
+
+@keyframes route-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (pointer: coarse) {
+  :where(button, [role="button"], a.button, input, select, textarea) {
+    min-height: 44px;
+  }
+
+  .shell-icon-button {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (max-width: 720px) {
+  :where(
+    .app-shell,
+    .landing-page,
+    .auth-page,
+    .public-booking-page
+  ) :where(small, .status-badge, .step-label, .dashboard-freshness) {
+    font-size: 0.875rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-loading-mark {
+    animation: none;
+  }
+
+  .booking-progress span {
+    transition: none;
+  }
 }
 
 @keyframes fadeIn {
@@ -659,7 +726,7 @@ textarea:focus {
 
 .landing-page {
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
   padding: 18px;
   background:
     radial-gradient(circle at 12% 4%, rgba(0, 127, 111, 0.12), transparent 28%),
@@ -1110,7 +1177,7 @@ textarea:focus {
   min-height: 100vh;
   min-width: 0;
   background: var(--gray-100);
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .sidebar {
@@ -1242,7 +1309,7 @@ textarea:focus {
 .workspace {
   min-width: 0;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .topbar {
@@ -1769,10 +1836,13 @@ textarea:focus {
 
 .booking-progress span {
   display: block;
+  width: 100%;
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--green-700), var(--green-800));
-  transition: width 220ms ease;
+  transform: scaleX(var(--booking-progress, 0));
+  transform-origin: left center;
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .booking-step {
@@ -2428,8 +2498,10 @@ textarea:focus {
 
 .client-profile-metric {
   min-width: 0;
-  border-left: 3px solid var(--green-800);
-  padding-left: 10px;
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
+  padding: 10px;
+  background: var(--panel-bg-soft);
 }
 
 .client-profile-metric span,
@@ -2908,7 +2980,7 @@ textarea:focus {
 
 .agenda-observations {
   margin: 0;
-  border-left: 3px solid rgba(0, 127, 111, 0.24);
+  border: 1px solid var(--gray-300);
   border-radius: 10px;
   padding: 10px 12px;
   color: var(--gray-700);
@@ -3788,7 +3860,7 @@ textarea:focus {
     width: auto;
     min-height: 100vh;
     align-content: start;
-    overflow-x: hidden;
+    overflow-x: clip;
     border-right: 1px solid var(--gray-300);
     border-bottom: 0;
     box-shadow: none;

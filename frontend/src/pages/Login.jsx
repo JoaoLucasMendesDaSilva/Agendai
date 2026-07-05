@@ -86,7 +86,7 @@ function Login({ navigate }) {
             </span>
           </label>
 
-          {erro && <p className="message message-error">{erro}</p>}
+          {erro && <p className="message message-error" role="alert">{erro}</p>}
 
           <button className="button button-primary auth-submit-button" disabled={carregando} type="submit">
             {carregando ? 'Entrando...' : 'Entrar'}

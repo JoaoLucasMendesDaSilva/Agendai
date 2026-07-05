@@ -3,22 +3,32 @@ import './professional-shell.css';
 import './professional-pages.css';
 import './professional-management.css';
 import './professional-public.css';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import ProtectedRoute from './components/ProtectedRoute';
-import Agenda from './pages/Agenda';
-import Cadastro from './pages/Cadastro';
-import Clientes from './pages/Clientes';
-import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
-import LandingPage from './pages/LandingPage';
-import AgendamentoPublico from './pages/AgendamentoPublico';
-import GerenciarAgendamento from './pages/GerenciarAgendamento';
-import Negocio from './pages/Negocio';
-import NotFound from './pages/NotFound';
-import Profissionais from './pages/Profissionais';
-import Servicos from './pages/Servicos';
 
-function App() {
+const Agenda = lazy(() => import('./pages/Agenda'));
+const Cadastro = lazy(() => import('./pages/Cadastro'));
+const Clientes = lazy(() => import('./pages/Clientes'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Login = lazy(() => import('./pages/Login'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const AgendamentoPublico = lazy(() => import('./pages/AgendamentoPublico'));
+const GerenciarAgendamento = lazy(() => import('./pages/GerenciarAgendamento'));
+const Negocio = lazy(() => import('./pages/Negocio'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Profissionais = lazy(() => import('./pages/Profissionais'));
+const Servicos = lazy(() => import('./pages/Servicos'));
+
+function RouteLoading() {
+  return (
+    <main className="route-loading" role="status" aria-live="polite">
+      <span className="route-loading-mark" aria-hidden="true" />
+      <p>Carregando página...</p>
+    </main>
+  );
+}
+
+function AppRoutes() {
   const [path, setPath] = useState(window.location.pathname);
 
   useEffect(() => {
@@ -122,6 +132,14 @@ function App() {
   }
 
   return <NotFound navigate={navigate} />;
+}
+
+function App() {
+  return (
+    <Suspense fallback={<RouteLoading />}>
+      <AppRoutes />
+    </Suspense>
+  );
 }
 
 export default App;

@@ -65,14 +65,17 @@ describe('AgendamentoPublico', () => {
     render(<AgendamentoPublico slugOuId="studio-teste" />);
 
     const servico = await screen.findByRole('button', { name: /Corte rapido/i });
+    expect(servico).toHaveAttribute('aria-pressed', 'false');
     await user.click(servico);
 
     expect(servico).toHaveClass('is-selected');
+    expect(servico).toHaveAttribute('aria-pressed', 'true');
 
     const profissional = await screen.findByRole('button', { name: /Maria/i });
     await user.click(profissional);
 
     expect(profissional).toHaveClass('is-selected');
+    expect(profissional).toHaveAttribute('aria-pressed', 'true');
     await waitFor(() => {
       expect(publicoServiceMock.listarHorariosDisponiveis).toHaveBeenCalledWith(
         'studio-teste',
@@ -87,8 +90,22 @@ describe('AgendamentoPublico', () => {
     await user.click(horario);
 
     expect(horario).toHaveClass('is-selected');
+    expect(horario).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '4');
     expect(
       screen.getByRole('heading', { name: /Informe seus dados/i }),
     ).toBeInTheDocument();
+  });
+
+  it('anuncia falhas de carregamento como alerta acessivel', async () => {
+    publicoServiceMock.buscarNegocioPublico.mockRejectedValueOnce(
+      new Error('Negócio indisponível'),
+    );
+
+    render(<AgendamentoPublico slugOuId="studio-teste" />);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Confira o endereço recebido',
+    );
   });
 });

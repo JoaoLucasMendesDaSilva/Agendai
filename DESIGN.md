@@ -2,20 +2,20 @@
 name: Agendai
 description: Sistema de agendamento online simples, profissional e confiavel para pequenos negocios.
 colors:
-  teal-deep: "#075047"
-  teal-primary: "#006b5a"
-  teal-action: "#00816f"
-  teal-soft: "#e5f5ef"
-  teal-wash: "#f0fbf7"
-  page-bg: "#f7f9fb"
-  page-bg-soft: "#fbfcfd"
+  green-deep: "#093e2a"
+  green-primary: "#0d6f3b"
+  green-action: "#178a4b"
+  green-soft: "#e8f6ed"
+  green-wash: "#f2fbf5"
+  page-bg: "#f5f7f6"
+  page-bg-soft: "#f8faf9"
   panel-bg: "#ffffff"
-  panel-bg-soft: "#fbfdfc"
-  ink: "#101727"
-  text: "#344054"
-  muted: "#667085"
-  border: "#dfe5ec"
-  quiet-surface: "#f3f6f9"
+  panel-bg-soft: "#f8faf9"
+  ink: "#14201e"
+  text: "#344541"
+  muted: "#5f706b"
+  border: "#dfe7e3"
+  quiet-surface: "#f0f4f2"
   warning-bg: "#fff4cc"
   warning: "#c88900"
   info-bg: "#e8f2ff"
@@ -70,14 +70,14 @@ spacing:
   section: "28px"
 components:
   button-primary:
-    backgroundColor: "{colors.teal-action}"
+    backgroundColor: "{colors.green-action}"
     textColor: "{colors.panel-bg}"
     rounded: "{rounded.sm}"
     padding: "13px 18px"
     height: "50px"
   button-secondary:
-    backgroundColor: "{colors.teal-wash}"
-    textColor: "{colors.teal-primary}"
+    backgroundColor: "{colors.green-wash}"
+    textColor: "{colors.green-primary}"
     rounded: "{rounded.sm}"
     padding: "13px 18px"
     height: "50px"
@@ -93,8 +93,8 @@ components:
     rounded: "{rounded.xl}"
     padding: "22px"
   status-chip-success:
-    backgroundColor: "{colors.teal-soft}"
-    textColor: "{colors.teal-primary}"
+    backgroundColor: "{colors.green-soft}"
+    textColor: "{colors.green-primary}"
     rounded: "{rounded.pill}"
     padding: "6px 10px"
 ---
@@ -123,11 +123,11 @@ O sistema rejeita a aparencia de sistema complicado, amador ou distante do usuar
 A paleta e restrita e funcional: verde profundo para confianca e acao, neutros limpos para leitura, e cores semanticas somente quando o estado pede.
 
 ### Primary
-- **Verde Atendimento Profundo** (`teal-deep`): usado em headers fortes, hero publico, dark accents e momentos de identidade do Agendai.
-- **Verde Operacional** (`teal-primary`): usado em texto de acao, navegacao ativa, chips de sucesso e elementos que indicam controle.
-- **Verde Acao** (`teal-action`): usado em botoes primarios, foco, selecao de horario e graficos.
-- **Verde Confirmacao Suave** (`teal-soft`): usado em estados positivos, icones de apoio e fundos de componentes selecionados.
-- **Verde Fundo Leve** (`teal-wash`): usado em botoes secundarios, hover de navegacao e areas de apoio.
+- **Verde Atendimento Profundo** (`green-deep`): usado em headers fortes, hero publico, dark accents e momentos de identidade do Agendai.
+- **Verde Operacional** (`green-primary`): usado em texto de acao, navegacao ativa, chips de sucesso e elementos que indicam controle.
+- **Verde Acao** (`green-action`): usado em botoes primarios, foco, selecao de horario e graficos.
+- **Verde Confirmacao Suave** (`green-soft`): usado em estados positivos, icones de apoio e fundos de componentes selecionados.
+- **Verde Fundo Leve** (`green-wash`): usado em botoes secundarios, hover de navegacao e areas de apoio.
 
 ### Secondary
 - **Amarelo Aviso** (`warning`): usado para status pendente, avisos e informacoes que pedem atencao sem bloquear.
@@ -171,8 +171,8 @@ A paleta e restrita e funcional: verde profundo para confianca e acao, neutros l
 O Agendai usa elevacao profissional discreta: sombras suaves e bordas claras separam superficies sem transformar cada card em uma peca decorativa. A hierarquia vem primeiro de layout, espacamento, texto e estado; sombra e complemento, nao protagonista.
 
 ### Shadow Vocabulary
-- **Card Discreto** (`0 10px 26px rgba(16, 24, 40, 0.055)`): padrao para cards, metricas, atalhos e superficies de formulario.
-- **Painel Suave** (`0 16px 42px rgba(16, 24, 40, 0.07)`): usado em containers maiores, auth cards e pagina publica.
+- **Card Discreto** (`0 4px 8px rgba(25, 57, 47, 0.05)`): padrao para cards, metricas, atalhos e superficies de formulario.
+- **Painel Suave** (`0 8px 22px rgba(25, 57, 47, 0.06)`): usado em containers maiores, auth cards e pagina publica.
 - **Hover Operacional** (`0 16px 34px rgba(16, 24, 40, 0.09)`): resposta para cards clicaveis e entidades.
 - **Foco Verde** (`0 0 0 4px rgba(0, 127, 111, 0.12)`): usado em inputs, escolha selecionada e estado ativo.
 
@@ -185,9 +185,9 @@ O Agendai usa elevacao profissional discreta: sombras suaves e bordas claras sep
 
 ### Buttons
 - **Shape:** retangulos levemente arredondados (`10px`), altura confortavel (`50px`) e peso `600`.
-- **Primary:** texto branco sobre gradiente vertical verde (`#00816f` para `#006b5a`), usado para a acao principal da tela.
+- **Primary:** texto branco sobre verde de acao (`#178a4b`), usado para a acao principal da tela.
 - **Hover / Focus:** hover aprofunda o verde e pode elevar ate `translateY(-2px)`; foco deve manter anel verde legivel.
-- **Secondary:** fundo verde muito claro (`#f0fbf7`), texto verde operacional e borda verde translucidada.
+- **Secondary:** fundo verde muito claro (`#f2fbf5`), texto verde operacional e borda verde translucidada.
 - **Danger:** fundo vermelho suave e texto vermelho para cancelamento, erro e exclusao logica.
 
 ### Chips
@@ -198,7 +198,7 @@ O Agendai usa elevacao profissional discreta: sombras suaves e bordas claras sep
 - **Corner Style:** cards operacionais usam `16px`; cards publicos grandes podem chegar a `20px`.
 - **Background:** `panel-bg` para conteudo principal e `quiet-surface` para o app shell.
 - **Shadow Strategy:** usar `Card Discreto` por padrao; reservar `Painel Suave` para containers grandes.
-- **Border:** sempre discreta (`#dfe5ec` ou equivalente translucidado). Evitar bordas coloridas decorativas.
+- **Border:** sempre discreta (`#dfe7e3` ou equivalente translucidado). Evitar bordas coloridas decorativas.
 - **Internal Padding:** `16px` para cards compactos, `22px` para paineis.
 
 ### Inputs / Fields

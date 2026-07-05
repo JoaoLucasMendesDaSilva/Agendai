@@ -1,38 +1,38 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-06-25T14:51:17.1714407-03:00",
+  "generatedAt": "2026-07-04T21:05:00-03:00",
   "title": "Design System: Agendai",
   "extensions": {
     "colorMeta": {
-      "teal-deep": {
+      "green-deep": {
         "role": "primary",
         "displayName": "Verde Atendimento Profundo",
-        "canonical": "#075047",
-        "tonalRamp": ["#021816", "#04302b", "#075047", "#0b6b5f", "#148875", "#31b99f", "#7be0c9", "#d8fff4"]
+        "canonical": "#093e2a",
+        "tonalRamp": ["#061d14", "#093e2a", "#0d6f3b", "#178a4b", "#39b96e", "#75d99a", "#c7f7d8", "#e8f6ed"]
       },
-      "teal-primary": {
+      "green-primary": {
         "role": "primary",
         "displayName": "Verde Operacional",
-        "canonical": "#006b5a",
-        "tonalRamp": ["#021b18", "#00342c", "#006b5a", "#00816f", "#18a38d", "#52cdb7", "#a9eadc", "#e5f5ef"]
+        "canonical": "#0d6f3b",
+        "tonalRamp": ["#061d14", "#093e2a", "#0d6f3b", "#178a4b", "#39b96e", "#75d99a", "#c7f7d8", "#e8f6ed"]
       },
-      "teal-action": {
+      "green-action": {
         "role": "primary",
         "displayName": "Verde Acao",
-        "canonical": "#00816f",
-        "tonalRamp": ["#02201c", "#004236", "#006b5a", "#00816f", "#14a690", "#4ed0ba", "#a9eadc", "#f0fbf7"]
+        "canonical": "#178a4b",
+        "tonalRamp": ["#061d14", "#093e2a", "#0d6f3b", "#178a4b", "#39b96e", "#75d99a", "#e8f6ed", "#f2fbf5"]
       },
       "page-bg": {
         "role": "neutral",
         "displayName": "Fundo de Trabalho",
-        "canonical": "#f7f9fb",
-        "tonalRamp": ["#101727", "#344054", "#667085", "#98a2b3", "#dfe5ec", "#f3f6f9", "#f7f9fb", "#fbfcfd"]
+        "canonical": "#f5f7f6",
+        "tonalRamp": ["#14201e", "#344541", "#5f706b", "#93a8a0", "#dfe7e3", "#f0f4f2", "#f5f7f6", "#f8faf9"]
       },
       "ink": {
         "role": "neutral",
         "displayName": "Tinta Principal",
-        "canonical": "#101727",
-        "tonalRamp": ["#030712", "#101727", "#1f2937", "#344054", "#667085", "#98a2b3", "#dfe5ec", "#f4f7fb"]
+        "canonical": "#14201e",
+        "tonalRamp": ["#07100e", "#14201e", "#344541", "#5f706b", "#93a8a0", "#dfe7e3", "#f0f4f2", "#f2f7f4"]
       },
       "danger": {
         "role": "danger",
@@ -58,12 +58,12 @@
     "shadows": [
       {
         "name": "card-discreto",
-        "value": "0 10px 26px rgba(16, 24, 40, 0.055)",
+        "value": "0 4px 8px rgba(25, 57, 47, 0.05)",
         "purpose": "Separar cards e atalhos sem pesar a interface."
       },
       {
         "name": "painel-suave",
-        "value": "0 16px 42px rgba(16, 24, 40, 0.07)",
+        "value": "0 8px 22px rgba(25, 57, 47, 0.06)",
         "purpose": "Containers grandes como auth card e agendamento publico."
       },
       {

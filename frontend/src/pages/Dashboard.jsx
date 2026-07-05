@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Chart } from 'chart.js/auto';
-import { jsPDF } from 'jspdf';
 import {
   CalendarCheck,
   CalendarDays,
@@ -374,20 +372,26 @@ function Dashboard({ navigate }) {
       return undefined;
     }
 
-    const rootStyles = getComputedStyle(document.documentElement);
-    const verdeBarra = rootStyles.getPropertyValue('--green-700').trim() || '#00816f';
-    const verdeBorda = rootStyles.getPropertyValue('--green-800').trim() || '#006b5a';
-    const textoSuave = rootStyles.getPropertyValue('--gray-500').trim() || '#667085';
-    const linhaGrade = isDark
-      ? 'rgba(45, 58, 71, 0.9)'
-      : 'rgba(223, 229, 236, 0.9)';
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let ativo = true;
 
-    if (chartInstanceRef.current) {
-      chartInstanceRef.current.destroy();
-    }
+    async function renderizarGrafico() {
+      const { Chart } = await import('chart.js/auto');
 
-    chartInstanceRef.current = new Chart(chartRef.current, {
+      if (!ativo || !chartRef.current) {
+        return;
+      }
+
+      const rootStyles = getComputedStyle(document.documentElement);
+      const verdeBarra = rootStyles.getPropertyValue('--green-700').trim() || '#178a4b';
+      const verdeBorda = rootStyles.getPropertyValue('--green-800').trim() || '#0d6f3b';
+      const textoSuave = rootStyles.getPropertyValue('--gray-500').trim() || '#5f706b';
+      const linhaGrade = isDark
+        ? 'rgba(39, 57, 52, 0.9)'
+        : 'rgba(223, 231, 227, 0.9)';
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      chartInstanceRef.current?.destroy();
+      chartInstanceRef.current = new Chart(chartRef.current, {
       type: 'bar',
       data: {
         labels: dadosSemana.map((dia) => dia.label),
@@ -465,9 +469,17 @@ function Dashboard({ navigate }) {
           },
         },
       },
+      });
+    }
+
+    renderizarGrafico().catch(() => {
+      if (ativo) {
+        setErro('Não foi possível carregar o gráfico do dashboard.');
+      }
     });
 
     return () => {
+      ativo = false;
       chartInstanceRef.current?.destroy();
       chartInstanceRef.current = null;
     };
@@ -478,14 +490,7 @@ function Dashboard({ navigate }) {
     navigate('/login', { replace: true });
   }
 
-  function atualizarPeriodo(campo, valor) {
-    setPeriodoRelatorio((atual) => ({
-      ...atual,
-      [campo]: valor,
-    }));
-  }
-
-  function gerarRelatorioPdf() {
+  async function gerarRelatorioPdf() {
     setErro('');
 
     if (!periodoRelatorio.inicio || !periodoRelatorio.fim) {
@@ -501,6 +506,7 @@ function Dashboard({ navigate }) {
     setGerandoRelatorio(true);
 
     try {
+      const { jsPDF } = await import('jspdf');
       const agendamentosPeriodo = filtrarAgendamentosPorPeriodo(
         agendamentos,
         periodoRelatorio.inicio,
@@ -695,7 +701,7 @@ function Dashboard({ navigate }) {
         }
       />
 
-      {erro && <p className="message message-error">{erro}</p>}
+      {erro && <p className="message message-error" role="alert">{erro}</p>}
 
       <section className="metrics-grid dashboard-metrics" aria-label="Indicadores do negócio">
         {metricas.map((metrica) => (

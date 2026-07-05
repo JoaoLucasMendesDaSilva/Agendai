@@ -380,9 +380,9 @@ function Agenda({ navigate }) {
           <div aria-live="polite"><PanelSkeleton lines={4} /></div>
         )}
 
-        {!carregando && erro && <p className="message message-error">{erro}</p>}
+        {!carregando && erro && <p className="message message-error" role="alert">{erro}</p>}
         {!carregando && sucesso && (
-          <p className="message message-success">{sucesso}</p>
+          <p className="message message-success" role="status">{sucesso}</p>
         )}
 
         {!carregando && precisaCadastrarNegocio && (

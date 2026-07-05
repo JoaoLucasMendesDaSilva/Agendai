@@ -49,7 +49,7 @@
   padding: 7px 11px;
   color: var(--green-800);
   background: var(--green-100);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0;
   text-transform: none;
@@ -390,7 +390,7 @@
   align-items: center;
   gap: 6px;
   color: var(--green-800);
-  font-size: 0.64rem;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
@@ -515,7 +515,7 @@
 
 .step-label {
   color: var(--green-800);
-  font-size: 0.64rem;
+  font-size: 0.75rem;
   letter-spacing: 0;
   text-transform: none;
 }

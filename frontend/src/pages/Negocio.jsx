@@ -434,14 +434,14 @@ function Negocio({ navigate }) {
           </div>
 
           {carregando && (
-            <p className="message message-info" aria-live="polite">
+            <p className="message message-info" role="status">
               Carregando negócio...
             </p>
           )}
 
-          {!carregando && erro && <p className="message message-error">{erro}</p>}
+          {!carregando && erro && <p className="message message-error" role="alert">{erro}</p>}
           {!carregando && sucesso && (
-            <p className="message message-success">{sucesso}</p>
+            <p className="message message-success" role="status">{sucesso}</p>
           )}
 
           {!carregando && (
@@ -572,7 +572,7 @@ function Negocio({ navigate }) {
                     Personalize sua página pública com a logo e a capa do seu negócio.
                   </p>
                   {!negocio ? (
-                    <p className="message message-info">
+                    <p className="message message-info" role="status">
                       Salve os dados do negócio antes de enviar as imagens.
                     </p>
                   ) : (
@@ -583,7 +583,7 @@ function Negocio({ navigate }) {
                   )}
                 </fieldset>
                 {possuiImagemPendente && (
-                  <p className="message message-info" aria-live="polite">
+                  <p className="message message-info" role="status">
                     Imagem selecionada. Clique em salvar para aplicar.
                   </p>
                 )}

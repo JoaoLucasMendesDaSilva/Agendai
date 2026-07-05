@@ -2,7 +2,7 @@
   "name": "tcc-agendamento-frontend",
   "version": "0.1.0",
   "private": true,
-  "description": "Frontend do MVP de agendamento online para TCC.",
+  "description": "Frontend profissional do sistema de agendamento online Agendai.",
   "type": "module",
   "scripts": {
     "dev": "vite",

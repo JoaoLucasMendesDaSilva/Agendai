@@ -34,13 +34,13 @@
 .management-sync-strip p {
   margin-top: 2px;
   color: var(--gray-500);
-  font-size: 0.64rem;
+  font-size: 0.75rem;
   line-height: 1.45;
 }
 
 .management-sync-strip > .status-badge {
   grid-column: 2;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
 }
 
 .catalog-management-grid,
@@ -118,13 +118,13 @@
 .professional-title p {
   margin-top: 3px;
   color: var(--gray-500);
-  font-size: 0.64rem;
+  font-size: 0.75rem;
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
 
 .catalog-entity-card .status-badge {
-  font-size: 0.56rem;
+  font-size: 0.75rem;
 }
 
 .catalog-entity-card .meta-list {
@@ -149,13 +149,13 @@
   align-items: center;
   gap: 5px;
   color: var(--gray-500);
-  font-size: 0.58rem;
+  font-size: 0.75rem;
 }
 
 .catalog-entity-card .meta-list dd {
   margin-top: 3px;
   color: var(--gray-900);
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
@@ -169,7 +169,7 @@
   width: auto;
   min-height: 36px;
   padding: 7px 10px;
-  font-size: 0.62rem;
+  font-size: 0.75rem;
 }
 
 .professional-card .entity-card-header {
@@ -267,7 +267,7 @@
 .day-pill span {
   min-height: 42px;
   border-radius: 10px;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
 }
 
 .business-public-panel {
@@ -314,13 +314,13 @@
   align-items: center;
   gap: 5px;
   color: var(--gray-500);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
 }
 
 .business-public-panel .compact-details dd {
   margin-top: 4px;
   color: var(--gray-900);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .business-public-panel .public-link-box {
@@ -336,7 +336,7 @@
 .business-public-panel .public-link-text {
   min-width: 0;
   color: var(--gray-700);
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   overflow-wrap: anywhere;
 }
 
@@ -349,7 +349,7 @@
 .business-public-panel .public-link-actions .button {
   width: 100%;
   min-height: 38px;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
 }
 
 .business-public-panel .qr-code-box {

@@ -213,15 +213,15 @@ function GerenciarAgendamento({ token }) {
 
         <div className="public-booking-content manage-booking-content">
           {carregando && (
-            <p className="message message-info" aria-live="polite">
+            <p className="message message-info" role="status">
               Carregando agendamento...
             </p>
           )}
 
           {erro && agendamento && (
-            <p className="message message-error">{erro}</p>
+            <p className="message message-error" role="alert">{erro}</p>
           )}
-          {sucesso && <p className="message message-success">{sucesso}</p>}
+          {sucesso && <p className="message message-success" role="status">{sucesso}</p>}
 
           {!carregando && !agendamento && (
             <div className="dashboard-empty">
@@ -307,7 +307,7 @@ function GerenciarAgendamento({ token }) {
                     </label>
 
                     {carregandoHorarios && (
-                      <p className="message message-info">
+                      <p className="message message-info" role="status">
                         Carregando horários...
                       </p>
                     )}

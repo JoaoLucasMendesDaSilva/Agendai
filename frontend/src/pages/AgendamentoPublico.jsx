@@ -315,7 +315,7 @@ function AgendamentoPublico({ slugOuId }) {
             </p>
           </div>
           <div className="public-booking-content">
-            <div className="dashboard-empty">
+            <div className="dashboard-empty" role="alert">
               <span className="empty-icon" aria-hidden="true">
                 <CircleAlert size={24} strokeWidth={2} />
               </span>
@@ -431,11 +431,11 @@ function AgendamentoPublico({ slugOuId }) {
           className="booking-progress"
           role="progressbar"
         >
-          <span style={{ width: `${progressoEtapa}%` }} />
+          <span style={{ '--booking-progress': progressoEtapa / 100 }} />
         </div>
 
         <div className="public-booking-content">
-          {erro && <p className="message message-error">{erro}</p>}
+          {erro && <p className="message message-error" role="alert">{erro}</p>}
 
           <section className="booking-intro-card">
             <span className="empty-icon" aria-hidden="true">
@@ -467,7 +467,7 @@ function AgendamentoPublico({ slugOuId }) {
               <div>
                 <p className="step-label">Confirmação</p>
                 <h2 id="confirmacao-title">Agendamento confirmado</h2>
-                {sucesso && <p className="panel-text">{sucesso}</p>}
+                {sucesso && <p className="panel-text" role="status">{sucesso}</p>}
               </div>
 
               <dl className="details-list booking-summary">
@@ -532,6 +532,7 @@ function AgendamentoPublico({ slugOuId }) {
             <div className="choice-list">
               {servicos.map((servico) => (
                 <button
+                  aria-pressed={String(servico.id) === String(servicoId)}
                   className={`choice-card booking-choice ${
                     String(servico.id) === String(servicoId) ? 'is-selected' : ''
                   }`}
@@ -573,6 +574,7 @@ function AgendamentoPublico({ slugOuId }) {
               <div className="choice-list">
                 {profissionais.map((profissional) => (
                   <button
+                    aria-pressed={String(profissional.id) === String(profissionalId)}
                     className={`choice-card booking-choice professional-choice ${
                       String(profissional.id) === String(profissionalId)
                         ? 'is-selected'
@@ -623,7 +625,7 @@ function AgendamentoPublico({ slugOuId }) {
               <h2 id="horario-title">Escolha o horário</h2>
 
               {carregandoHorarios && (
-                <p className="message message-info">Carregando horários...</p>
+                <p className="message message-info" role="status">Carregando horários...</p>
               )}
 
               {!carregandoHorarios && horarios.length === 0 && (
@@ -641,6 +643,10 @@ function AgendamentoPublico({ slugOuId }) {
               <div className="time-grid">
                 {horarios.map((horario) => (
                   <button
+                    aria-pressed={
+                      horarioSelecionado?.data_hora_inicio ===
+                      horario.data_hora_inicio
+                    }
                     className={`time-button ${
                       horarioSelecionado?.data_hora_inicio ===
                       horario.data_hora_inicio

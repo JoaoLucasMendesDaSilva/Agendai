@@ -2,6 +2,8 @@
 
 Data: 04/07/2026
 
+> **Status após as correções:** os itens P1, P2 e P3 identificados nesta auditoria foram resolvidos. O chunk inicial foi reduzido, os estados acessíveis foram implementados, os tokens foram consolidados e a suíte passou a 12 testes. O conteúdo abaixo permanece como registro técnico do diagnóstico anterior às correções.
+
 Escopo: frontend React completo, incluindo landing page, autenticação, área administrativa, agendamento público e gerenciamento do agendamento.
 
 ## Veredito sobre antipadrões

@@ -224,14 +224,14 @@ function Servicos({ navigate }) {
           </div>
 
           {carregando && (
-            <p className="message message-info" aria-live="polite">
+            <p className="message message-info" role="status">
               Carregando serviços...
             </p>
           )}
 
-          {!carregando && erro && <p className="message message-error">{erro}</p>}
+          {!carregando && erro && <p className="message message-error" role="alert">{erro}</p>}
           {!carregando && sucesso && (
-            <p className="message message-success">{sucesso}</p>
+            <p className="message message-success" role="status">{sucesso}</p>
           )}
 
           {!carregando && precisaCadastrarNegocio && (

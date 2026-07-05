@@ -242,7 +242,7 @@ function Clientes({ navigate }) {
         }
       />
 
-      {erro && <p className="message message-error">{erro}</p>}
+      {erro && <p className="message message-error" role="alert">{erro}</p>}
 
       <section className="metrics-grid" aria-label="Resumo de clientes">
         <article className="metric-card">
@@ -303,7 +303,7 @@ function Clientes({ navigate }) {
           </div>
 
           {carregando && (
-            <p className="message message-info" aria-live="polite">
+            <p className="message message-info" role="status">
               Carregando clientes...
             </p>
           )}
@@ -347,15 +347,15 @@ function Clientes({ navigate }) {
             </div>
           )}
 
-          <div className="entity-list clients-list" role="list">
+          <div className="entity-list clients-list">
             {clientesFiltrados.map((cliente) => (
               <button
+                aria-pressed={clienteAtivo?.chave === cliente.chave}
                 className={`client-card ${
                   clienteAtivo?.chave === cliente.chave ? 'is-selected' : ''
                 }`}
                 key={cliente.chave}
                 onClick={() => setClienteSelecionado(cliente.chave)}
-                role="listitem"
                 type="button"
               >
                 <div className="client-card-header">
