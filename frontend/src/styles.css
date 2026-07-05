@@ -292,40 +292,13 @@ textarea {
 }
 
 .brand-mark {
-  position: relative;
   display: inline-grid;
   width: 34px;
   height: 34px;
   place-items: center;
-  border: 3px solid currentColor;
-  border-radius: 8px;
-}
-
-.brand-mark::before,
-.brand-mark::after {
-  position: absolute;
-  top: -8px;
-  width: 4px;
-  height: 10px;
-  border-radius: 99px;
-  background: currentColor;
-  content: "";
-}
-
-.brand-mark::before {
-  left: 7px;
-}
-
-.brand-mark::after {
-  right: 7px;
-}
-
-.brand-mark span {
-  width: 14px;
-  height: 8px;
-  border-bottom: 3px solid currentColor;
-  border-left: 3px solid currentColor;
-  transform: rotate(-45deg) translate(1px, -1px);
+  border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+  border-radius: 10px;
+  background: var(--green-100);
 }
 
 .brand-name {

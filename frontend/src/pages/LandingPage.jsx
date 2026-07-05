@@ -21,6 +21,7 @@ import {
 import authIllustration from '../assets/auth-illustration.png';
 import BrandLogo from '../components/BrandLogo';
 import { useTheme } from '../contexts/ThemeContext';
+import '../landing-page.css';
 
 const funcionalidades = [
   {
@@ -181,6 +182,7 @@ function LandingPage({ navigate }) {
             aria-label={isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}
             className="theme-toggle landing-theme-toggle"
             onClick={toggleTheme}
+            title={isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}
             type="button"
           >
             {isDark ? (
@@ -188,7 +190,7 @@ function LandingPage({ navigate }) {
             ) : (
               <Moon aria-hidden="true" size={18} strokeWidth={2} />
             )}
-            <span>{isDark ? 'Claro' : 'Escuro'}</span>
+            <span className="sr-only">{isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}</span>
           </button>
           <button className="landing-nav-link" onClick={irParaLogin} type="button">
             Entrar
