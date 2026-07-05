@@ -655,11 +655,24 @@
   justify-content: flex-start;
 }
 
-.landing-page .landing-footer span {
+.landing-page .landing-footer > div > span {
   border-radius: 999px;
   padding: 7px 10px;
   color: var(--gray-700);
   background: var(--panel-bg);
+}
+
+.landing-page .landing-footer .brand-mark {
+  padding: 0;
+  border-radius: 10px;
+  color: var(--green-800);
+  background: var(--green-100);
+}
+
+.landing-page .landing-footer .brand-name {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 /* Temas */
@@ -679,16 +692,25 @@
 
 [data-theme='dark'] .landing-page .mockup-main-card,
 [data-theme='dark'] .landing-page .mockup-row {
-  color: #14201e;
-  background: #ffffff;
+  color: var(--gray-900);
+  background: var(--panel-bg);
 }
 
 [data-theme='dark'] .landing-page .mockup-main-card :where(.mockup-header, .mockup-row strong) {
-  color: #14201e;
+  color: var(--gray-900);
 }
 
 [data-theme='dark'] .landing-page .mockup-main-card .mockup-row em {
-  color: #5f706b;
+  color: var(--gray-500);
+}
+
+[data-theme='dark'] .landing-page .mockup-main-card .mockup-header,
+[data-theme='dark'] .landing-page .mockup-main-card .mockup-row {
+  border-color: var(--gray-300);
+}
+
+[data-theme='dark'] .landing-page .mockup-main-card .mockup-row {
+  background: var(--panel-bg-soft);
 }
 
 [data-theme='dark'] .landing-page .landing-product-demo,
