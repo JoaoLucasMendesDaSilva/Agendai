@@ -142,10 +142,10 @@
   align-items: center;
   gap: 12px;
   margin-top: 20px;
-  border: 0;
-  border-radius: 0;
-  padding: 4px 0 0;
-  background: transparent;
+  border: 1px solid var(--gray-300);
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--panel-bg);
   box-shadow: none;
 }
 
@@ -610,12 +610,17 @@
 }
 
 .agenda-client-avatar {
+  display: grid;
   width: 36px;
   height: 36px;
+  min-width: 36px;
+  place-items: center;
+  color: var(--green-800);
+  background: var(--green-100);
 }
 
 .agenda-client-cell strong,
-.agenda-client-cell span,
+.agenda-client-cell > div span,
 .agenda-service-cell strong,
 .agenda-service-cell span {
   display: flex;

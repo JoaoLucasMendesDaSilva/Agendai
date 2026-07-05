@@ -463,7 +463,7 @@ function Agenda({ navigate }) {
 
                     <div className="agenda-client-cell">
                       <span className="agenda-client-avatar" aria-hidden="true">
-                        {agendamento.cliente_nome?.charAt(0).toUpperCase() || 'C'}
+                        {String(agendamento.cliente_nome || '').trim().charAt(0).toLocaleUpperCase('pt-BR') || 'C'}
                       </span>
                       <div>
                         <strong>{agendamento.cliente_nome}</strong>

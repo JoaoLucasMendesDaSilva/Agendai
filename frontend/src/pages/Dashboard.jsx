@@ -731,7 +731,7 @@ function Dashboard({ navigate }) {
           {!carregando && proximoAgendamento && (
             <div className="next-appointment-card">
               <span className="next-appointment-avatar" aria-hidden="true">
-                {proximoAgendamento.cliente_nome?.charAt(0).toUpperCase() || 'C'}
+                {String(proximoAgendamento.cliente_nome || '').trim().charAt(0).toLocaleUpperCase('pt-BR') || 'C'}
               </span>
               <div className="next-appointment-person">
                 <strong>{proximoAgendamento.cliente_nome}</strong>
