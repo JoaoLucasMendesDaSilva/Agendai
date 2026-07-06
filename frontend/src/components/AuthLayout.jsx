@@ -1,3 +1,4 @@
+import { CalendarDays, UserRound, UsersRound } from 'lucide-react';
 import authIllustration from '../assets/auth-illustration.png';
 import BrandLogo from './BrandLogo';
 
@@ -9,33 +10,59 @@ function AuthLayout({ children, mode = 'login', onLogoClick }) {
       <section className="auth-card" aria-label="Acesso do empreendedor">
         <div className="auth-form-panel">{children}</div>
 
-        <aside className="auth-visual-panel">
-          <BrandLogo onClick={onLogoClick} />
-          <div className="auth-visual-proof" aria-label="Resumo do Agendai">
-            <span>Agenda online</span>
-            <span>Sem conflito</span>
-            <span>Gestão profissional</span>
-          </div>
-          <div className="auth-illustration-wrap">
-            <img
-              alt="Ilustração de calendário com planta e relógio"
-              className="auth-illustration"
-              src={authIllustration}
-            />
-          </div>
-          <div className="auth-visual-copy">
-            <h2>
-              {isCadastro
-                ? 'Comece a organizar seus horários'
-                : 'Seu painel de atendimento começa aqui'}
-            </h2>
-            <p>
-              {isCadastro
-                ? 'Crie sua conta, configure seu negócio e comece a receber agendamentos.'
-                : 'Entre para acompanhar agenda, clientes e horários com clareza.'}
-            </p>
-          </div>
-        </aside>
+        {isCadastro ? (
+          <aside className="auth-visual-panel">
+            <BrandLogo onClick={onLogoClick} />
+            <div className="auth-visual-proof" aria-label="Resumo do Agendai">
+              <span>Agenda online</span>
+              <span>Sem conflito</span>
+              <span>Gestão profissional</span>
+            </div>
+            <div className="auth-illustration-wrap">
+              <img
+                alt="Ilustração de calendário com planta e relógio"
+                className="auth-illustration"
+                src={authIllustration}
+              />
+            </div>
+            <div className="auth-visual-copy">
+              <h2>Comece a organizar seus horários</h2>
+              <p>Crie sua conta, configure seu negócio e comece a receber agendamentos.</p>
+            </div>
+          </aside>
+        ) : (
+          <aside className="auth-visual-panel auth-login-visual" aria-label="Visão geral do Agendai">
+            <div className="auth-login-visual-content">
+              <BrandLogo onClick={onLogoClick} />
+
+              <div className="auth-login-visual-copy">
+                <h2>Sua agenda começa organizada</h2>
+                <p>
+                  Acompanhe clientes, horários e equipe em um só lugar.
+                  Mais controle, menos imprevistos.
+                </p>
+              </div>
+
+              <section className="auth-promise-card" aria-labelledby="auth-promise-title">
+                <span className="auth-promise-icon" aria-hidden="true">
+                  <CalendarDays size={28} strokeWidth={1.8} />
+                </span>
+                <div className="auth-promise-copy">
+                  <h3 id="auth-promise-title">Tudo o que importa, no horário certo.</h3>
+                  <p>
+                    Gerencie compromissos, organize sua equipe e ofereça uma experiência
+                    impecável para seus clientes.
+                  </p>
+                </div>
+                <div className="auth-product-cues" aria-label="Agenda, clientes e equipe">
+                  <span><CalendarDays aria-hidden="true" size={23} /></span>
+                  <span><UserRound aria-hidden="true" size={23} /></span>
+                  <span><UsersRound aria-hidden="true" size={23} /></span>
+                </div>
+              </section>
+            </div>
+          </aside>
+        )}
       </section>
     </main>
   );

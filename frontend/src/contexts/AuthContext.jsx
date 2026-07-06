@@ -53,9 +53,9 @@ function AuthProvider({ children }) {
     return cadastrarUsuario(dados);
   }
 
-  async function login(dados) {
+  async function login(dados, opcoes = {}) {
     const resposta = await loginUsuario(dados);
-    setToken(resposta.token);
+    setToken(resposta.token, Boolean(opcoes.lembrar));
     setUsuario(resposta.usuario);
     return resposta;
   }

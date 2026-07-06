@@ -2,15 +2,19 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const TOKEN_KEY = 'tcc_agendamento_token';
 
 function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
+  return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
 }
 
-function setToken(token) {
-  localStorage.setItem(TOKEN_KEY, token);
+function setToken(token, persistir = true) {
+  clearToken();
+
+  const storage = persistir ? localStorage : sessionStorage;
+  storage.setItem(TOKEN_KEY, token);
 }
 
 function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
 }
 
 async function request(path, options = {}) {
