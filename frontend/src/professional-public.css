@@ -359,15 +359,26 @@
 
 /* Login editorial: formulário direto + contexto do produto */
 .auth-page-login {
-  padding: clamp(12px, 2vw, 28px);
+  --auth-space-1: 4px;
+  --auth-space-2: 8px;
+  --auth-space-3: 12px;
+  --auth-space-4: 16px;
+  --auth-space-5: 24px;
+  --auth-space-6: 32px;
+  --auth-space-7: 48px;
+  --auth-space-8: 64px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: clamp(var(--auth-space-3), 2vw, var(--auth-space-5));
   color: #14201e;
   background: #f5f7f6;
 }
 
 .auth-page-login .auth-card {
-  width: min(100%, 1360px);
-  min-height: calc(100vh - clamp(24px, 4vw, 56px));
+  width: min(100%, 1200px);
+  min-height: clamp(680px, calc(100dvh - 48px), 800px);
   grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "form";
   overflow: visible;
   border: 0;
   border-radius: 0;
@@ -375,19 +386,21 @@
 }
 
 .auth-page-login .auth-form-panel {
+  grid-area: form;
   align-content: center;
-  padding: clamp(28px, 6vw, 58px);
+  padding: clamp(var(--auth-space-6), 6vw, var(--auth-space-8));
 }
 
 .auth-page-login .auth-panel {
-  width: min(100%, 480px);
+  display: grid;
+  width: min(100%, 440px);
+  gap: var(--auth-space-7);
   margin-inline: auto;
   color: #14201e;
 }
 
 .auth-page-login .auth-panel-header {
   min-height: 44px;
-  margin-bottom: clamp(40px, 6vh, 64px);
 }
 
 .auth-page-login .auth-panel-header .brand-logo {
@@ -406,22 +419,32 @@
   line-height: 1.18;
 }
 
+.auth-page-login .auth-login-main {
+  display: grid;
+  gap: var(--auth-space-5);
+}
+
+.auth-page-login .auth-heading-group {
+  display: grid;
+  gap: var(--auth-space-2);
+}
+
 .auth-page-login .auth-intro-text {
   max-width: 44ch;
-  margin-top: 14px;
+  margin: 0;
   color: #4f625c;
   font-size: 1rem;
   line-height: 1.6;
 }
 
 .auth-page-login .auth-login-form {
-  gap: 18px;
-  margin-top: 30px;
+  gap: var(--auth-space-4);
+  margin: 0;
 }
 
 .auth-page-login .auth-field-group {
   display: grid;
-  gap: 9px;
+  gap: var(--auth-space-2);
   min-width: 0;
 }
 
@@ -573,7 +596,7 @@
 }
 
 .auth-signup-prompt {
-  margin-top: 24px;
+  margin: 0;
   color: #4f625c;
   text-align: center;
 }
@@ -604,22 +627,22 @@
 
 .auth-page-login .auth-login-visual {
   display: none;
+  grid-area: visual;
   min-height: 100%;
   overflow: hidden;
   border-radius: 16px;
-  padding: clamp(38px, 5vw, 64px);
+  padding: clamp(var(--auth-space-6), 5vw, var(--auth-space-8));
   color: #14201e;
   background: #e8f1ec;
   animation: none;
 }
 
 .auth-login-visual-content {
-  display: flex;
-  width: min(100%, 650px);
+  display: grid;
+  width: min(100%, 520px);
   min-height: 100%;
-  flex-direction: column;
-  justify-content: center;
-  gap: clamp(52px, 8vh, 88px);
+  grid-template-rows: auto 1fr auto;
+  gap: var(--auth-space-6);
   margin-inline: auto;
 }
 
@@ -641,10 +664,14 @@
   max-width: 15ch;
   margin: 0;
   color: #093e2a;
-  font-size: clamp(2rem, 3vw, 2.75rem);
+  font-size: 2.5rem;
   letter-spacing: -0.03em;
   line-height: 1.12;
   text-wrap: balance;
+}
+
+.auth-login-visual-copy {
+  align-self: center;
 }
 
 .auth-login-visual-copy p {
@@ -659,15 +686,97 @@
 .auth-login-visual-note {
   max-width: 38ch;
   border-top: 1px solid rgba(13, 111, 59, 0.14);
-  padding-top: 20px;
+  padding-top: var(--auth-space-5);
   color: #52675f;
   font-size: 0.9rem;
   line-height: 1.5;
 }
 
+[data-theme="dark"] .auth-page-login {
+  color: #f2f7f4;
+  background: #0c1312;
+}
+
+[data-theme="dark"] .auth-page-login .auth-panel {
+  border: 0;
+  color: #f2f7f4;
+  background: transparent;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .auth-page-login .brand-name,
+[data-theme="dark"] .auth-page-login .auth-panel h1 {
+  color: #f2f7f4;
+}
+
+[data-theme="dark"] .auth-page-login .auth-intro-text,
+[data-theme="dark"] .auth-page-login .auth-signup-prompt {
+  color: #a9bbb4;
+}
+
+[data-theme="dark"] .auth-page-login .auth-field-group > label,
+[data-theme="dark"] .auth-page-login .auth-remember-choice {
+  color: #d5e1dc;
+}
+
+[data-theme="dark"] .auth-page-login .auth-input-shell {
+  border-color: #354740;
+  color: #93a8a0;
+  background: #121c1a;
+}
+
+[data-theme="dark"] .auth-page-login .auth-input-shell input {
+  color: #f2f7f4;
+}
+
+[data-theme="dark"] .auth-page-login .auth-input-shell input::placeholder {
+  color: #93a8a0;
+}
+
+[data-theme="dark"] .auth-page-login .auth-input-shell svg,
+[data-theme="dark"] .auth-page-login .auth-password-toggle {
+  color: #a9bbb4;
+}
+
+[data-theme="dark"] .auth-page-login .auth-password-toggle:hover {
+  color: #75d99a;
+  background: #173c26;
+}
+
+[data-theme="dark"] .auth-page-login .message-error {
+  color: #ffb0b0;
+  background: #3a171a;
+}
+
+[data-theme="dark"] .auth-page-login .auth-login-visual {
+  color: #f2f7f4;
+  background: #16251f;
+}
+
+[data-theme="dark"] .auth-page-login .auth-login-visual .brand-mark {
+  border-color: #354740;
+  color: #75d99a;
+  background: #121c1a;
+}
+
+[data-theme="dark"] .auth-page-login .auth-login-visual-copy h2 {
+  color: #c7f7d8;
+}
+
+[data-theme="dark"] .auth-page-login .auth-login-visual-copy p {
+  color: #b8c8c2;
+}
+
+[data-theme="dark"] .auth-page-login .auth-login-visual-note {
+  border-top-color: #354740;
+  color: #93a8a0;
+}
+
 @media (min-width: 900px) {
   .auth-page-login .auth-card {
-    grid-template-columns: minmax(360px, 0.82fr) minmax(0, 1.18fr);
+    grid-template-areas: "form visual";
+    grid-template-columns: minmax(400px, 0.92fr) minmax(0, 1.08fr);
+    column-gap: var(--auth-space-4);
   }
 
   .auth-page-login .auth-login-visual {
@@ -677,7 +786,7 @@
 
 @media (min-width: 1200px) {
   .auth-page-login .auth-form-panel {
-    padding-inline: clamp(54px, 6vw, 92px);
+    padding-inline: var(--auth-space-8);
   }
 }
 
@@ -687,7 +796,7 @@
   }
 
   .auth-login-visual-content {
-    gap: 40px;
+    gap: var(--auth-space-5);
   }
 
   .auth-login-visual-copy h2 {
@@ -696,12 +805,20 @@
 }
 
 @media (max-width: 480px) {
-  .auth-page-login .auth-form-panel {
-    padding-inline: 20px;
+  .auth-page-login {
+    padding: 0;
   }
 
-  .auth-page-login .auth-panel-header {
-    margin-bottom: 40px;
+  .auth-page-login .auth-card {
+    min-height: 100dvh;
+  }
+
+  .auth-page-login .auth-form-panel {
+    padding: var(--auth-space-5);
+  }
+
+  .auth-page-login .auth-panel {
+    gap: var(--auth-space-6);
   }
 
   .auth-page-login .auth-panel h1 {

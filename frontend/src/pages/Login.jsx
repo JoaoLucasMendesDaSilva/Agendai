@@ -103,115 +103,119 @@ function Login({ navigate }) {
         <div className="auth-panel-header">
           <BrandLogo onClick={() => navigate('/')} />
         </div>
-        <h1 id="login-title">Entre no Agendai</h1>
-        <p className="panel-text auth-intro-text">
-          Acesse sua conta para acompanhar sua agenda e manter tudo organizado.
-        </p>
-
-        <form
-          aria-busy={carregando}
-          className="form auth-login-form"
-          noValidate
-          onSubmit={handleSubmit}
-        >
-          <div className="auth-field-group">
-            <label htmlFor="login-email">E-mail</label>
-            <span className={`auth-input-shell ${errosCampos.email || errosCampos.credenciais ? 'is-invalid' : ''}`}>
-              <Mail aria-hidden="true" size={17} strokeWidth={2} />
-              <input
-                aria-describedby={errosCampos.email ? 'login-email-error' : undefined}
-                aria-invalid={Boolean(errosCampos.email || errosCampos.credenciais)}
-                autoComplete="email"
-                disabled={carregando}
-                id="login-email"
-                inputMode="email"
-                maxLength={254}
-                onChange={(event) => {
-                  setEmail(event.target.value);
-                  limparErros();
-                }}
-                placeholder="seuemail@exemplo.com"
-                ref={emailRef}
-                required
-                type="email"
-                value={email}
-              />
-            </span>
-            {errosCampos.email && (
-              <span className="auth-field-error" id="login-email-error">{errosCampos.email}</span>
-            )}
-          </div>
-
-          <div className="auth-field-group">
-            <label htmlFor="login-password">Senha</label>
-            <span className={`auth-input-shell auth-password-shell ${errosCampos.senha || errosCampos.credenciais ? 'is-invalid' : ''}`}>
-              <LockKeyhole aria-hidden="true" size={17} strokeWidth={2} />
-              <input
-                aria-describedby={errosCampos.senha ? 'login-password-error' : undefined}
-                aria-invalid={Boolean(errosCampos.senha || errosCampos.credenciais)}
-                autoComplete="current-password"
-                disabled={carregando}
-                id="login-password"
-                minLength={8}
-                onChange={(event) => {
-                  setSenha(event.target.value);
-                  limparErros();
-                }}
-                placeholder="Digite sua senha"
-                ref={senhaRef}
-                required
-                type={mostrarSenha ? 'text' : 'password'}
-                value={senha}
-              />
-              <button
-                aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
-                className="auth-password-toggle"
-                disabled={carregando}
-                onClick={() => setMostrarSenha((valorAtual) => !valorAtual)}
-                type="button"
-              >
-                {mostrarSenha ? <EyeOff aria-hidden="true" size={19} /> : <Eye aria-hidden="true" size={19} />}
-              </button>
-            </span>
-            {errosCampos.senha && (
-              <span className="auth-field-error" id="login-password-error">{errosCampos.senha}</span>
-            )}
-          </div>
-
-          <div className="auth-login-options">
-            <label className="auth-remember-choice">
-              <input
-                checked={lembrar}
-                disabled={carregando}
-                onChange={(event) => setLembrar(event.target.checked)}
-                type="checkbox"
-              />
-              <span>Lembrar de mim</span>
-            </label>
-          </div>
-
-          {erro && (
-            <p
-              className="message message-error auth-login-error"
-              ref={erroRef}
-              role="alert"
-              tabIndex={-1}
-            >
-              {erro}
+        <div className="auth-login-main">
+          <div className="auth-heading-group">
+            <h1 id="login-title">Entre no Agendai</h1>
+            <p className="panel-text auth-intro-text">
+              Acesse sua conta para acompanhar sua agenda e manter tudo organizado.
             </p>
-          )}
+          </div>
 
-          <button className="button button-primary auth-submit-button" disabled={carregando} type="submit">
-            {carregando ? 'Verificando acesso…' : 'Entrar'}
-          </button>
-        </form>
+          <form
+            aria-busy={carregando}
+            className="form auth-login-form"
+            noValidate
+            onSubmit={handleSubmit}
+          >
+            <div className="auth-field-group">
+              <label htmlFor="login-email">E-mail</label>
+              <span className={`auth-input-shell ${errosCampos.email || errosCampos.credenciais ? 'is-invalid' : ''}`}>
+                <Mail aria-hidden="true" size={17} strokeWidth={2} />
+                <input
+                  aria-describedby={errosCampos.email ? 'login-email-error' : undefined}
+                  aria-invalid={Boolean(errosCampos.email || errosCampos.credenciais)}
+                  autoComplete="email"
+                  disabled={carregando}
+                  id="login-email"
+                  inputMode="email"
+                  maxLength={254}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    limparErros();
+                  }}
+                  placeholder="seuemail@exemplo.com"
+                  ref={emailRef}
+                  required
+                  type="email"
+                  value={email}
+                />
+              </span>
+              {errosCampos.email && (
+                <span className="auth-field-error" id="login-email-error">{errosCampos.email}</span>
+              )}
+            </div>
 
-        <p className="auth-signup-prompt">
-          Ainda não tem uma conta?{' '}
-          <button className="auth-signup-link" onClick={() => navigate('/cadastro')} type="button">
-            Cadastre-se
-          </button>
-        </p>
+            <div className="auth-field-group">
+              <label htmlFor="login-password">Senha</label>
+              <span className={`auth-input-shell auth-password-shell ${errosCampos.senha || errosCampos.credenciais ? 'is-invalid' : ''}`}>
+                <LockKeyhole aria-hidden="true" size={17} strokeWidth={2} />
+                <input
+                  aria-describedby={errosCampos.senha ? 'login-password-error' : undefined}
+                  aria-invalid={Boolean(errosCampos.senha || errosCampos.credenciais)}
+                  autoComplete="current-password"
+                  disabled={carregando}
+                  id="login-password"
+                  minLength={8}
+                  onChange={(event) => {
+                    setSenha(event.target.value);
+                    limparErros();
+                  }}
+                  placeholder="Digite sua senha"
+                  ref={senhaRef}
+                  required
+                  type={mostrarSenha ? 'text' : 'password'}
+                  value={senha}
+                />
+                <button
+                  aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+                  className="auth-password-toggle"
+                  disabled={carregando}
+                  onClick={() => setMostrarSenha((valorAtual) => !valorAtual)}
+                  type="button"
+                >
+                  {mostrarSenha ? <EyeOff aria-hidden="true" size={19} /> : <Eye aria-hidden="true" size={19} />}
+                </button>
+              </span>
+              {errosCampos.senha && (
+                <span className="auth-field-error" id="login-password-error">{errosCampos.senha}</span>
+              )}
+            </div>
+
+            <div className="auth-login-options">
+              <label className="auth-remember-choice">
+                <input
+                  checked={lembrar}
+                  disabled={carregando}
+                  onChange={(event) => setLembrar(event.target.checked)}
+                  type="checkbox"
+                />
+                <span>Lembrar de mim</span>
+              </label>
+            </div>
+
+            {erro && (
+              <p
+                className="message message-error auth-login-error"
+                ref={erroRef}
+                role="alert"
+                tabIndex={-1}
+              >
+                {erro}
+              </p>
+            )}
+
+            <button className="button button-primary auth-submit-button" disabled={carregando} type="submit">
+              {carregando ? 'Verificando acesso…' : 'Entrar'}
+            </button>
+          </form>
+
+          <p className="auth-signup-prompt">
+            Ainda não tem uma conta?{' '}
+            <button className="auth-signup-link" onClick={() => navigate('/cadastro')} type="button">
+              Cadastre-se
+            </button>
+          </p>
+        </div>
       </section>
     </AuthLayout>
   );
