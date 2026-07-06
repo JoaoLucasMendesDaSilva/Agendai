@@ -1,152 +1,131 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   BriefcaseBusiness,
   CalendarCheck2,
   CheckCircle2,
   ChevronDown,
-  FileSpreadsheet,
-  FileText,
   LayoutDashboard,
-  MessageCircle,
+  Menu,
   Moon,
-  QrCode,
   Scissors,
+  ShieldCheck,
   Smartphone,
   Stethoscope,
   Store,
   Sun,
   Users,
+  X,
 } from 'lucide-react';
-import authIllustration from '../assets/auth-illustration.png';
 import BrandLogo from '../components/BrandLogo';
 import { useTheme } from '../contexts/ThemeContext';
 import '../landing-page.css';
 
-const funcionalidades = [
+const pilares = [
   {
-    titulo: 'Agendamento online',
-    texto: 'O cliente escolhe serviço, profissional, data e horário sem precisar criar uma conta.',
+    titulo: 'Agendamento que começa pelo cliente',
+    texto: 'Seu cliente escolhe serviço, profissional, data e horário pelo link público, sem precisar criar uma conta.',
+    detalhe: 'Menos mensagens para organizar manualmente',
     Icone: CalendarCheck2,
-    tom: 'green',
   },
   {
-    titulo: 'QR Code',
-    texto: 'Leve sua agenda para o balcão, cartão, vitrine ou qualquer material de divulgação.',
-    Icone: QrCode,
-    tom: 'yellow',
+    titulo: 'Horários protegidos contra conflito',
+    texto: 'A disponibilidade é validada antes da confirmação para impedir dois atendimentos no mesmo horário.',
+    detalhe: 'Mais confiança para divulgar sua agenda',
+    Icone: ShieldCheck,
   },
   {
-    titulo: 'WhatsApp',
-    texto: 'Compartilhe o link público com uma mensagem pronta em poucos cliques.',
-    Icone: MessageCircle,
-    tom: 'green',
-  },
-  {
-    titulo: 'Dashboard inteligente',
-    texto: 'Acompanhe indicadores, próximo atendimento e o movimento da semana.',
+    titulo: 'Rotina centralizada em um painel',
+    texto: 'Agenda, clientes, serviços e profissionais ficam reunidos para você entender o dia sem procurar em várias conversas.',
+    detalhe: 'Mais clareza para quem atende e administra',
     Icone: LayoutDashboard,
-    tom: 'blue',
   },
-  {
-    titulo: 'Gestão de clientes',
-    texto: 'Consulte histórico, recorrência, cancelamentos e serviços mais utilizados.',
-    Icone: Users,
-    tom: 'blue',
-  },
-  {
-    titulo: 'PWA instalável',
-    texto: 'Instale o Agendai no celular ou computador e acesse como um aplicativo.',
-    Icone: Smartphone,
-    tom: 'green',
-  },
-  {
-    titulo: 'Relatórios em PDF',
-    texto: 'Gere um resumo profissional do período com os dados reais do negócio.',
-    Icone: FileText,
-    tom: 'yellow',
-  },
-  {
-    titulo: 'Exportação Excel',
-    texto: 'Exporte os agendamentos em XLSX para analisar e organizar seus dados.',
-    Icone: FileSpreadsheet,
-    tom: 'blue',
-  },
-  {
-    titulo: 'Dark Mode',
-    texto: 'Use o painel com conforto em ambientes claros ou escuros.',
-    Icone: Moon,
-    tom: 'dark',
-  },
+];
+
+const recursosComplementares = [
+  'Link e QR Code para divulgação',
+  'Compartilhamento pelo WhatsApp',
+  'Instalação como aplicativo (PWA)',
+  'Relatórios em PDF',
+  'Exportação para Excel',
+  'Tema claro e escuro',
 ];
 
 const publicos = [
-  {
-    titulo: 'Barbearias',
-    texto: 'Organize cortes, barba e equipe sem depender de conversas espalhadas.',
-    Icone: Scissors,
-  },
-  {
-    titulo: 'Salões',
-    texto: 'Apresente serviços, profissionais e horários em uma página própria.',
-    Icone: Store,
-  },
-  {
-    titulo: 'Clínicas',
-    texto: 'Centralize a agenda e acompanhe cada atendimento com mais clareza.',
-    Icone: Stethoscope,
-  },
-  {
-    titulo: 'Profissionais autônomos',
-    texto: 'Tenha presença profissional e uma agenda simples de administrar.',
-    Icone: BriefcaseBusiness,
-  },
+  { nome: 'Barbearias', Icone: Scissors },
+  { nome: 'Salões', Icone: Store },
+  { nome: 'Clínicas', Icone: Stethoscope },
+  { nome: 'Profissionais autônomos', Icone: BriefcaseBusiness },
 ];
 
 const passos = [
-  ['Configure', 'Cadastre seu negócio, serviços, profissionais e horários.'],
-  ['Compartilhe', 'Envie seu link público pelo WhatsApp ou divulgue o QR Code.'],
-  ['Receba', 'O cliente escolhe uma opção disponível e confirma o agendamento.'],
-  ['Acompanhe', 'Gerencie agenda, clientes e indicadores em um só painel.'],
+  ['Configure', 'Cadastre negócio, serviços, profissionais e horários.'],
+  ['Compartilhe', 'Envie o link público ou divulgue o QR Code.'],
+  ['Receba', 'O cliente escolhe uma opção realmente disponível.'],
+  ['Acompanhe', 'Veja agenda, clientes e próximos atendimentos.'],
 ];
 
 const perguntas = [
   {
     pergunta: 'O cliente precisa criar uma conta para agendar?',
-    resposta: 'Não. O cliente acessa o link público, escolhe serviço, profissional, data e horário sem precisar criar cadastro.',
+    resposta: 'Não. O cliente acessa o link público, escolhe serviço, profissional, data e horário sem criar cadastro.',
   },
   {
-    pergunta: 'Como evito dois agendamentos no mesmo horário?',
-    resposta: 'O sistema valida os horários disponíveis e bloqueia conflitos automaticamente.',
+    pergunta: 'Como o Agendai evita dois agendamentos no mesmo horário?',
+    resposta: 'Antes da confirmação, o sistema consulta a disponibilidade e bloqueia combinações que gerariam conflito.',
   },
   {
-    pergunta: 'Posso divulgar minha agenda pelo WhatsApp?',
-    resposta: 'Sim. O Agendai gera um link público que pode ser compartilhado pelo WhatsApp, redes sociais, QR Code ou materiais impressos.',
+    pergunta: 'Preciso informar cartão para criar minha conta?',
+    resposta: 'Não. Na versão atual, o cadastro inicial não solicita cartão nem pagamento.',
   },
   {
-    pergunta: 'O Agendai funciona no celular?',
-    resposta: 'Sim. O sistema é responsivo e também pode ser instalado como PWA em celular ou desktop.',
-  },
-  {
-    pergunta: 'Quais dados posso acompanhar?',
-    resposta: 'Você acompanha agendamentos, clientes, serviços, profissionais, relatórios em PDF e exportação Excel.',
+    pergunta: 'Consigo usar o Agendai pelo celular?',
+    resposta: 'Sim. A interface é responsiva e o sistema também pode ser instalado como PWA no celular ou computador.',
   },
 ];
 
 function LandingPage({ navigate }) {
   const { isDark, toggleTheme } = useTheme();
+  const [menuAberto, setMenuAberto] = useState(false);
   const [perguntasAbertas, setPerguntasAbertas] = useState([]);
+  const menuButtonRef = useRef(null);
+
+  useEffect(() => {
+    if (!menuAberto) {
+      return undefined;
+    }
+
+    function fecharMenuComEscape(event) {
+      if (event.key === 'Escape') {
+        setMenuAberto(false);
+        requestAnimationFrame(() => menuButtonRef.current?.focus());
+      }
+    }
+
+    window.addEventListener('keydown', fecharMenuComEscape);
+    return () => window.removeEventListener('keydown', fecharMenuComEscape);
+  }, [menuAberto]);
 
   function irParaLanding() {
+    const prefereReducaoMovimento = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+
+    setMenuAberto(false);
     navigate('/');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({
+      top: 0,
+      behavior: prefereReducaoMovimento ? 'auto' : 'smooth',
+    });
   }
 
   function irParaCadastro() {
+    setMenuAberto(false);
     navigate('/cadastro');
   }
 
   function irParaLogin() {
+    setMenuAberto(false);
     navigate('/login');
   }
 
@@ -155,6 +134,7 @@ function LandingPage({ navigate }) {
       '(prefers-reduced-motion: reduce)',
     ).matches;
 
+    setMenuAberto(false);
     document.getElementById(id)?.scrollIntoView({
       behavior: prefereReducaoMovimento ? 'auto' : 'smooth',
     });
@@ -169,14 +149,16 @@ function LandingPage({ navigate }) {
   }
 
   return (
-    <main className="landing-page">
+    <div className="landing-page">
       <nav className="landing-nav" aria-label="Navegação principal">
         <BrandLogo onClick={irParaLanding} />
+
         <div className="landing-nav-links" aria-label="Seções da página">
-          <button onClick={() => rolarPara('funcionalidades')} type="button">Recursos</button>
+          <button onClick={() => rolarPara('recursos')} type="button">O que resolve</button>
           <button onClick={() => rolarPara('como-funciona')} type="button">Como funciona</button>
           <button onClick={() => rolarPara('faq')} type="button">Dúvidas</button>
         </div>
+
         <div className="landing-nav-actions">
           <button
             aria-label={isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}
@@ -185,186 +167,153 @@ function LandingPage({ navigate }) {
             title={isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}
             type="button"
           >
-            {isDark ? (
-              <Sun aria-hidden="true" size={18} strokeWidth={2} />
-            ) : (
-              <Moon aria-hidden="true" size={18} strokeWidth={2} />
-            )}
-            <span className="sr-only">{isDark ? 'Ativar modo claro' : 'Ativar modo escuro'}</span>
+            {isDark ? <Sun aria-hidden="true" size={18} /> : <Moon aria-hidden="true" size={18} />}
           </button>
-          <button className="landing-nav-link" onClick={irParaLogin} type="button">
+          <button className="landing-nav-login" onClick={irParaLogin} type="button">
             Entrar
           </button>
           <button className="button button-primary button-small" onClick={irParaCadastro} type="button">
-            Começar grátis
+            Criar agenda
           </button>
+          <button
+            aria-controls="landing-mobile-menu"
+            aria-expanded={menuAberto}
+            aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
+            className="landing-menu-button"
+            onClick={() => setMenuAberto((aberto) => !aberto)}
+            ref={menuButtonRef}
+            type="button"
+          >
+            {menuAberto ? <X aria-hidden="true" size={21} /> : <Menu aria-hidden="true" size={21} />}
+          </button>
+        </div>
+
+        <div className="landing-mobile-menu" hidden={!menuAberto} id="landing-mobile-menu">
+          <button onClick={() => rolarPara('recursos')} type="button">O que resolve</button>
+          <button onClick={() => rolarPara('como-funciona')} type="button">Como funciona</button>
+          <button onClick={() => rolarPara('faq')} type="button">Dúvidas frequentes</button>
+          <button onClick={irParaLogin} type="button">Entrar na minha conta</button>
         </div>
       </nav>
 
+      <main className="landing-content">
+
       <section className="landing-hero">
         <div className="landing-hero-copy">
-          <p className="landing-kicker">Agenda profissional. Experiência simples.</p>
-          <h1>Sua agenda online, pronta para trabalhar por você.</h1>
+          <p className="landing-kicker">Feito para quem atende todos os dias</p>
+          <h1>Menos conversa perdida. Mais horário confirmado.</h1>
           <p className="landing-lead">
-            Receba agendamentos 24 horas por dia, organize clientes e atendimentos
-            e compartilhe seu negócio por link, QR Code ou WhatsApp.
+            Receba agendamentos pelo seu próprio link, proteja a agenda contra
+            conflitos e acompanhe a rotina do negócio em um só lugar.
           </p>
           <div className="landing-hero-actions">
             <button className="button button-primary" onClick={irParaCadastro} type="button">
-              Criar minha agenda grátis
-              <ArrowRight aria-hidden="true" size={18} strokeWidth={2} />
+              Criar minha agenda
+              <ArrowRight aria-hidden="true" size={18} />
             </button>
-            <button className="button button-secondary" onClick={() => rolarPara('em-acao')} type="button">
-              Ver o Agendai em ação
+            <button className="button button-secondary" onClick={() => rolarPara('como-funciona')} type="button">
+              Ver como funciona
             </button>
           </div>
           <div className="landing-proof" aria-label="Diferenciais do Agendai">
-            <span><CheckCircle2 aria-hidden="true" size={17} /> Cliente agenda sem cadastro</span>
-            <span><CheckCircle2 aria-hidden="true" size={17} /> Sem conflito de horário</span>
-            <span><CheckCircle2 aria-hidden="true" size={17} /> Instalável como aplicativo</span>
+            <span><CheckCircle2 aria-hidden="true" size={17} /> Cliente agenda sem conta</span>
+            <span><CheckCircle2 aria-hidden="true" size={17} /> O sistema confere o horário</span>
+            <span><CheckCircle2 aria-hidden="true" size={17} /> Funciona no celular</span>
           </div>
         </div>
 
-        <div className="landing-hero-visual" aria-label="Prévia visual do painel Agendai">
-          <div className="landing-visual-toolbar">
-            <BrandLogo compact />
-            <span>Visão geral</span>
-            <span className="landing-live-dot">Online</span>
+        <div className="landing-routine-board" aria-label="Exemplo ilustrativo de uma agenda organizada">
+          <header>
+            <div>
+              <span>Exemplo de rotina</span>
+              <strong>Agenda de hoje</strong>
+            </div>
+            <span className="landing-routine-status">3 horários confirmados</span>
+          </header>
+          <div className="landing-routine-list">
+            <div><time>09:00</time><span><strong>Corte masculino</strong><small>João · confirmado</small></span></div>
+            <div><time>10:30</time><span><strong>Barba</strong><small>Marcos · confirmado</small></span></div>
+            <div className="is-available"><time>12:00</time><span><strong>Horário disponível</strong><small>Pronto para receber agendamento</small></span></div>
           </div>
-          <div className="landing-visual-metrics">
-            <div><CalendarCheck2 aria-hidden="true" size={19} /><span>Agenda organizada</span></div>
-            <div><Users aria-hidden="true" size={19} /><span>Clientes em um só lugar</span></div>
-          </div>
-          <img
-            alt="Ilustração de calendário com planta e relógio"
-            className="landing-hero-illustration"
-            src={authIllustration}
-          />
-          <div className="landing-mockup-card mockup-main-card">
-            <div className="mockup-header">
-              <span>Próximos atendimentos</span>
-              <span className="status-badge status-confirmado">Atualizado</span>
-            </div>
-            <div className="mockup-row">
-              <span>09:00</span><strong>Corte masculino</strong><em>Confirmado</em>
-            </div>
-            <div className="mockup-row">
-              <span>10:30</span><strong>Barba</strong><em>Pendente</em>
-            </div>
-            <div className="mockup-row">
-              <span>14:00</span><strong>Sobrancelha</strong><em>Confirmado</em>
-            </div>
+          <div className="landing-new-booking">
+            <CalendarCheck2 aria-hidden="true" size={24} />
+            <div><small>Novo agendamento</small><strong>14:00 · Sobrancelha</strong></div>
+            <span>Sem conflito</span>
           </div>
         </div>
       </section>
 
-      <section className="landing-trust-strip" aria-label="Principais recursos">
-        <span>Agendamento online</span><span>QR Code</span><span>WhatsApp</span>
-        <span>PWA</span><span>PDF</span><span>Excel</span>
+      <section className="landing-assurance" aria-label="Informações importantes antes de começar">
+        <div><strong>Sem cartão no cadastro atual</strong><span>Você pode conhecer a configuração antes de qualquer pagamento.</span></div>
+        <div><strong>Sem conta para o cliente</strong><span>Quem agenda informa apenas os dados necessários ao atendimento.</span></div>
+        <div><strong>Painel protegido por login</strong><span>O acesso administrativo exige login e senha do empreendedor.</span></div>
       </section>
 
-      <section className="landing-section landing-action-section" id="em-acao">
-        <div className="landing-section-heading landing-heading-centered">
-          <h2>Do link compartilhado à agenda organizada.</h2>
-          <p>Uma jornada curta para o cliente e controle completo para quem atende.</p>
-        </div>
-        <div className="landing-product-demo">
-          <div className="landing-demo-sidebar" aria-hidden="true">
-            <BrandLogo compact />
-            <span className="is-active"><LayoutDashboard size={18} /> Painel</span>
-            <span><CalendarCheck2 size={18} /> Agenda</span>
-            <span><Users size={18} /> Clientes</span>
-          </div>
-          <div className="landing-demo-workspace">
-            <div className="landing-demo-heading">
-              <div><small>AGENDA DO NEGÓCIO</small><strong>Atendimentos em ordem</strong></div>
-              <span className="status-badge status-confirmado">Sincronizado</span>
-            </div>
-            <div className="landing-demo-flow">
-              <article>
-                <span className="landing-demo-number">1</span>
-                <div><strong>O cliente escolhe</strong><p>Serviço, profissional, data e horário.</p></div>
-              </article>
-              <article>
-                <span className="landing-demo-number">2</span>
-                <div><strong>O sistema valida</strong><p>Disponibilidade e conflitos automaticamente.</p></div>
-              </article>
-              <article>
-                <span className="landing-demo-number">3</span>
-                <div><strong>Você acompanha</strong><p>Agenda, clientes e indicadores no painel.</p></div>
-              </article>
-            </div>
-          </div>
-          <aside className="landing-demo-public">
-            <span className="landing-icon"><CalendarCheck2 aria-hidden="true" size={23} /></span>
-            <small>AGENDAMENTO PÚBLICO</small>
-            <strong>Escolha seu horário</strong>
-            <div className="landing-demo-times"><span>09:00</span><span className="is-selected">10:30</span><span>14:00</span></div>
-            <span className="landing-demo-button">Continuar</span>
-          </aside>
-        </div>
-      </section>
-
-      <section className="landing-section" id="funcionalidades">
+      <section className="landing-section landing-core-section" id="recursos">
         <div className="landing-section-heading">
-          <h2>Recursos reais para uma rotina mais profissional.</h2>
-          <p>Do primeiro contato ao relatório do mês, o Agendai mantém a operação clara e acessível.</p>
+          <p>O essencial vem primeiro</p>
+          <h2>Três partes da rotina que precisam funcionar juntas.</h2>
         </div>
-        <div className="landing-feature-grid">
-          {funcionalidades.map(({ titulo, texto, Icone, tom }) => (
-            <article className="landing-feature-card" key={titulo}>
-              <span className={`landing-icon landing-icon-${tom}`}>
-                <Icone aria-hidden="true" size={23} strokeWidth={2} />
-              </span>
-              <h3>{titulo}</h3>
-              <p>{texto}</p>
+        <div className="landing-core-grid">
+          {pilares.map(({ titulo, texto, detalhe, Icone }, index) => (
+            <article className={index === 0 ? 'landing-core-item is-primary' : 'landing-core-item'} key={titulo}>
+              <span className="landing-core-icon"><Icone aria-hidden="true" size={25} /></span>
+              <div><h3>{titulo}</h3><p>{texto}</p></div>
+              <small>{detalhe}</small>
             </article>
           ))}
         </div>
+
+        <details className="landing-more-features">
+          <summary>Ver recursos complementares</summary>
+          <ul>
+            {recursosComplementares.map((recurso) => (
+              <li key={recurso}><CheckCircle2 aria-hidden="true" size={17} />{recurso}</li>
+            ))}
+          </ul>
+        </details>
       </section>
 
-      <section className="landing-section landing-audience-section">
-        <div className="landing-section-heading landing-heading-centered">
-          <h2>Quem vive de atendimento merece uma agenda à altura.</h2>
+      <section className="landing-audience-section">
+        <div className="landing-audience-copy">
+          <p>Uma ferramenta próxima da rotina real</p>
+          <h2>Para quem precisa atender bem sem virar especialista em sistemas.</h2>
+          <span>
+            O Agendai nasceu a partir da realidade de pequenos negócios de Cubatão
+            e foi pensado para continuar simples conforme o negócio cresce.
+          </span>
         </div>
-        <div className="landing-audience-grid">
-          {publicos.map(({ titulo, texto, Icone }) => (
-            <article className="landing-audience-card" key={titulo}>
-              <Icone aria-hidden="true" size={26} strokeWidth={1.9} />
-              <div><h3>{titulo}</h3><p>{texto}</p></div>
-            </article>
+        <ul className="landing-audience-list" aria-label="Negócios atendidos pelo Agendai">
+          {publicos.map(({ nome, Icone }) => (
+            <li key={nome}><Icone aria-hidden="true" size={22} /><span>{nome}</span></li>
           ))}
-        </div>
+        </ul>
       </section>
 
       <section className="landing-section landing-process-section" id="como-funciona">
-        <div className="landing-section-heading">
-          <h2>Quatro passos entre você e uma agenda mais leve.</h2>
+        <div className="landing-section-heading landing-heading-centered">
+          <p>Da configuração ao primeiro horário</p>
+          <h2>Uma sequência curta, sem trabalho duplicado.</h2>
         </div>
-        <div className="landing-steps">
+        <ol className="landing-steps">
           {passos.map(([titulo, texto], index) => (
-            <article className="landing-step-card" key={titulo}>
+            <li key={titulo}>
               <span>{String(index + 1).padStart(2, '0')}</span>
-              <h3>{titulo}</h3>
-              <p>{texto}</p>
-            </article>
+              <div><h3>{titulo}</h3><p>{texto}</p></div>
+            </li>
           ))}
-        </div>
-      </section>
-
-      <section className="landing-value-strip" aria-label="Benefícios para o negócio">
-        <span><CheckCircle2 aria-hidden="true" size={18} /> Menos conversas perdidas</span>
-        <span><CheckCircle2 aria-hidden="true" size={18} /> Mais organização</span>
-        <span><CheckCircle2 aria-hidden="true" size={18} /> Mais controle do negócio</span>
+        </ol>
       </section>
 
       <section className="landing-section landing-faq-section" id="faq">
         <div className="landing-section-heading">
-          <h2>O que você precisa saber antes de começar.</h2>
+          <p>Antes de criar sua agenda</p>
+          <h2>Respostas diretas para decidir com segurança.</h2>
         </div>
         <div className="landing-faq-list">
           {perguntas.map(({ pergunta, resposta }, index) => {
             const aberta = perguntasAbertas.includes(index);
+            const perguntaId = `pergunta-faq-${index}`;
             const respostaId = `resposta-faq-${index}`;
 
             return (
@@ -372,14 +321,21 @@ function LandingPage({ navigate }) {
                 <button
                   aria-controls={respostaId}
                   aria-expanded={aberta}
+                  id={perguntaId}
                   onClick={() => alternarPergunta(index)}
                   type="button"
                 >
                   {pergunta}
                   <ChevronDown aria-hidden="true" size={20} />
                 </button>
-                <div className="landing-faq-answer" id={respostaId}>
-                  <div><p>{resposta}</p></div>
+                <div
+                  aria-labelledby={perguntaId}
+                  className="landing-faq-answer"
+                  hidden={!aberta}
+                  id={respostaId}
+                  role="region"
+                >
+                  <p>{resposta}</p>
                 </div>
               </article>
             );
@@ -389,21 +345,24 @@ function LandingPage({ navigate }) {
 
       <section className="landing-final-cta">
         <div>
-          <h2>Seu próximo agendamento pode começar por aqui.</h2>
-          <p>Crie sua conta, configure o negócio e compartilhe uma experiência profissional com seus clientes.</p>
+          <p>Seu próximo atendimento pode começar mais organizado</p>
+          <h2>Configure a agenda e compartilhe seu link.</h2>
+          <span>O cadastro atual não solicita cartão ou pagamento.</span>
         </div>
         <button className="button button-primary" onClick={irParaCadastro} type="button">
-          Criar minha agenda grátis
-          <ArrowRight aria-hidden="true" size={18} strokeWidth={2} />
+          Criar minha agenda
+          <ArrowRight aria-hidden="true" size={18} />
         </button>
       </section>
 
+      </main>
+
       <footer className="landing-footer">
         <BrandLogo onClick={irParaLanding} />
-        <p>Sistema de agendamento online para pequenos negócios.</p>
-        <div><span>WhatsApp</span><span>QR Code</span><span>PWA</span></div>
+        <p>Agendamento online simples para pequenos negócios.</p>
+        <p className="landing-footer-origin">Projeto nascido em Cubatão — SP.</p>
       </footer>
-    </main>
+    </div>
   );
 }
 
