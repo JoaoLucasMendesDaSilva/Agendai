@@ -171,6 +171,13 @@
   padding: 16px;
   background: var(--panel-bg);
   box-shadow: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.next-appointment-card:hover {
+  border-color: color-mix(in srgb, var(--green-700) 44%, var(--gray-300));
+  box-shadow: 0 14px 28px rgba(16, 24, 40, 0.1);
+  transform: translateY(-3px);
 }
 
 .next-appointment-avatar,
@@ -187,6 +194,11 @@
 .next-appointment-avatar {
   width: 46px;
   height: 46px;
+  transition: transform 180ms ease;
+}
+
+.next-appointment-card:hover .next-appointment-avatar {
+  transform: scale(1.06);
 }
 
 .next-appointment-person {
@@ -1071,6 +1083,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .agenda-card-pro,
+  .next-appointment-card,
+  .next-appointment-avatar,
   .client-card,
   .quick-action,
   .dashboard-panel,
@@ -1081,6 +1095,8 @@
 
   .client-card:hover,
   .client-card.is-selected,
+  .next-appointment-card:hover,
+  .next-appointment-card:hover .next-appointment-avatar,
   .client-card:hover .client-card-arrow,
   .client-card.is-selected .client-card-arrow,
   .dashboard-panel:hover,
