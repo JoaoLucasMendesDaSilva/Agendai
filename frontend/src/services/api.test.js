@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { clearToken, getToken, setToken } from './api';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { clearToken, getToken, request, setToken } from './api';
 
 const TOKEN_KEY = 'tcc_agendamento_token';
 
@@ -22,5 +22,24 @@ describe('armazenamento do token', () => {
     expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
     expect(sessionStorage.getItem(TOKEN_KEY)).toBe('token-da-sessao');
     expect(getToken()).toBe('token-da-sessao');
+  });
+});
+
+describe('erros da API', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('preserva o status HTTP para a interface escolher uma mensagem segura', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      json: vi.fn().mockResolvedValue({ erro: 'Limite excedido.' }),
+      ok: false,
+      status: 429,
+    }));
+
+    await expect(request('/api/auth/login', { auth: false })).rejects.toMatchObject({
+      message: 'Limite excedido.',
+      status: 429,
+    });
   });
 });
