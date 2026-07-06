@@ -2,7 +2,7 @@
   "name": "tcc-agendamento-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "Backend do MVP de agendamento online para TCC.",
+  "description": "Backend da plataforma profissional de agendamento online Agendai.",
   "main": "src/server.js",
   "scripts": {
     "dev": "node --watch src/server.js",

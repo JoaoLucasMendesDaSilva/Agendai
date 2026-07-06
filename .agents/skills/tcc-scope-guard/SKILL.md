@@ -1,43 +1,44 @@
 ---
 name: tcc-scope-guard
-description: Verifica se uma tarefa está dentro do MVP do TCC, evita escopo exagerado e propõe a menor versão útil da funcionalidade.
+description: Avalia propostas para o Agendai por valor, risco, custo e alinhamento, buscando a menor entrega profissional completa sem limitar o produto ao MVP original.
 ---
 
-# Skill: Guarda de Escopo do TCC
+# Skill: Guarda de Escopo do Produto
 
-## Quando usar
+## Objetivo
 
-Use antes de implementar qualquer funcionalidade nova.
+Proteger o foco e a sustentabilidade do Agendai sem impedir sua evolução além do MVP que deu origem ao TCC.
 
-## MVP permitido
+## Critérios de avaliação
 
-- Cadastro/login de empreendedor
-- Cadastro de negócio
-- CRUD de serviços
-- CRUD de profissionais
-- Agendamento público
-- Painel simples do empreendedor
-- Horários disponíveis
-- Bloqueio de conflitos
-- JWT, bcrypt e segurança básica
-- Documentação
+- Qual problema real do usuário será resolvido?
+- Há evidência ou contexto suficiente para a necessidade?
+- A proposta combina com o público e o posicionamento do Agendai?
+- Qual é o impacto em segurança, dados, UX, suporte e operação?
+- A mudança exige nova dependência, integração, migration ou custo recorrente?
+- Existe uma entrega menor que ainda resolva o problema por completo?
+- Como o resultado será testado e observado?
 
-## Fora do escopo sem aprovação
+## Classificação
 
-- Pagamentos
-- Planos pagos funcionais
-- Marketplace
-- App mobile nativo
-- Dashboard avançado
-- Múltiplas unidades
-- Relatórios complexos
-- Chat
-- Sistema avançado de permissões
+- **Incremental:** pequena, reversível e compatível com a arquitetura atual.
+- **Relevante:** afeta múltiplas camadas ou requer migration, contrato novo ou testes amplos.
+- **Estratégica:** introduz modelo de negócio, provedor crítico, grande custo operacional ou mudança arquitetural.
+
+Mudanças relevantes devem ter plano e critérios de aceite. Mudanças estratégicas exigem análise de alternativas e aprovação antes da implementação.
+
+## Cuidados
+
+- Não usar “fora do MVP” como motivo automático para rejeitar uma proposta.
+- Não confundir qualidade profissional com excesso de arquitetura.
+- Evitar funcionalidades sem usuário, objetivo ou estratégia de manutenção claros.
+- Preservar compatibilidade ou tornar qualquer quebra explícita.
 
 ## Resposta esperada
 
-1. A tarefa está no MVP? Sim/não.
-2. Menor versão útil.
-3. Arquivos prováveis.
-4. Riscos de escopo.
-5. Próximo passo recomendado.
+1. Problema e valor para o usuário.
+2. Classificação de escopo e justificativa.
+3. Menor entrega profissional completa.
+4. Dependências e arquivos prováveis.
+5. Riscos e critérios de aceite.
+6. Recomendação: avançar, ajustar, pesquisar ou aguardar aprovação.

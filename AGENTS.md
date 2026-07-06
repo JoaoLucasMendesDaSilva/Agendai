@@ -1,108 +1,165 @@
-# AGENTS.md — TCC Sistema de Agendamento Online
+# AGENTS.md — Agendai
 
 ## 1. Contexto do projeto
 
-Este repositório é um Trabalho de Conclusão de Curso cujo objetivo é desenvolver um sistema web de agendamento online para pequenos negócios de serviços, com foco principal em Cubatão - SP.
+O Agendai é um sistema web de agendamento online para microempreendedores, profissionais autônomos e pequenos negócios de serviços, com origem em um Trabalho de Conclusão de Curso desenvolvido a partir da realidade de Cubatão - SP.
 
-O sistema deve ajudar pequenos empreendedores a substituir cadernos, ligações e mensagens desorganizadas por uma plataforma simples para cadastrar serviços, profissionais e agendamentos.
+O produto ajuda empreendedores a organizar negócios, serviços, profissionais, clientes e agendamentos, substituindo controles manuais e conversas dispersas por uma experiência simples, confiável e acessível.
 
-## 2. Objetivo do MVP
+O TCC continua sendo parte importante da história e da documentação do projeto, mas não limita sua evolução técnica ou funcional.
 
-Entregar um MVP funcional, seguro, simples e explicável para apresentação acadêmica.
+## 2. Fase atual
 
-O MVP deve permitir:
+O projeto já ultrapassou a fase de protótipo inicial. A prioridade atual é evoluir o Agendai como produto real, profissional e preparado para uso contínuo.
 
-1. Cadastro e login do empreendedor.
-2. Cadastro do negócio.
-3. CRUD de serviços.
-4. CRUD de profissionais.
-5. Agendamento público sem conta para o cliente.
-6. Validação de horários disponíveis.
-7. Bloqueio de conflito de agendamento.
-8. Painel simples do empreendedor.
-9. Documentação para rodar e apresentar o projeto.
+Toda evolução deve buscar:
 
-## 3. Stack obrigatória
+1. Confiabilidade das regras de agendamento.
+2. Segurança e isolamento dos dados de cada negócio.
+3. Boa experiência em dispositivos móveis e desktop.
+4. Acessibilidade e linguagem clara em português.
+5. Cobertura de testes proporcional ao risco.
+6. Desempenho e operação previsíveis em produção.
+7. Código legível, sustentável e documentado.
 
-- Frontend: React, HTML, CSS e JavaScript
-- Backend: Node.js com Express
-- Banco de dados: MySQL
-- Autenticação: JWT
-- Hash de senha: bcrypt
-- Calendário: FullCalendar.js quando necessário
-- E-mail: SendGrid ou EmailJS, podendo iniciar com serviço simulado
-- WhatsApp: Z-API ou WPPConnect, podendo iniciar com serviço simulado
-- Deploy futuro: Vercel para frontend; Railway ou Render para backend
+Não tratar o MVP original como teto do produto. Ao mesmo tempo, não adicionar funcionalidades apenas para aumentar o escopo: cada mudança precisa resolver um problema real e ter critérios de aceite claros.
 
-Não trocar a stack sem justificar e pedir aprovação.
+## 3. Capacidades do produto
 
-## 4. Fora do escopo inicial
+O núcleo atual inclui:
 
-Não implementar agora:
+- Cadastro, login e sessão do empreendedor.
+- Configuração e identidade visual do negócio.
+- Gestão de serviços e profissionais.
+- Gestão de clientes e agendamentos.
+- Agenda administrativa, filtros, métricas e relatórios.
+- Página pública de agendamento sem conta para o cliente.
+- Cálculo de disponibilidade e bloqueio de conflitos.
+- Gerenciamento público do agendamento por token seguro.
+- Experiência responsiva, tema escuro e recursos de PWA.
+- Deploy do frontend e backend.
 
-- Pagamentos
-- Assinaturas
-- Gateway de pagamento
-- Marketplace
-- Aplicativo mobile nativo
-- Dashboard avançado
-- Relatórios complexos
-- Múltiplas unidades
-- Sistema avançado de permissões
-- Funcionalidades fora do MVP sem aprovação
+Antes de afirmar que uma capacidade está concluída, confirme sua implementação, testes e comportamento real no repositório.
 
-## 5. Regras de segurança obrigatórias
+## 4. Stack e evolução arquitetural
+
+Stack atual:
+
+- Frontend: React, Vite, HTML, CSS e JavaScript.
+- Backend: Node.js com Express.
+- Banco de dados: MySQL com migrations SQL.
+- Autenticação: JWT e bcrypt.
+- Deploy: Vercel no frontend e Railway no backend.
+
+Integrações externas, bibliotecas e provedores devem ser escolhidos conforme necessidade comprovada. Não trocar componentes centrais da stack nem introduzir uma dependência relevante sem:
+
+1. Explicar o problema.
+2. Comparar alternativas e custos.
+3. Avaliar migração, segurança e manutenção.
+4. Solicitar aprovação quando houver impacto arquitetural amplo.
+
+## 5. Segurança obrigatória
 
 - Nunca salvar senha em texto puro.
-- Usar bcrypt para senhas.
-- Nunca retornar senha ou hash de senha.
-- Usar JWT com segredo vindo de variável de ambiente.
-- Nunca versionar `.env`.
-- Criar `.env.example`.
-- Validar entradas do usuário.
-- Usar queries parametrizadas ou ORM/query builder seguro.
-- Proteger rotas privadas com middleware.
-- Garantir isolamento entre negócios: um empreendedor não pode acessar dados de outro.
-- Não expor stack trace ou erro interno do banco ao usuário final.
-- Configurar CORS de forma controlada.
-- Usar rate limit em rotas sensíveis.
-- Usar Helmet ou headers equivalentes quando possível.
-- Não colocar tokens de SendGrid, EmailJS, Z-API ou WPPConnect no código.
+- Usar bcrypt com configuração adequada para senhas.
+- Nunca retornar senha, hash ou segredo em respostas e logs.
+- Manter segredos exclusivamente em variáveis de ambiente.
+- Nunca versionar `.env`; manter `.env.example` sem valores reais.
+- Validar e normalizar entradas em todas as fronteiras da aplicação.
+- Usar queries parametrizadas ou uma camada de dados segura.
+- Proteger rotas privadas e aplicar autorização por recurso.
+- Garantir isolamento entre negócios em toda consulta e mutação.
+- Não expor stack traces, detalhes internos ou erros do banco ao usuário.
+- Configurar CORS com origens explícitas por ambiente.
+- Aplicar rate limit e proteção contra abuso em rotas sensíveis.
+- Usar Helmet ou headers equivalentes.
+- Validar tipo, tamanho e destino de uploads.
+- Não incluir tokens de provedores externos no código.
+- Tratar concorrência, idempotência e transações nas operações críticas.
 
-## 6. Regras de trabalho
+Mudanças em autenticação, autorização, agendamento público, upload, banco ou integrações exigem revisão de segurança proporcional ao risco.
+
+## 6. Decisões de escopo
+
+Classifique propostas por valor para o usuário, risco, custo de operação e alinhamento com o produto.
+
+- Mudanças pequenas e reversíveis podem avançar com testes e documentação adequados.
+- Funcionalidades grandes devem ser divididas em entregas verticais utilizáveis.
+- Pagamentos, assinaturas, múltiplas unidades, permissões avançadas, marketplace, aplicativo nativo e integrações críticas são possíveis evoluções, mas exigem análise e aprovação antes da implementação.
+- Evite arquitetura especulativa, abstrações sem uso atual e dependências desnecessárias.
+- Prefira a menor solução profissional que resolva completamente o problema aprovado.
+
+## 7. Regras de trabalho
 
 Antes de mudanças grandes:
 
-1. Analise o repositório.
-2. Explique o plano.
-3. Liste arquivos que pretende alterar.
-4. Use skills e/ou subagents relevantes.
-5. Aguarde aprovação se a alteração for ampla.
+1. Analise o repositório e o comportamento existente.
+2. Explique objetivo, plano e critérios de aceite.
+3. Liste os arquivos que pretende alterar.
+4. Identifique riscos, migrations, compatibilidade e estratégia de testes.
+5. Use as skills e revisores especializados relevantes.
+6. Aguarde aprovação quando a alteração for ampla, destrutiva ou arquitetural.
+
+Durante a implementação:
+
+- Preserve alterações existentes do usuário.
+- Trabalhe em incrementos pequenos e verificáveis.
+- Não faça refatorações não relacionadas sem justificativa.
+- Mantenha compatibilidade de API ou documente claramente a quebra.
+- Não declare sucesso sem executar verificações compatíveis com o risco.
 
 Depois de cada etapa:
 
-1. Explique o que mudou.
-2. Liste arquivos alterados.
-3. Diga como testar.
-4. Aponte riscos ou pendências.
-5. Sugira mensagem de commit.
+1. Explique o que mudou e por quê.
+2. Liste os arquivos alterados.
+3. Informe testes executados e como reproduzi-los.
+4. Aponte riscos, limitações e pendências reais.
+5. Atualize a documentação afetada.
+6. Sugira uma mensagem de commit objetiva.
 
-## 7. Preferência de implementação
+## 8. Padrões de implementação
 
-Priorize código simples, legível e fácil de explicar no TCC.
+- Priorize código simples, explícito e fácil de manter.
+- Mantenha regras de negócio fora de controllers e componentes visuais.
+- Centralize acesso à API e tratamento consistente de erros.
+- Preserve separação entre routes, controllers, services e middlewares no backend.
+- Crie componentes frontend coesos, evitando arquivos gigantes e estados duplicados.
+- Use nomes claros e consistentes com o domínio do produto.
+- Comente decisões não óbvias, não o funcionamento trivial do código.
 
-Evite:
+## 9. Qualidade de interface
 
-- Arquitetura exagerada.
-- Dependências desnecessárias.
-- Refatorações gigantes.
-- Código “mágico” difícil de entender.
-- Mudanças grandes sem testes manuais.
+- Seguir `PRODUCT.md`, `DESIGN.md` e a documentação de redesign profissional.
+- Manter experiência mobile-first sem prejudicar desktop.
+- Buscar WCAG AA, navegação por teclado, foco visível e contraste adequado.
+- Respeitar `prefers-reduced-motion` e estados de carregamento, vazio, erro e sucesso.
+- Usar linguagem simples para pessoas com diferentes níveis de familiaridade técnica.
+- Verificar visualmente os fluxos alterados em larguras representativas.
 
-## 8. Estrutura backend sugerida
+## 10. Testes e critérios de aceite
+
+- Backend: testar regras de negócio, autorização, validação, erros e concorrência quando aplicável.
+- Frontend: testar utilitários e fluxos críticos, além de verificar build e comportamento visual.
+- Banco: revisar migrations, índices, constraints, compatibilidade e estratégia de recuperação.
+- Correções de bugs devem incluir teste de regressão sempre que viável.
+- Não reduzir ou contornar testes apenas para obter uma execução verde.
+
+Comandos de referência:
+
+```bash
+cd backend
+npm test
+
+cd ../frontend
+npm test
+npm run build
+```
+
+## 11. Estrutura de referência
 
 ```txt
 backend/
+  database/migrations/
   src/
     config/
     controllers/
@@ -112,36 +169,44 @@ backend/
     utils/
     app.js
     server.js
-  .env.example
-  package.json
-```
+  test/
 
-## 9. Estrutura frontend sugerida
-
-```txt
 frontend/
+  public/
   src/
+    assets/
     components/
+    contexts/
     pages/
     services/
-    styles/
     App.jsx
     main.jsx
+  test/
+
+docs/
+plans/
 ```
 
-## 10. Uso de skills
+A estrutura existente deve ser respeitada. Mudanças estruturais precisam ter benefício claro e plano de migração.
 
-Use as skills da pasta `.agents/skills` quando uma tarefa envolver escopo, backend, segurança, banco, agendamento, frontend, documentação ou revisão antes de commit.
+## 12. Uso de skills e revisores
 
-## 11. Uso de subagents
+Use as skills da pasta `.agents/skills` quando a tarefa envolver escopo, backend, segurança, banco, agendamento, frontend, documentação, deploy ou revisão antes de commit.
 
-Para tarefas complexas, use perfis de subagents da pasta `.agents/subagents` como revisores especializados.
+Para tarefas complexas, use os perfis de `.agents/subagents` como revisores especializados quando o ambiente permitir e houver autorização para delegação. O revisor deve produzir evidências e recomendações acionáveis, não apenas aprovação genérica.
 
-Sugestão de fluxo para mudanças grandes:
+Fluxo sugerido para mudanças de alto risco:
 
-1. Backend Lead revisa arquitetura.
-2. Database Architect revisa banco.
-3. Security Engineer revisa riscos.
-4. QA Tester define testes.
-5. Code Reviewer faz revisão final.
-6. TCC Documenter atualiza documentação.
+1. Backend Lead revisa arquitetura e compatibilidade.
+2. Database Architect revisa dados, migrations e concorrência.
+3. Security Engineer revisa ameaças e isolamento.
+4. QA Tester define cenários e regressões.
+5. Code Reviewer verifica qualidade e escopo final.
+6. TCC Documenter registra decisões técnicas e acadêmicas relevantes.
+
+## 13. Documentação e veracidade
+
+- Manter README, `.env.example`, documentação de API, planos e guias operacionais sincronizados com o código.
+- Diferenciar claramente estado atual, trabalho em andamento e roadmap.
+- Não inventar funcionalidades, resultados de teste, integrações ou condições de produção.
+- Registrar decisões relevantes de modo que sejam compreensíveis tanto por avaliadores do TCC quanto por futuros mantenedores do produto.

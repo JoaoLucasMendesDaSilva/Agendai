@@ -1,36 +1,50 @@
 ---
 name: pre-commit-checklist
-description: Revisa alterações antes de commit, incluindo testes, segurança, escopo, arquivos alterados e mensagem de commit.
+description: Revisa alterações antes de commit, incluindo escopo real do diff, testes, segurança, compatibilidade, documentação e mensagem de commit.
 ---
 
 # Skill: Checklist Antes de Commit
 
+## Procedimento
+
+Revisar o diff real e executar somente verificações relevantes ao que foi alterado. Não corrigir problemas não relacionados sem autorização.
+
 ## Checklist
 
-- Projeto roda?
-- Rotas alteradas foram testadas?
-- Rotas antigas continuam funcionando?
-- `node_modules` não será commitado?
-- `.env` não será commitado?
-- Não há segredos no código?
-- Mensagens estão em português?
-- Está dentro do MVP?
-- Arquivos estão no lugar certo?
-- README precisa atualizar?
-- Há pendências?
+- A alteração resolve o problema e atende aos critérios de aceite?
+- O diff contém apenas arquivos intencionais?
+- Backend, frontend e build aplicáveis foram testados?
+- Há teste de regressão para correções e regras críticas?
+- Rotas e comportamentos existentes continuam compatíveis?
+- Validação, autorização e isolamento entre negócios foram preservados?
+- Não há segredos, dados pessoais, stack traces ou logs sensíveis?
+- `.env`, artefatos, uploads e `node_modules` permanecem fora do commit?
+- Migrations são seguras, ordenadas e documentadas?
+- A interface mantém acessibilidade, responsividade e mensagens claras?
+- README, `.env.example`, API ou planos precisam ser atualizados?
+- Existem riscos ou pendências que devem ser declarados?
 
-## Comandos úteis
+## Comandos de referência
 
 ```bash
-git status
-cd backend && npm run dev
+git status --short
+git diff --check
+
+cd backend
 npm test
+
+cd ../frontend
+npm test
+npm run build
 ```
+
+Adapte os comandos ao escopo. Nunca declare uma verificação como concluída sem executá-la.
 
 ## Resposta esperada
 
-1. Resumo.
-2. Arquivos alterados.
-3. Testes feitos.
-4. Pendências.
-5. Mensagem de commit sugerida.
+1. Veredito e resumo do escopo.
+2. Arquivos revisados.
+3. Testes e verificações executados.
+4. Problemas por prioridade.
+5. Riscos ou pendências.
+6. Mensagem de commit sugerida.

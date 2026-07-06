@@ -12,7 +12,9 @@ O usuario principal e o empreendedor que acessa o painel para manter o negocio f
 
 ## Product Purpose
 
-O produto existe para tornar a gestao de agendamentos simples, confiavel e acessivel para pequenos negocios. O sucesso do MVP e permitir que o empreendedor crie conta, configure seu negocio, cadastre servicos e profissionais, divulgue um link publico e receba agendamentos sem conflito de horario.
+O produto existe para tornar a gestao de agendamentos simples, confiavel e acessivel para pequenos negocios. Seu sucesso depende de permitir que o empreendedor configure e opere o negocio com seguranca, divulgue um link publico, receba agendamentos sem conflito e mantenha uma experiencia confiavel no uso cotidiano.
+
+As capacidades construidas no MVP formam a base do produto, mas nao limitam sua evolucao. Novas entregas devem resolver necessidades reais, preservar a simplicidade para o publico-alvo e atender a criterios profissionais de seguranca, acessibilidade, testes e operacao.
 
 A interface deve reduzir trabalho manual, evitar erros de agenda e ajudar o empreendedor a entender rapidamente o estado do negocio.
 

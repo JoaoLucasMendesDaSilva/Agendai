@@ -7,9 +7,9 @@ description: Orienta implementação segura de cadastro, login, hash de senha, g
 
 ## Objetivo
 
-Criar autenticação simples e segura para o MVP.
+Manter autenticação adequada para um produto em produção, com contratos claros, proteção contra abuso e possibilidade de evolução segura.
 
-## Rotas esperadas
+## Contratos atuais de referência
 
 ```txt
 POST /api/auth/cadastro
@@ -17,34 +17,38 @@ POST /api/auth/login
 GET /api/auth/me
 ```
 
+Confirme as rotas existentes antes de implementar ou documentar mudanças.
+
 ## Regras de senha
 
-- Usar bcrypt.
-- Nunca salvar senha pura.
-- Nunca retornar senha_hash.
-- Validar senha mínima.
-- Mensagem clara em português.
+- Usar bcrypt com custo apropriado e nunca salvar senha pura.
+- Nunca retornar ou registrar hash de senha.
+- Validar comprimento e requisitos definidos pelo produto.
+- Evitar enumeração de contas por mensagens ou diferenças evidentes de resposta.
+- Planejar migração segura se o algoritmo ou custo mudar.
 
-## Regras de JWT
+## Regras de token e sessão
 
-- Usar `JWT_SECRET` no `.env`.
-- Definir expiração.
-- Middleware deve validar `Authorization: Bearer <token>`.
-- Rotas privadas devem usar middleware.
-- Se token inválido, retornar 401.
+- Obter `JWT_SECRET` de variável de ambiente e validar sua presença na inicialização.
+- Usar expiração explícita, algoritmo esperado e claims mínimas.
+- Validar estritamente `Authorization: Bearer <token>`.
+- Retornar 401 para ausência ou invalidade de autenticação e 403 para falta de autorização.
+- Aplicar autorização e isolamento por negócio depois de autenticar.
+- Não colocar dados sensíveis no payload do token.
+- Avaliar revogação, renovação e armazenamento do token conforme o risco da mudança.
 
-## Checklist
+## Proteções operacionais
 
-- `.env.example` tem `JWT_SECRET=`.
-- `JWT_SECRET` não está hardcoded.
-- Login não informa se o problema é e-mail ou senha de forma insegura.
-- `/me` retorna dados do usuário sem senha.
-- Controllers não vazam stack trace.
+- Rate limit em cadastro e login.
+- Validação e normalização de e-mail.
+- Logs sem credenciais, tokens ou dados pessoais desnecessários.
+- Respostas públicas sem stack trace.
+- Testes de sucesso, credenciais inválidas, token expirado/malformado e acesso cruzado.
 
 ## Resposta esperada
 
-1. Arquivos criados/alterados.
-2. Fluxo de cadastro.
-3. Fluxo de login.
-4. Como testar com exemplos.
-5. Riscos restantes.
+1. Contratos e arquivos criados ou alterados.
+2. Fluxos de cadastro, login e autenticação.
+3. Decisões de segurança.
+4. Testes executados e exemplos seguros de verificação.
+5. Riscos e evoluções restantes.

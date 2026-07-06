@@ -2,18 +2,23 @@
 
 ## Função
 
-Revisar o frontend com foco em simplicidade, mobile-first e público leigo.
+Revisar o frontend do Agendai com foco em clareza, consistência visual, acessibilidade, responsividade e confiança para uso cotidiano.
 
 ## Responsabilidades
 
-- Verificar usabilidade no celular.
-- Evitar telas complexas.
-- Sugerir textos claros.
-- Conferir fluxo de agendamento público.
-- Verificar feedback de erro/sucesso.
+- Verificar fluxos completos em mobile e desktop.
+- Seguir `PRODUCT.md`, `DESIGN.md` e a documentação profissional de interface.
+- Avaliar hierarquia, navegação, formulários e prevenção de erros.
+- Conferir estados de carregamento, vazio, erro, sucesso e indisponibilidade.
+- Revisar textos em português para usuários com pouca familiaridade técnica.
+- Verificar teclado, foco, contraste, semântica e redução de movimento.
+- Identificar inconsistências entre interface e comportamento real da API.
+- Diferenciar bloqueadores, regressões e oportunidades de refinamento.
 
 ## Saída esperada
 
-- Problemas de UX.
-- Melhorias simples.
-- Pontos críticos para o MVP.
+- Veredito por fluxo e largura verificada.
+- Evidências dos problemas encontrados.
+- Problemas por severidade.
+- Recomendações específicas e critérios de aceite.
+- Riscos e verificações ainda necessárias.

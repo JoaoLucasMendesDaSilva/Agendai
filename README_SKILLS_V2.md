@@ -1,17 +1,10 @@
-# Pacote V2 — Skills e Subagents para Codex
+# Guia de Skills e Revisores do Agendai
 
-Este pacote contém instruções, skills e perfis de subagents para ajudar o Codex a desenvolver o sistema web de agendamento online do TCC com mais segurança e organização.
+Este diretório reúne instruções reutilizáveis e perfis de revisão para apoiar a evolução profissional do Agendai com segurança, consistência e boa documentação.
 
-## Como instalar
+O nome do arquivo foi preservado por compatibilidade histórica. O conteúdo atual não representa mais um pacote voltado apenas à construção de um MVP.
 
-Copie para a raiz do seu projeto:
-
-```txt
-AGENTS.md
-.agents/
-```
-
-A estrutura deve ficar assim:
+## Estrutura
 
 ```txt
 tcc-agendamento/
@@ -21,18 +14,20 @@ tcc-agendamento/
     subagents/
   backend/
   frontend/
+  docs/
+  plans/
 ```
 
-## Skills incluídas
+## Skills disponíveis
 
-### Controle e planejamento
+### Planejamento e qualidade
 
-- `tcc-scope-guard`
-- `api-design-review`
-- `pre-commit-checklist`
-- `learning-review`
+- `tcc-scope-guard`: avalia valor, risco e tamanho das propostas sem usar o MVP como teto.
+- `api-design-review`: revisa contratos e consistência da API.
+- `pre-commit-checklist`: verifica qualidade, testes, segurança e documentação.
+- `learning-review`: explica decisões e conceitos técnicos.
 
-### Backend
+### Backend e autenticação
 
 - `backend-express-feature`
 - `jwt-auth-implementation`
@@ -51,13 +46,14 @@ tcc-agendamento/
 ### Frontend
 
 - `frontend-mobile-first`
+- `impeccable`
 
-### Documentação e deploy
+### Documentação e operação
 
 - `tcc-documentation`
 - `deployment-readiness`
 
-## Subagents incluídos
+## Revisores especializados
 
 - `backend-lead`
 - `security-engineer`
@@ -68,20 +64,29 @@ tcc-agendamento/
 - `tcc-documenter`
 - `teacher-mentor`
 
-## Exemplos de uso no Codex
+## Princípios de uso
+
+- Escolha somente as skills relevantes para a tarefa atual.
+- Use a análise de escopo para encontrar a menor entrega profissional completa, não para bloquear toda evolução além do MVP original.
+- Exija evidências para afirmar que algo está pronto.
+- Em mudanças críticas, combine revisão de arquitetura, dados, segurança e testes.
+- Perfis de subagents são revisores especializados; seu uso depende de autorização e disponibilidade do ambiente.
+- As instruções de `AGENTS.md` prevalecem como política geral do repositório.
+
+## Exemplos
 
 ```txt
-Use as skills tcc-scope-guard, backend-express-feature e security-review para planejar a implementação de autenticação JWT. Não altere arquivos ainda.
+Use backend-express-feature, api-design-review e security-review para implementar esta rota. Antes de editar, analise o contrato atual, proponha critérios de aceite e liste os arquivos afetados.
 ```
 
 ```txt
-Use os subagents backend-lead, database-architect e security-engineer para revisar o plano do banco de dados antes de criar migrations.
+Use tcc-scope-guard para avaliar valor, riscos, dependências e a menor entrega profissional desta funcionalidade. Não trate o MVP original como limite automático.
 ```
 
 ```txt
-Use a skill pre-commit-checklist para revisar as alterações atuais e sugerir uma mensagem de commit.
+Use pre-commit-checklist para revisar as alterações atuais, executar as verificações aplicáveis e sugerir uma mensagem de commit baseada no diff real.
 ```
 
-## Observação
+## Manutenção
 
-As skills são instruções reutilizáveis. Os subagents são perfis de revisão/especialistas para organizar melhor o raciocínio em tarefas complexas.
+As skills e os perfis devem acompanhar a fase real do produto. Quando arquitetura, operação ou prioridades mudarem, atualize estas instruções junto com a documentação relacionada para evitar orientações contraditórias.

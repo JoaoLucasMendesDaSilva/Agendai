@@ -1,28 +1,30 @@
-# Prompt inicial para usar no Codex com as Skills V2
+# Prompt de continuidade profissional do Agendai
 
-Leia o `AGENTS.md`, carregue o contexto do projeto e use as skills disponíveis em `.agents/skills`.
+> O nome deste arquivo foi mantido por compatibilidade histórica. Este prompt substitui o antigo contexto de início do MVP.
 
-Primeiro, não altere arquivos. Faça apenas uma análise inicial:
+Leia `AGENTS.md`, `PRODUCT.md`, `DESIGN.md` e os documentos relevantes em `docs/` e `plans/`. Analise o código e use somente as skills necessárias de `.agents/skills`.
 
-1. Estrutura atual do repositório.
-2. O que já está implementado.
-3. O que falta para o MVP do TCC.
-4. Principais riscos de segurança.
-5. Plano de implementação em etapas pequenas.
-6. Quais skills e subagents você recomenda usar em cada etapa.
+O Agendai nasceu como TCC, mas está sendo evoluído como produto real. Não use o MVP original como teto de escopo e não presuma que funcionalidades documentadas estão prontas sem verificar o repositório.
 
-Leve segurança a sério. Antes de implementar autenticação, banco ou agendamento, use pelo menos:
+Antes de alterar arquivos, apresente:
 
-- `tcc-scope-guard`
-- `api-design-review`
-- `security-review`
+1. Estado atual relacionado à solicitação, com evidências do código.
+2. Problema que será resolvido e impacto para o usuário.
+3. Menor solução profissional completa.
+4. Critérios de aceite observáveis.
+5. Riscos de segurança, dados, compatibilidade e operação.
+6. Arquivos que pretende alterar.
+7. Estratégia de testes e documentação.
 
-Para tarefas complexas, use também os perfis em `.agents/subagents`, principalmente:
+Para mudanças amplas, destrutivas ou arquiteturais, aguarde aprovação. Para mudanças aprovadas, implemente em etapas pequenas, verificáveis e sem refatorações não relacionadas.
 
-- Backend Lead
-- Security Engineer
-- Database Architect
-- QA Tester
-- Code Reviewer
+Use revisões especializadas conforme o risco:
 
-Não implemente tudo de uma vez. Trabalhe em etapas pequenas e explique como testar cada uma.
+- API e backend: `api-design-review` e `backend-express-feature`.
+- Autenticação e dados sensíveis: `security-review` e `jwt-auth-implementation`.
+- Banco e concorrência: `mysql-data-modeling`, `mysql-migration-generator` e `scheduling-rules`.
+- Frontend: `frontend-mobile-first` e as diretrizes de design do projeto.
+- Deploy: `deployment-readiness`.
+- Encerramento: `pre-commit-checklist` e `tcc-documentation` quando aplicável.
+
+Ao concluir, informe o que mudou, arquivos alterados, testes executados, limitações, pendências e uma mensagem de commit sugerida. Nunca invente resultados, funcionalidades ou verificações não executadas.
