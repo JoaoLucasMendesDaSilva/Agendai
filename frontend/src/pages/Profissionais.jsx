@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Mail, Pencil, Phone, Plus, Power, Users } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
 import PageHeader from '../components/ui/PageHeader';
@@ -48,6 +48,8 @@ function normalizarMensagem(texto) {
 
 function Profissionais({ navigate }) {
   const { logout, usuario } = useAuth();
+  const formularioRef = useRef(null);
+  const nomeInputRef = useRef(null);
   const [profissionais, setProfissionais] = useState([]);
   const [profissionalEditando, setProfissionalEditando] = useState(null);
   const [form, setForm] = useState(FORM_INICIAL);
@@ -102,11 +104,15 @@ function Profissionais({ navigate }) {
   }
 
   function prepararNovoProfissional() {
-    cancelarEdicao();
-    document.getElementById('profissionais-form-title')?.scrollIntoView({
+    setProfissionalEditando(null);
+    setForm(FORM_INICIAL);
+    setErro('');
+    setSucesso('');
+    formularioRef.current?.scrollIntoView?.({
       behavior: 'smooth',
       block: 'start',
     });
+    nomeInputRef.current?.focus({ preventScroll: true });
   }
 
   async function handleSubmit(event) {
@@ -205,7 +211,7 @@ function Profissionais({ navigate }) {
       </section>
 
       <section className="management-grid catalog-management-grid">
-        <div className="dashboard-panel management-form-card catalog-form-panel">
+        <div className="dashboard-panel management-form-card catalog-form-panel" ref={formularioRef}>
           <div className="panel-heading">
             <div>
               <h2 id="profissionais-form-title">
@@ -252,6 +258,7 @@ function Profissionais({ navigate }) {
               <label>
                 Nome do profissional
                 <input
+                  ref={nomeInputRef}
                   onChange={(event) =>
                     atualizarCampo('nome', event.target.value)
                   }

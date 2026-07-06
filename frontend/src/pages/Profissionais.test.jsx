@@ -67,4 +67,17 @@ describe('Profissionais', () => {
       'status',
     );
   });
+
+  it('leva o foco ao formulario ao clicar em novo profissional', async () => {
+    const user = userEvent.setup();
+
+    render(<Profissionais navigate={vi.fn()} />);
+
+    const nomeInput = await screen.findByLabelText(/Nome do profissional/i);
+    await user.click(
+      screen.getByRole('button', { name: /^Novo profissional$/i }),
+    );
+
+    expect(nomeInput).toHaveFocus();
+  });
 });

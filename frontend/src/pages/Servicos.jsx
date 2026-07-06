@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Clock3, Pencil, Plus, Power, Scissors } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
 import PageHeader from '../components/ui/PageHeader';
@@ -55,6 +55,8 @@ function normalizarMensagem(texto) {
 
 function Servicos({ navigate }) {
   const { logout, usuario } = useAuth();
+  const formularioRef = useRef(null);
+  const nomeInputRef = useRef(null);
   const [servicos, setServicos] = useState([]);
   const [servicoEditando, setServicoEditando] = useState(null);
   const [form, setForm] = useState(FORM_INICIAL);
@@ -109,11 +111,15 @@ function Servicos({ navigate }) {
   }
 
   function prepararNovoServico() {
-    cancelarEdicao();
-    document.getElementById('servicos-form-title')?.scrollIntoView({
+    setServicoEditando(null);
+    setForm(FORM_INICIAL);
+    setErro('');
+    setSucesso('');
+    formularioRef.current?.scrollIntoView?.({
       behavior: 'smooth',
       block: 'start',
     });
+    nomeInputRef.current?.focus({ preventScroll: true });
   }
 
   async function handleSubmit(event) {
@@ -211,7 +217,7 @@ function Servicos({ navigate }) {
       </section>
 
       <section className="management-grid catalog-management-grid">
-        <div className="dashboard-panel management-form-card catalog-form-panel">
+        <div className="dashboard-panel management-form-card catalog-form-panel" ref={formularioRef}>
           <div className="panel-heading">
             <div>
               <h2 id="servicos-form-title">
@@ -258,6 +264,7 @@ function Servicos({ navigate }) {
               <label>
                 Nome do serviço
                 <input
+                  ref={nomeInputRef}
                   onChange={(event) =>
                     atualizarCampo('nome', event.target.value)
                   }

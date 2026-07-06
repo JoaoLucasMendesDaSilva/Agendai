@@ -50,4 +50,15 @@ describe('Servicos', () => {
       'status',
     );
   });
+
+  it('leva o foco ao formulario ao clicar em novo servico', async () => {
+    const user = userEvent.setup();
+
+    render(<Servicos navigate={vi.fn()} />);
+
+    const nomeInput = await screen.findByLabelText(/Nome do serviço/i);
+    await user.click(screen.getByRole('button', { name: /^Novo serviço$/i }));
+
+    expect(nomeInput).toHaveFocus();
+  });
 });
