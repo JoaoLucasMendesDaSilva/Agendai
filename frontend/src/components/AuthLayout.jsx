@@ -1,4 +1,3 @@
-import { CalendarDays, UserRound, UsersRound } from 'lucide-react';
 import authIllustration from '../assets/auth-illustration.png';
 import BrandLogo from './BrandLogo';
 
@@ -43,23 +42,9 @@ function AuthLayout({ children, mode = 'login', onLogoClick }) {
                 </p>
               </div>
 
-              <section className="auth-promise-card" aria-labelledby="auth-promise-title">
-                <span className="auth-promise-icon" aria-hidden="true">
-                  <CalendarDays size={28} strokeWidth={1.8} />
-                </span>
-                <div className="auth-promise-copy">
-                  <h3 id="auth-promise-title">Tudo o que importa, no horário certo.</h3>
-                  <p>
-                    Gerencie compromissos, organize sua equipe e ofereça uma experiência
-                    impecável para seus clientes.
-                  </p>
-                </div>
-                <div className="auth-product-cues" aria-label="Agenda, clientes e equipe">
-                  <span><CalendarDays aria-hidden="true" size={23} /></span>
-                  <span><UserRound aria-hidden="true" size={23} /></span>
-                  <span><UsersRound aria-hidden="true" size={23} /></span>
-                </div>
-              </section>
+              <p className="auth-login-visual-note">
+                Feito para a rotina de pequenos negócios.
+              </p>
             </div>
           </aside>
         )}
