@@ -456,7 +456,7 @@
 
 /* Públicos: composição robusta a zoom e larguras intermediárias */
 .landing-page .landing-audience-section {
-  width: 100%;
+  width: auto;
   max-width: none;
   margin-inline: calc(var(--landing-gutter) * -1);
   padding-inline: max(var(--landing-gutter), calc((100% - var(--landing-width)) / 2));
