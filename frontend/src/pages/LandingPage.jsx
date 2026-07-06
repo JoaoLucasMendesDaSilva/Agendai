@@ -235,6 +235,11 @@ function LandingPage({ navigate }) {
             <div><CalendarCheck2 aria-hidden="true" size={19} /><span>Agenda organizada</span></div>
             <div><Users aria-hidden="true" size={19} /><span>Clientes em um só lugar</span></div>
           </div>
+          <img
+            alt="Ilustração de calendário com planta e relógio"
+            className="landing-hero-illustration"
+            src={authIllustration}
+          />
           <div className="landing-mockup-card mockup-main-card">
             <div className="mockup-header">
               <span>Próximos atendimentos</span>
@@ -250,11 +255,6 @@ function LandingPage({ navigate }) {
               <span>14:00</span><strong>Sobrancelha</strong><em>Confirmado</em>
             </div>
           </div>
-          <img
-            alt="Ilustração de calendário com planta e relógio"
-            className="landing-hero-illustration"
-            src={authIllustration}
-          />
         </div>
       </section>
 

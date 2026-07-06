@@ -308,14 +308,16 @@
 }
 
 .landing-page .landing-hero-illustration {
-  position: absolute;
-  z-index: 1;
-  top: 88px;
-  right: -12px;
-  width: min(250px, 52%);
+  position: relative;
+  z-index: 2;
+  top: auto;
+  right: auto;
+  width: min(150px, 38%);
   height: auto;
-  opacity: 0.18;
-  filter: none;
+  margin: 0 8px 12px 0;
+  justify-self: end;
+  opacity: 0.92;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.18));
   pointer-events: none;
 }
 
