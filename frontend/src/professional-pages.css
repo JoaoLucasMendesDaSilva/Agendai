@@ -59,6 +59,14 @@
   padding: 16px;
   background: var(--panel-bg);
   box-shadow: none;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.dashboard-metrics .metric-card:hover,
+.metrics-grid .metric-card:hover {
+  border-color: color-mix(in srgb, var(--green-700) 36%, var(--gray-300));
+  box-shadow: 0 14px 28px rgba(16, 24, 40, 0.1);
+  transform: translateY(-3px);
 }
 
 .metric-card p {
@@ -94,6 +102,22 @@
 
 .dashboard-panel {
   padding: 18px;
+}
+
+.daily-dashboard-grid .dashboard-panel,
+.dashboard-secondary-grid .dashboard-panel,
+.report-panel,
+.clients-grid .dashboard-panel {
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.daily-dashboard-grid .dashboard-panel:hover,
+.dashboard-secondary-grid .dashboard-panel:hover,
+.report-panel:hover,
+.clients-grid .dashboard-panel:hover {
+  border-color: color-mix(in srgb, var(--green-700) 32%, var(--gray-300));
+  box-shadow: 0 16px 32px rgba(16, 24, 40, 0.09);
+  transform: translateY(-2px);
 }
 
 .operational-panel-heading {
@@ -721,6 +745,7 @@
 }
 
 .client-card {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px 12px;
@@ -731,14 +756,15 @@
   padding: 14px 16px;
   background: var(--panel-bg);
   box-shadow: none;
+  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .client-card:hover,
 .client-card.is-selected {
   border-color: var(--gray-300);
   background: var(--panel-bg-soft);
-  box-shadow: none;
-  transform: none;
+  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--green-700) 76%, transparent);
+  transform: translateX(3px);
 }
 
 .client-card.is-selected {
@@ -805,6 +831,17 @@
   grid-column: 2;
   grid-row: 1;
   color: var(--gray-500);
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.client-card:hover .client-card-arrow,
+.client-card.is-selected .client-card-arrow {
+  color: var(--green-700);
+  transform: translateX(3px);
+}
+
+.client-agenda-button:hover {
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--green-800) 24%, transparent);
 }
 
 .client-history-panel {
@@ -1035,7 +1072,19 @@
 @media (prefers-reduced-motion: reduce) {
   .agenda-card-pro,
   .client-card,
-  .quick-action {
+  .quick-action,
+  .dashboard-panel,
+  .metric-card,
+  .client-card-arrow {
     transition: none;
+  }
+
+  .client-card:hover,
+  .client-card.is-selected,
+  .client-card:hover .client-card-arrow,
+  .client-card.is-selected .client-card-arrow,
+  .dashboard-panel:hover,
+  .metric-card:hover {
+    transform: none;
   }
 }

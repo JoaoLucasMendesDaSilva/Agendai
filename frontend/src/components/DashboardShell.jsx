@@ -7,12 +7,13 @@ import {
   LogOut,
   Menu,
   Moon,
+  PanelLeftClose,
+  PanelLeftOpen,
   Scissors,
   Store,
   Sun,
   UserRound,
   UsersRound,
-  X,
 } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import { useTheme } from '../contexts/ThemeContext';
@@ -39,6 +40,7 @@ function DashboardShell({
   const [installPrompt, setInstallPrompt] = useState(null);
   const [negocio, setNegocio] = useState(null);
   const [perfilAberto, setPerfilAberto] = useState(false);
+  const [sidebarRecolhida, setSidebarRecolhida] = useState(false);
   const [pwaInstalado, setPwaInstalado] = useState(() => {
     if (typeof window === 'undefined') return false;
 
@@ -108,6 +110,15 @@ function DashboardShell({
     }
   }
 
+  function alternarSidebar() {
+    if (typeof window !== 'undefined' && window.innerWidth < 1040) {
+      setMenuAberto(false);
+      return;
+    }
+
+    setSidebarRecolhida((recolhida) => !recolhida);
+  }
+
   function navegarPara(path) {
     setPerfilAberto(false);
     navigate(path);
@@ -130,7 +141,11 @@ function DashboardShell({
   }
 
   return (
-    <main className={`app-shell ${menuAberto ? 'is-menu-open' : ''}`}>
+    <main
+      className={`app-shell ${menuAberto ? 'is-menu-open' : ''} ${
+        sidebarRecolhida ? 'is-sidebar-collapsed' : ''
+      }`}
+    >
       <button
         aria-label="Fechar menu"
         className="sidebar-overlay"
@@ -138,16 +153,18 @@ function DashboardShell({
         type="button"
       />
 
-      <aside className="sidebar">
+      <aside className="sidebar" id="dashboard-sidebar">
         <div className="sidebar-head">
           <BrandLogo onClick={() => navegarPara('/')} />
           <button
-            aria-label="Fechar menu"
-            className="shell-icon-button sidebar-close-button"
-            onClick={() => setMenuAberto(false)}
+            aria-controls="dashboard-sidebar"
+            aria-expanded={!sidebarRecolhida}
+            aria-label={sidebarRecolhida ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+            className="shell-icon-button sidebar-toggle-button"
+            onClick={alternarSidebar}
             type="button"
           >
-            <X size={20} />
+            {sidebarRecolhida ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
           </button>
         </div>
 
@@ -155,6 +172,7 @@ function DashboardShell({
           {NAV_ITEMS.map(({ label, path, Icon }) => (
             <button
               aria-current={currentPath === path ? 'page' : undefined}
+              aria-label={label}
               className={`sidebar-link ${currentPath === path ? 'is-active' : ''}`}
               key={path}
               onClick={() => navegarPara(path)}
@@ -188,6 +206,7 @@ function DashboardShell({
       <section className="workspace">
         <header className="topbar">
           <button
+            aria-controls="dashboard-sidebar"
             aria-expanded={menuAberto}
             aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
             className="shell-icon-button menu-button"
