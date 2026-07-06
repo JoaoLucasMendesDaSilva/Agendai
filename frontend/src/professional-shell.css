@@ -525,6 +525,7 @@ body {
   .app-shell.is-sidebar-collapsed .sidebar-footer {
     grid-template-columns: 1fr;
     justify-items: center;
+    margin-top: auto;
     padding-inline: 0;
   }
 
