@@ -1,5 +1,11 @@
 /* Landing page — narrativa pública do Agendai */
 
+@property --landing-check-progress {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
 .landing-page {
   --landing-width: 1180px;
   --landing-gutter: clamp(16px, 3vw, 32px);
@@ -343,7 +349,24 @@
 }
 
 .landing-page .landing-routine-list {
+  position: relative;
   border-block: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.landing-page .landing-routine-list::before {
+  position: absolute;
+  top: 22px;
+  bottom: 22px;
+  left: 61px;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(117, 217, 154, 0.28),
+    rgba(255, 255, 255, 0.1)
+  );
+  content: "";
+  transform-origin: 50% 0;
+  animation: landing-routine-line-grow 720ms var(--landing-ease-out-expo) 320ms both;
 }
 
 .landing-page .landing-routine-list > div {
@@ -368,8 +391,26 @@
 }
 
 .landing-page .landing-routine-list time {
+  position: relative;
   color: #75d99a;
   font-weight: 700;
+}
+
+.landing-page .landing-routine-list time::after {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+  transform: translateY(-50%);
+}
+
+.landing-page .landing-routine-list .is-available time::after {
+  box-shadow: 0 0 0 0 rgba(117, 217, 154, 0.32);
+  animation: landing-open-slot-pulse 1500ms var(--landing-ease-out-quart) 840ms 2;
 }
 
 .landing-page .landing-routine-list span,
@@ -382,6 +423,92 @@
 .landing-page .landing-routine-list .is-available strong {
   color: rgba(255, 255, 255, 0.82);
   font-weight: 600;
+}
+
+.landing-page .landing-routine-check {
+  --landing-check-progress: 100%;
+  position: relative;
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  animation:
+    landing-check-panel-in 420ms var(--landing-ease-out-quint) 620ms both,
+    landing-check-progress 1100ms var(--landing-ease-out-expo) 760ms both;
+}
+
+.landing-page .landing-routine-check::before {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  left: 14px;
+  height: 3px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, #75d99a, rgba(117, 217, 154, 0.12))
+      0 / var(--landing-check-progress) 100% no-repeat,
+    rgba(255, 255, 255, 0.1);
+  content: "";
+}
+
+.landing-page .landing-routine-beam {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.landing-page .landing-routine-beam span {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(117, 217, 154, 0.2);
+  overflow: hidden;
+}
+
+.landing-page .landing-routine-beam span::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: #75d99a;
+  content: "";
+  transform-origin: 0 50%;
+  animation: landing-beam-fill 560ms var(--landing-ease-out-quint) both;
+}
+
+.landing-page .landing-routine-beam span:nth-child(2)::before {
+  animation-delay: 880ms;
+}
+
+.landing-page .landing-routine-beam span:nth-child(3)::before {
+  animation-delay: 1080ms;
+}
+
+.landing-page .landing-routine-check ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0 0 10px;
+  list-style: none;
+}
+
+.landing-page .landing-routine-check li {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.landing-page .landing-routine-check li strong {
+  color: #ffffff;
+  font-size: 0.75rem;
+}
+
+.landing-page .landing-routine-check li span {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.68rem;
+  line-height: 1.35;
 }
 
 .landing-page .landing-new-booking {
@@ -848,6 +975,43 @@
   }
 }
 
+@keyframes landing-routine-line-grow {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes landing-open-slot-pulse {
+  0% {
+    transform: translateY(-50%) scale(1);
+    box-shadow: 0 0 0 0 rgba(117, 217, 154, 0.32);
+  }
+
+  100% {
+    transform: translateY(-50%) scale(1.18);
+    box-shadow: 0 0 0 10px rgba(117, 217, 154, 0);
+  }
+}
+
+@keyframes landing-check-panel-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0.68;
+  }
+}
+
+@keyframes landing-check-progress {
+  from {
+    --landing-check-progress: 0%;
+  }
+}
+
+@keyframes landing-beam-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
 @keyframes landing-booking-confirm {
   0% {
     transform: translateY(10px) scale(0.985);
@@ -1056,6 +1220,14 @@
     grid-column: 2;
   }
 
+  .landing-page .landing-routine-check ol {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-page .landing-routine-beam {
+    grid-template-columns: 1fr;
+  }
+
   .landing-page .landing-core-item {
     grid-template-columns: 1fr;
   }
@@ -1081,6 +1253,10 @@
 
   .landing-page .landing-routine-list > div {
     grid-template-columns: 54px minmax(0, 1fr);
+  }
+
+  .landing-page .landing-routine-list::before {
+    left: 51px;
   }
 }
 
