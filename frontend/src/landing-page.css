@@ -1,11 +1,5 @@
 /* Landing page — narrativa pública do Agendai */
 
-@property --landing-check-progress {
-  syntax: "<percentage>";
-  inherits: false;
-  initial-value: 0%;
-}
-
 .landing-page {
   --landing-width: 1180px;
   --landing-gutter: clamp(16px, 3vw, 32px);
@@ -301,7 +295,7 @@
   color: #ffffff;
   background: var(--green-900);
   box-shadow: var(--shadow-soft);
-  contain: paint;
+  contain: layout paint style;
   animation: landing-board-arrive 680ms var(--landing-ease-out-expo) 120ms both;
 }
 
@@ -426,31 +420,38 @@
 }
 
 .landing-page .landing-routine-check {
-  --landing-check-progress: 100%;
   position: relative;
+  isolation: isolate;
   display: grid;
   gap: 14px;
   margin-top: 22px;
   border-radius: 14px;
   padding: 14px;
   background: rgba(255, 255, 255, 0.08);
-  animation:
-    landing-check-panel-in 420ms var(--landing-ease-out-quint) 620ms both,
-    landing-check-progress 1100ms var(--landing-ease-out-expo) 760ms both;
+  animation: landing-check-panel-in 420ms var(--landing-ease-out-quint) 620ms both;
 }
 
-.landing-page .landing-routine-check::before {
+.landing-page .landing-routine-check::before,
+.landing-page .landing-routine-check::after {
   position: absolute;
   right: 14px;
   bottom: 10px;
   left: 14px;
   height: 3px;
   border-radius: 999px;
-  background:
-    linear-gradient(90deg, #75d99a, rgba(117, 217, 154, 0.12))
-      0 / var(--landing-check-progress) 100% no-repeat,
-    rgba(255, 255, 255, 0.1);
   content: "";
+}
+
+.landing-page .landing-routine-check::before {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.landing-page .landing-routine-check::after {
+  background:
+    linear-gradient(90deg, #75d99a, rgba(117, 217, 154, 0.12));
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  animation: landing-check-progress 1100ms var(--landing-ease-out-expo) 760ms both;
 }
 
 .landing-page .landing-routine-beam {
@@ -939,17 +940,26 @@
   color: var(--gray-700);
 }
 
+@supports (content-visibility: auto) {
+  .landing-page :where(
+    .landing-audience-section,
+    .landing-final-cta,
+    .landing-footer
+  ) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 420px;
+  }
+}
+
 @keyframes landing-copy-arrive {
   from {
     transform: translateY(12px);
-    filter: blur(2px);
   }
 }
 
 @keyframes landing-board-arrive {
   from {
     transform: translateY(16px) scale(0.985);
-    filter: saturate(0.88);
   }
 }
 
@@ -1002,7 +1012,11 @@
 
 @keyframes landing-check-progress {
   from {
-    --landing-check-progress: 0%;
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
   }
 }
 
@@ -1019,12 +1033,10 @@
 
   58% {
     transform: translateY(0) scale(1.01);
-    box-shadow: 0 0 0 6px rgba(117, 217, 154, 0.16);
   }
 
   100% {
     transform: translateY(0) scale(1);
-    box-shadow: none;
   }
 }
 

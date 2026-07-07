@@ -10,11 +10,9 @@ import {
   Moon,
   Scissors,
   ShieldCheck,
-  Smartphone,
   Stethoscope,
   Store,
   Sun,
-  Users,
   X,
 } from 'lucide-react';
 import BrandLogo from '../components/BrandLogo';
@@ -237,8 +235,8 @@ function LandingPage({ navigate }) {
             <span className="landing-routine-status">3 horários confirmados</span>
           </header>
           <div className="landing-routine-list">
-            <div className="is-confirmed"><time>09:00</time><span><strong>Corte masculino</strong><small>João · confirmado</small></span></div>
-            <div className="is-confirmed"><time>10:30</time><span><strong>Barba</strong><small>Marcos · confirmado</small></span></div>
+            <div><time>09:00</time><span><strong>Corte masculino</strong><small>João · confirmado</small></span></div>
+            <div><time>10:30</time><span><strong>Barba</strong><small>Marcos · confirmado</small></span></div>
             <div className="is-available"><time>12:00</time><span><strong>Horário disponível</strong><small>Pronto para receber agendamento</small></span></div>
           </div>
           <div className="landing-routine-check" aria-label="Ilustração da conferência automática de disponibilidade">
