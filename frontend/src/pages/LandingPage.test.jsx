@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import LandingPage from './LandingPage';
@@ -56,11 +56,70 @@ describe('LandingPage', () => {
     expect(menu).toHaveAttribute('hidden');
   });
 
+  it('fecha o menu compacto ao clicar fora ou redimensionar a tela', async () => {
+    const user = userEvent.setup();
+    render(<LandingPage navigate={vi.fn()} />);
+
+    await user.click(screen.getByRole('button', { name: 'Abrir menu' }));
+
+    const menu = document.getElementById('landing-mobile-menu');
+    expect(menu).not.toHaveAttribute('hidden');
+
+    await user.click(screen.getByRole('heading', {
+      name: 'Menos conversa perdida. Mais horário confirmado.',
+    }));
+
+    expect(menu).toHaveAttribute('hidden');
+
+    await user.click(screen.getByRole('button', { name: 'Abrir menu' }));
+    expect(menu).not.toHaveAttribute('hidden');
+
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    expect(menu).toHaveAttribute('hidden');
+  });
+
+  it('mantem a rolagem funcional quando matchMedia nao esta disponivel', async () => {
+    const user = userEvent.setup();
+    const matchMediaOriginal = window.matchMedia;
+    const scrollIntoViewOriginal = window.HTMLElement.prototype.scrollIntoView;
+    const scrollIntoView = vi.fn();
+
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: undefined,
+    });
+    Object.defineProperty(window.HTMLElement.prototype, 'scrollIntoView', {
+      configurable: true,
+      value: scrollIntoView,
+    });
+
+    try {
+      render(<LandingPage navigate={vi.fn()} />);
+
+      await user.click(screen.getByRole('button', { name: 'Ver como funciona' }));
+
+      expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' });
+    } finally {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        value: matchMediaOriginal,
+      });
+      Object.defineProperty(window.HTMLElement.prototype, 'scrollIntoView', {
+        configurable: true,
+        value: scrollIntoViewOriginal,
+      });
+    }
+  });
+
   it('nao promete gratuidade sem apresentar condicoes', () => {
     render(<LandingPage navigate={vi.fn()} />);
 
     expect(screen.queryByText(/grátis/i)).not.toBeInTheDocument();
     expect(screen.getAllByText('Criar minha agenda')).toHaveLength(2);
     expect(screen.getByText('O cadastro atual não solicita cartão ou pagamento.')).toBeInTheDocument();
+    expect(screen.queryByText(/PWA/i)).not.toBeInTheDocument();
   });
 });

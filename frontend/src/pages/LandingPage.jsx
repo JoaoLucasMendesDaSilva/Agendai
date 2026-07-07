@@ -43,7 +43,7 @@ const pilares = [
 const recursosComplementares = [
   'Link e QR Code para divulgação',
   'Compartilhamento pelo WhatsApp',
-  'Instalação como aplicativo (PWA)',
+  'Instalação como aplicativo',
   'Relatórios em PDF',
   'Exportação para Excel',
   'Tema claro e escuro',
@@ -84,14 +84,23 @@ const perguntas = [
   },
   {
     pergunta: 'Consigo usar o Agendai pelo celular?',
-    resposta: 'Sim. A interface é responsiva e o sistema também pode ser instalado como PWA no celular ou computador.',
+    resposta: 'Sim. A interface é responsiva e o sistema também pode ser instalado como aplicativo no celular ou computador.',
   },
 ];
+
+function usuarioPrefereReducaoMovimento() {
+  return (
+    typeof window !== 'undefined'
+    && typeof window.matchMedia === 'function'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+}
 
 function LandingPage({ navigate }) {
   const { isDark, toggleTheme } = useTheme();
   const [menuAberto, setMenuAberto] = useState(false);
   const [perguntasAbertas, setPerguntasAbertas] = useState([]);
+  const navRef = useRef(null);
   const menuButtonRef = useRef(null);
 
   useEffect(() => {
@@ -106,20 +115,35 @@ function LandingPage({ navigate }) {
       }
     }
 
+    function fecharMenuAoClicarFora(event) {
+      if (navRef.current?.contains(event.target)) {
+        return;
+      }
+
+      setMenuAberto(false);
+    }
+
+    function fecharMenuAoRedimensionar() {
+      setMenuAberto(false);
+    }
+
     window.addEventListener('keydown', fecharMenuComEscape);
-    return () => window.removeEventListener('keydown', fecharMenuComEscape);
+    window.addEventListener('pointerdown', fecharMenuAoClicarFora);
+    window.addEventListener('resize', fecharMenuAoRedimensionar);
+
+    return () => {
+      window.removeEventListener('keydown', fecharMenuComEscape);
+      window.removeEventListener('pointerdown', fecharMenuAoClicarFora);
+      window.removeEventListener('resize', fecharMenuAoRedimensionar);
+    };
   }, [menuAberto]);
 
   function irParaLanding() {
-    const prefereReducaoMovimento = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches;
-
     setMenuAberto(false);
     navigate('/');
     window.scrollTo({
       top: 0,
-      behavior: prefereReducaoMovimento ? 'auto' : 'smooth',
+      behavior: usuarioPrefereReducaoMovimento() ? 'auto' : 'smooth',
     });
   }
 
@@ -134,13 +158,9 @@ function LandingPage({ navigate }) {
   }
 
   function rolarPara(id) {
-    const prefereReducaoMovimento = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches;
-
     setMenuAberto(false);
     document.getElementById(id)?.scrollIntoView({
-      behavior: prefereReducaoMovimento ? 'auto' : 'smooth',
+      behavior: usuarioPrefereReducaoMovimento() ? 'auto' : 'smooth',
     });
   }
 
@@ -154,7 +174,7 @@ function LandingPage({ navigate }) {
 
   return (
     <div className="landing-page">
-      <nav className="landing-nav" aria-label="Navegação principal">
+      <nav className="landing-nav" aria-label="Navegação principal" ref={navRef}>
         <BrandLogo onClick={irParaLanding} />
 
         <div className="landing-nav-links" aria-label="Seções da página">
