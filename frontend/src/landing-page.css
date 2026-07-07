@@ -1,4 +1,4 @@
-/* Landing page — narrativa pública do Agendai */
+/* Landing page â€” narrativa pÃºblica do Agendai */
 
 .landing-page {
   --landing-width: 1180px;
@@ -9,6 +9,13 @@
   --landing-green-deep: #093e2a;
   --landing-green-fresh: #75d99a;
   --landing-green-soft: #e8f6ed;
+  --landing-surface: var(--panel-bg);
+  --landing-surface-raised: var(--panel-bg);
+  --landing-ink: var(--gray-900);
+  --landing-text: var(--gray-700);
+  --landing-action-text: var(--green-800);
+  --landing-primary-bg: var(--green-800);
+  --landing-primary-text: var(--white);
   min-height: 100vh;
   min-height: 100dvh;
   overflow-x: clip;
@@ -39,26 +46,32 @@
 }
 
 .landing-page .button-primary {
-  color: #ffffff;
-  background: #0d6f3b;
+  color: var(--landing-primary-text);
+  background: var(--landing-primary-bg);
   box-shadow: none;
 }
 
 .landing-page .button-primary:hover {
-  color: #ffffff;
+  color: var(--white);
   background: var(--landing-green-deep);
   box-shadow: none;
 }
 
 .landing-page .button-secondary {
   border: 1px solid color-mix(in srgb, var(--green-700) 24%, var(--gray-300));
-  color: var(--green-800);
+  color: var(--landing-action-text);
   background: transparent;
   box-shadow: none;
 }
 
 .landing-page .button-secondary:hover {
   background: var(--green-50);
+  box-shadow: none;
+}
+
+.landing-page :where(.button, .brand-logo-button):focus-visible {
+  outline: 3px solid var(--landing-action-text);
+  outline-offset: 3px;
   box-shadow: none;
 }
 
@@ -75,7 +88,7 @@
   transform: translateY(1px) scale(0.985);
 }
 
-/* Navegação */
+/* NavegaÃ§Ã£o */
 .landing-page .landing-nav {
   position: sticky;
   top: max(8px, env(safe-area-inset-top));
@@ -90,6 +103,7 @@
   padding: 10px 12px;
   background: color-mix(in srgb, var(--panel-bg) 96%, transparent);
   box-shadow: var(--shadow-card);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 
@@ -292,7 +306,7 @@
   color: var(--green-700);
 }
 
-/* Exemplo explícito de rotina; não representa dados ao vivo */
+/* Exemplo explÃ­cito de rotina; nÃ£o representa dados ao vivo */
 .landing-page .landing-routine-board {
   position: relative;
   isolation: isolate;
@@ -302,7 +316,7 @@
   overflow: hidden;
   border-radius: 20px;
   padding: clamp(22px, 4vw, 36px);
-  color: #ffffff;
+  color: var(--white);
   background: var(--landing-green-deep);
   box-shadow: var(--shadow-soft);
   contain: layout paint style;
@@ -525,7 +539,7 @@
 }
 
 .landing-page .landing-routine-check li strong {
-  color: #ffffff;
+  color: var(--white);
   font-size: 0.75rem;
 }
 
@@ -553,7 +567,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #0d6f3b;
+  color: var(--green-800);
   font-size: 0.75rem;
   font-weight: 700;
 }
@@ -622,7 +636,7 @@
   line-height: 1.55;
 }
 
-/* Seções */
+/* SeÃ§Ãµes */
 .landing-page .landing-section {
   padding: clamp(72px, 9vw, 112px) 0;
 }
@@ -654,7 +668,7 @@
   margin-inline: auto;
 }
 
-/* Três pilares, com hierarquia deliberada */
+/* TrÃªs pilares, com hierarquia deliberada */
 .landing-page .landing-core-grid {
   display: grid;
   gap: 14px;
@@ -669,7 +683,7 @@
   border: 1px solid var(--gray-300);
   border-radius: 16px;
   padding: clamp(20px, 3vw, 30px);
-  background: var(--panel-bg);
+  background: var(--landing-surface);
   transition:
     transform 180ms var(--landing-ease-out-quart),
     border-color 180ms var(--landing-ease-out-quart),
@@ -677,7 +691,7 @@
 }
 
 .landing-page .landing-core-item.is-primary {
-  color: #ffffff;
+  color: var(--white);
   border: 0;
   background: var(--landing-green-deep);
 }
@@ -693,7 +707,7 @@
 }
 
 .landing-page .landing-core-item.is-primary .landing-core-icon {
-  color: #ffffff;
+  color: var(--white);
   background: rgba(255, 255, 255, 0.12);
 }
 
@@ -703,13 +717,13 @@
 
 .landing-page .landing-core-item h3 {
   margin: 0 0 9px;
-  color: var(--gray-900);
+  color: var(--landing-ink);
   font-size: 1.15rem;
 }
 
 .landing-page .landing-core-item p {
   margin: 0;
-  color: var(--gray-700);
+  color: var(--landing-text);
   line-height: 1.65;
 }
 
@@ -717,12 +731,12 @@
   grid-column: 2;
   margin-top: auto;
   padding-top: 18px;
-  color: var(--green-800);
+  color: var(--landing-action-text);
   font-weight: 600;
 }
 
 .landing-page .landing-core-item.is-primary :where(h3, p, small) {
-  color: #ffffff;
+  color: var(--white);
 }
 
 .landing-page .landing-core-item.is-primary p {
@@ -766,7 +780,7 @@
   color: var(--green-700);
 }
 
-/* Marca e público */
+/* Marca e pÃºblico */
 .landing-page .landing-audience-section {
   display: grid;
   gap: clamp(36px, 7vw, 80px);
@@ -774,7 +788,7 @@
   max-width: none;
   margin-inline: calc(var(--landing-gutter) * -1);
   padding: clamp(64px, 8vw, 96px) max(var(--landing-gutter), calc((100% - var(--landing-width)) / 2));
-  color: #ffffff;
+  color: var(--white);
   background: var(--landing-green-deep);
 }
 
@@ -789,7 +803,7 @@
 }
 
 .landing-page .landing-audience-copy h2 {
-  color: #ffffff;
+  color: var(--white);
 }
 
 .landing-page .landing-audience-copy > span {
@@ -812,7 +826,7 @@
   gap: 12px;
   min-height: 58px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.16);
-  color: #ffffff;
+  color: var(--white);
   font-weight: 600;
 }
 
@@ -933,7 +947,7 @@
   margin-top: 0;
   border-radius: 20px;
   padding: clamp(30px, 5vw, 56px);
-  color: #ffffff;
+  color: var(--white);
   background: var(--landing-green-deep);
   box-shadow: none;
 }
@@ -948,7 +962,7 @@
 }
 
 .landing-page .landing-final-cta h2 {
-  color: #ffffff;
+  color: var(--white);
 }
 
 .landing-page .landing-final-cta > div > span {
@@ -958,7 +972,7 @@
 .landing-page .landing-final-cta .button-primary {
   justify-self: start;
   color: var(--landing-green-deep);
-  background: #ffffff;
+  background: var(--white);
 }
 
 .landing-page .landing-footer {
@@ -1123,6 +1137,13 @@
 
 /* Tema escuro */
 [data-theme='dark'] .landing-page {
+  --landing-surface: var(--panel-bg);
+  --landing-surface-raised: var(--panel-bg-soft);
+  --landing-ink: var(--gray-900);
+  --landing-text: var(--gray-700);
+  --landing-action-text: var(--green-800);
+  --landing-primary-bg: var(--green-800);
+  --landing-primary-text: var(--landing-green-deep);
   background: var(--page-bg);
 }
 
@@ -1130,16 +1151,55 @@
   background: color-mix(in srgb, var(--panel-bg) 96%, transparent);
 }
 
+[data-theme='dark'] .landing-page :where(
+  .landing-nav-links button,
+  .landing-nav-login
+) {
+  color: var(--landing-text);
+}
+
+[data-theme='dark'] .landing-page :where(
+  .brand-logo-button,
+  .landing-theme-toggle,
+  .button-secondary,
+  .landing-more-features summary
+) {
+  color: var(--landing-action-text);
+}
+
+[data-theme='dark'] .landing-page .brand-name {
+  color: var(--landing-ink);
+}
+
 [data-theme='dark'] .landing-page .landing-core-item,
 [data-theme='dark'] .landing-page .landing-faq-item,
 [data-theme='dark'] .landing-page .landing-mobile-menu {
-  background: var(--panel-bg);
+  background-color: var(--landing-surface);
+  background-image: none;
+}
+
+[data-theme='dark'] .landing-page .landing-core-grid .landing-core-item:not(.is-primary) {
+  color: var(--landing-ink);
+  background-color: var(--landing-surface);
+  background-image: none;
+}
+
+[data-theme='dark'] .landing-page .landing-core-grid .landing-core-item:not(.is-primary) :where(h3) {
+  color: var(--landing-ink);
+}
+
+[data-theme='dark'] .landing-page .landing-core-grid .landing-core-item:not(.is-primary) :where(p) {
+  color: var(--landing-text);
+}
+
+[data-theme='dark'] .landing-page .landing-core-grid .landing-core-item:not(.is-primary) :where(small) {
+  color: var(--landing-action-text);
 }
 
 [data-theme='dark'] .landing-page .landing-core-item.is-primary,
 [data-theme='dark'] .landing-page .landing-audience-section,
 [data-theme='dark'] .landing-page .landing-routine-board {
-  background: #093e2a;
+  background: var(--landing-green-deep);
 }
 
 /* Estrutura responsiva */
@@ -1226,7 +1286,7 @@
 
 @media (max-width: 640px) {
   .landing-page {
-    --landing-gutter: max(14px, env(safe-area-inset-left));
+    --landing-gutter: max(14px, env(safe-area-inset-left), env(safe-area-inset-right));
     padding-top: max(10px, env(safe-area-inset-top));
   }
 
@@ -1298,6 +1358,18 @@
 
   .landing-page .landing-final-cta .button-primary {
     width: 100%;
+  }
+}
+
+@media (max-height: 560px) and (orientation: landscape) {
+  .landing-page .landing-nav {
+    position: relative;
+    top: auto;
+  }
+
+  .landing-page .landing-hero {
+    min-height: auto;
+    padding: 32px 0 44px;
   }
 }
 
