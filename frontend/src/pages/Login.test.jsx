@@ -90,6 +90,8 @@ describe('Login', () => {
     await user.dblClick(entrar);
 
     expect(authMock.login).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('button', { name: 'Verificando acesso…' })).toBeDisabled();
+    const verificando = screen.getByRole('button', { name: 'Verificando acesso…' });
+    expect(verificando).toBeDisabled();
+    expect(verificando).toHaveAttribute('aria-busy', 'true');
   });
 });

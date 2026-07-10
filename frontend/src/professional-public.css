@@ -129,6 +129,7 @@
   border: 0;
   border-radius: 0;
   background: transparent;
+  animation: none;
 }
 
 .auth-page-login .auth-form-panel {
@@ -143,6 +144,7 @@
   gap: var(--auth-space-7);
   margin-inline: auto;
   color: #14201e;
+  animation: none;
 }
 
 .auth-page-login .auth-panel-header {
@@ -277,6 +279,7 @@
   font-weight: 500;
   line-height: 1.45;
   overflow-wrap: anywhere;
+  animation: auth-feedback-in 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .auth-login-options {
@@ -317,18 +320,35 @@
 }
 
 .auth-page-login .auth-submit-button {
+  display: inline-flex;
   min-height: 54px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
   margin-top: 2px;
   border-radius: 10px;
   color: #ffffff;
   background: #178a4b;
   box-shadow: none;
+  transition:
+    background 180ms cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 180ms cubic-bezier(0.25, 1, 0.5, 1),
+    transform 100ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .auth-page-login .auth-submit-button:hover {
   background: #0d6f3b;
   box-shadow: none;
   transform: none;
+}
+
+.auth-page-login .auth-submit-button:not(:disabled):active {
+  transform: scale(0.98);
+}
+
+.auth-page-login .auth-submit-loader {
+  flex: 0 0 auto;
+  animation: auth-loader-spin 650ms linear infinite;
 }
 
 .auth-page-login .message-error {
@@ -339,6 +359,28 @@
 .auth-page-login .auth-login-error:focus {
   outline: 3px solid rgba(201, 59, 59, 0.16);
   outline-offset: 2px;
+}
+
+.auth-page-login .auth-login-error {
+  animation: auth-feedback-in 200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes auth-feedback-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes auth-loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .auth-signup-prompt {
@@ -577,6 +619,12 @@
   .auth-page-login .auth-input-shell,
   .auth-signup-link {
     transition: none;
+  }
+
+  .auth-page-login .auth-field-error,
+  .auth-page-login .auth-login-error,
+  .auth-page-login .auth-submit-loader {
+    animation: none;
   }
 }
 

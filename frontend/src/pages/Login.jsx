@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
+import { Eye, EyeOff, LoaderCircle, LockKeyhole, Mail } from 'lucide-react';
 import AuthLayout from '../components/AuthLayout';
 import BrandLogo from '../components/BrandLogo';
 import { useAuth } from '../contexts/AuthContext';
@@ -204,8 +204,16 @@ function Login({ navigate }) {
               </p>
             )}
 
-            <button className="button button-primary auth-submit-button" disabled={carregando} type="submit">
-              {carregando ? 'Verificando acesso…' : 'Entrar'}
+            <button
+              aria-busy={carregando}
+              className="button button-primary auth-submit-button"
+              disabled={carregando}
+              type="submit"
+            >
+              {carregando && (
+                <LoaderCircle aria-hidden="true" className="auth-submit-loader" size={18} />
+              )}
+              <span>{carregando ? 'Verificando acesso…' : 'Entrar'}</span>
             </button>
           </form>
 
