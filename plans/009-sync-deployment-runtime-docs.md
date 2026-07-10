@@ -1,5 +1,14 @@
 # Plan 009: Sync Deployment, Runtime, And Public Management Docs
 
+> [!WARNING]
+> **STALE / SUPERSEDED as of 2026-07-10. Do not execute this plan again.**
+> It was implemented by commit `8e1e106`, but the later README rewrite in
+> commit `518e7ab` regressed several of its runtime, migration, deployment, and
+> test corrections. Node 20 also reached end of life on 2026-03-24. Preserve
+> this file as execution history and use
+> `plans/012-establish-supported-runtime-and-ci-gates.md` for the replacement
+> work.
+
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
@@ -13,6 +22,7 @@
 
 ## Status
 
+- **Plan status**: SUPERSEDED by plan 012; retained for historical traceability
 - **Priority**: P2
 - **Effort**: S
 - **Risk**: LOW
