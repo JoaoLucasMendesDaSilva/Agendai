@@ -490,6 +490,13 @@ function Dashboard({ navigate }) {
     navigate('/login', { replace: true });
   }
 
+  function atualizarPeriodo(campo, valor) {
+    setPeriodoRelatorio((atual) => ({
+      ...atual,
+      [campo]: valor,
+    }));
+  }
+
   async function gerarRelatorioPdf() {
     setErro('');
 
