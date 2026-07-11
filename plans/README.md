@@ -21,7 +21,7 @@ The evidence and prioritization for this wave are recorded in
 | 008 | Establish Frontend Verification Baseline | P2 | M | - | DONE |
 | 009 | Sync Deployment Runtime Docs | P2 | S | - | STALE - superseded by 012 after later README drift |
 | 010 | Restore Dashboard Report Period Controls | P1 | S | - | DONE |
-| 011 | Make Public Appointment UI Authoritative | P1 | M | - | TODO |
+| 011 | Make Public Appointment UI Authoritative | P1 | M | - | DONE |
 | 012 | Establish Supported Runtime And CI Gates | P1 | M | 010 | TODO |
 | 013 | Automate Migrations And MySQL Integration | P1 | L | 012 | TODO |
 | 014 | Enforce Durable Business Identity | P1 | M | 013 | TODO |
