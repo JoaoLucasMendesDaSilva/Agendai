@@ -24,6 +24,7 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
+      - run: npm audit --audit-level=low
       - run: npm test
 
   postgres-security-boundary:
@@ -279,6 +280,7 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - run: npm audit --audit-level=low
       - run: npm run lint
       - run: npm test
       - run: npm run build
@@ -297,4 +299,5 @@ jobs:
           cache: npm
           cache-dependency-path: design-prototype/package-lock.json
       - run: npm ci
+      - run: npm audit --audit-level=low
       - run: npm run build
