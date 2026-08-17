@@ -1,5 +1,11 @@
 # Plan 013: Automate Migrations And MySQL Integration Verification
 
+> **STALE / SUPERSEDED (2026-08-17): DO NOT EXECUTE.** Commit `95d181a`
+> migrated the active backend to PostgreSQL/Supabase. This plan's MySQL parser,
+> advisory-lock, baseline, and CI assumptions are invalid. Plan 016 replaces
+> it with a transactional PostgreSQL migration runner and disposable
+> PostgreSQL integration gate.
+
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
@@ -20,6 +26,7 @@
 - **Depends on**: `plans/012-establish-supported-runtime-and-ci-gates.md`
 - **Category**: migration
 - **Planned at**: commit `5020d22`, 2026-07-10
+- **Disposition**: REJECTED / SUPERSEDED by plan 016.
 
 ## Why this matters
 

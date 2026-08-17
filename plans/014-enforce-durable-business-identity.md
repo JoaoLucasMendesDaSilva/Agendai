@@ -1,5 +1,10 @@
 # Plan 014: Enforce Durable Business Identity
 
+> **STALE / SUPERSEDED (2026-08-17): DO NOT EXECUTE.** The product finding is
+> still valid, but commit `95d181a` replaced MySQL with PostgreSQL. The error
+> codes, migration path, concurrency harness, and constraint plan below no
+> longer match the codebase. Execute plan 018 instead.
+
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
@@ -20,6 +25,7 @@
 - **Depends on**: `plans/013-automate-migrations-and-mysql-integration.md`
 - **Category**: migration
 - **Planned at**: commit `5020d22`, 2026-07-10
+- **Disposition**: REJECTED / SUPERSEDED by plan 018.
 
 ## Why this matters
 
