@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AgendamentoPublico from './AgendamentoPublico';
@@ -12,6 +12,17 @@ const publicoServiceMock = vi.hoisted(() => ({
 }));
 
 vi.mock('../services/publicoService', () => publicoServiceMock);
+
+function criarPromessaControlada() {
+  let resolve;
+  let reject;
+  const promise = new Promise((resolver, rejeitar) => {
+    resolve = resolver;
+    reject = rejeitar;
+  });
+
+  return { promise, reject, resolve };
+}
 
 describe('AgendamentoPublico', () => {
   beforeEach(() => {
@@ -107,5 +118,138 @@ describe('AgendamentoPublico', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Confira o endereço recebido',
     );
+  });
+
+  it('mantem a confirmacao quando a atualizacao auxiliar de horarios falha', async () => {
+    const user = userEvent.setup();
+    const atualizacaoAuxiliar = criarPromessaControlada();
+    publicoServiceMock.listarHorariosDisponiveis
+      .mockResolvedValueOnce({
+        horarios: [{ data_hora_inicio: '2026-06-26T09:00:00' }],
+      })
+      .mockImplementationOnce(() => atualizacaoAuxiliar.promise);
+    publicoServiceMock.criarAgendamentoPublico.mockResolvedValue({
+      mensagem: 'Agendamento confirmado com sucesso.',
+      agendamento: { token_gerenciamento: 'token-de-teste' },
+    });
+
+    render(<AgendamentoPublico slugOuId="studio-teste" />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /Corte rapido/i }),
+    );
+    await user.click(await screen.findByRole('button', { name: /Maria/i }));
+    await user.click(await screen.findByRole('button', { name: '09:00' }));
+    await user.type(screen.getByRole('textbox', { name: /^Nome$/i }), 'Joao');
+    await user.type(
+      screen.getByRole('textbox', { name: /^Telefone$/i }),
+      '13999990000',
+    );
+    await user.click(
+      screen.getByRole('button', { name: /Confirmar agendamento/i }),
+    );
+
+    await waitFor(() => {
+      expect(
+        publicoServiceMock.listarHorariosDisponiveis,
+      ).toHaveBeenCalledTimes(2);
+    });
+    await act(async () => {
+      atualizacaoAuxiliar.reject(new Error('Falha ao atualizar horários'));
+      await atualizacaoAuxiliar.promise.catch(() => {});
+    });
+
+    expect(
+      await screen.findByRole('heading', { name: /Agendamento confirmado/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Agendamento confirmado com sucesso.',
+    );
+    expect(
+      screen.getByRole('link', { name: /Gerenciar agendamento/i }),
+    ).toHaveAttribute(
+      'href',
+      `${window.location.origin}/gerenciar-agendamento/token-de-teste`,
+    );
+    expect(
+      screen.queryByRole('button', { name: '09:00' }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(publicoServiceMock.criarAgendamentoPublico).toHaveBeenCalledTimes(1);
+  });
+
+  it('exibe apenas os horarios da consulta de data mais recente', async () => {
+    const user = userEvent.setup();
+    const consultaDataA = criarPromessaControlada();
+    const consultaDataB = criarPromessaControlada();
+    publicoServiceMock.listarHorariosDisponiveis
+      .mockResolvedValueOnce({
+        horarios: [{ data_hora_inicio: '2026-07-11T08:00:00' }],
+      })
+      .mockImplementationOnce(() => consultaDataA.promise)
+      .mockImplementationOnce(() => consultaDataB.promise);
+
+    render(<AgendamentoPublico slugOuId="studio-teste" />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /Corte rapido/i }),
+    );
+    await user.click(await screen.findByRole('button', { name: /Maria/i }));
+    await waitFor(() => {
+      expect(
+        publicoServiceMock.listarHorariosDisponiveis,
+      ).toHaveBeenCalledTimes(1);
+    });
+    expect(
+      await screen.findByRole('button', { name: '08:00' }),
+    ).toBeInTheDocument();
+
+    const campoData = screen.getByLabelText(/Data do agendamento/i);
+    fireEvent.change(campoData, { target: { value: '2026-07-14' } });
+    expect(
+      screen.queryByRole('button', { name: '08:00' }),
+    ).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(publicoServiceMock.listarHorariosDisponiveis).toHaveBeenCalledWith(
+        'studio-teste',
+        expect.objectContaining({ data: '2026-07-14' }),
+      );
+    });
+    fireEvent.change(campoData, { target: { value: '2026-07-15' } });
+    await waitFor(() => {
+      expect(publicoServiceMock.listarHorariosDisponiveis).toHaveBeenCalledWith(
+        'studio-teste',
+        expect.objectContaining({ data: '2026-07-15' }),
+      );
+    });
+
+    await act(async () => {
+      consultaDataA.resolve({
+        horarios: [{ data_hora_inicio: '2026-07-14T09:00:00' }],
+      });
+      await consultaDataA.promise;
+    });
+
+    expect(
+      screen.queryByRole('button', { name: '09:00' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent(
+      /Carregando horários/i,
+    );
+
+    await act(async () => {
+      consultaDataB.resolve({
+        horarios: [{ data_hora_inicio: '2026-07-15T10:00:00' }],
+      });
+      await consultaDataB.promise;
+    });
+
+    expect(
+      await screen.findByRole('button', { name: '10:00' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: '09:00' }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });

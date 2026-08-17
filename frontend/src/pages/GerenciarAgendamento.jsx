@@ -5,7 +5,7 @@ import {
   RefreshCw,
   ShieldCheck,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import BrandLogo from '../components/BrandLogo';
 import {
   buscarAgendamentoPublico,
@@ -21,6 +21,12 @@ const STATUS_LABELS = {
   confirmado: 'Confirmado',
   pendente: 'Pendente',
 };
+
+const STATUS_TERMINAIS = new Set(['cancelado', 'concluido']);
+
+function agendamentoPodeSerGerenciado(agendamento) {
+  return Boolean(agendamento) && !STATUS_TERMINAIS.has(agendamento.status);
+}
 
 function formatarDataHora(valor) {
   const texto = String(valor || '');
@@ -59,6 +65,25 @@ function GerenciarAgendamento({ token }) {
   const [salvandoReagendamento, setSalvandoReagendamento] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
+  const ultimaConsultaHorariosId = useRef(0);
+
+  const podeSerGerenciado = agendamentoPodeSerGerenciado(agendamento);
+
+  function resetarReagendamento() {
+    ultimaConsultaHorariosId.current += 1;
+    setExibindoReagendamento(false);
+    setNovaData('');
+    setHorarios([]);
+    setCarregandoHorarios(false);
+  }
+
+  function atualizarAgendamento(novoAgendamento) {
+    setAgendamento(novoAgendamento);
+
+    if (!agendamentoPodeSerGerenciado(novoAgendamento)) {
+      resetarReagendamento();
+    }
+  }
 
   useEffect(() => {
     let ativo = true;
@@ -94,13 +119,14 @@ function GerenciarAgendamento({ token }) {
     }
 
     setCancelando(true);
+    resetarReagendamento();
     setErro('');
     setSucesso('');
 
     try {
       const resposta = await cancelarAgendamentoPublico(token);
-      setAgendamento(resposta.agendamento);
-      setExibindoReagendamento(false);
+      atualizarAgendamento(resposta.agendamento);
+      setErro('');
       setSucesso(resposta.mensagem || 'Agendamento cancelado com sucesso.');
     } catch (err) {
       setErro(err.message);
@@ -115,12 +141,14 @@ function GerenciarAgendamento({ token }) {
     }
 
     setConfirmando(true);
+    resetarReagendamento();
     setErro('');
     setSucesso('');
 
     try {
       const resposta = await confirmarPresencaPublica(token);
-      setAgendamento(resposta.agendamento);
+      atualizarAgendamento(resposta.agendamento);
+      setErro('');
       setSucesso(resposta.mensagem || 'Presença confirmada com sucesso.');
     } catch (err) {
       setErro(err.message);
@@ -130,12 +158,15 @@ function GerenciarAgendamento({ token }) {
   }
 
   async function selecionarNovaData(valor) {
+    const consultaId = ultimaConsultaHorariosId.current + 1;
+    ultimaConsultaHorariosId.current = consultaId;
     setNovaData(valor);
     setHorarios([]);
     setErro('');
     setSucesso('');
 
     if (!valor) {
+      setCarregandoHorarios(false);
       return;
     }
 
@@ -143,18 +174,26 @@ function GerenciarAgendamento({ token }) {
 
     try {
       const resposta = await listarHorariosReagendamento(token, valor);
-      setHorarios(resposta.horarios || []);
+      if (consultaId === ultimaConsultaHorariosId.current) {
+        setHorarios(resposta.horarios || []);
+      }
     } catch (err) {
-      setErro(err.message);
+      if (consultaId === ultimaConsultaHorariosId.current) {
+        setErro(err.message);
+      }
     } finally {
-      setCarregandoHorarios(false);
+      if (consultaId === ultimaConsultaHorariosId.current) {
+        setCarregandoHorarios(false);
+      }
     }
   }
 
   function alternarReagendamento() {
     setExibindoReagendamento((valorAtual) => !valorAtual);
+    ultimaConsultaHorariosId.current += 1;
     setNovaData('');
     setHorarios([]);
+    setCarregandoHorarios(false);
     setErro('');
     setSucesso('');
   }
@@ -170,6 +209,8 @@ function GerenciarAgendamento({ token }) {
       return;
     }
 
+    ultimaConsultaHorariosId.current += 1;
+    setCarregandoHorarios(false);
     setSalvandoReagendamento(true);
     setErro('');
     setSucesso('');
@@ -179,15 +220,14 @@ function GerenciarAgendamento({ token }) {
         token,
         horario.data_hora_inicio
       );
-      setAgendamento(resposta.agendamento);
+      atualizarAgendamento(resposta.agendamento);
+      setErro('');
       setSucesso(
         `Agendamento reagendado para ${formatarDataHora(
           horario.data_hora_inicio
         )}.`
       );
-      setExibindoReagendamento(false);
-      setNovaData('');
-      setHorarios([]);
+      resetarReagendamento();
     } catch (err) {
       setErro(
         err.message.includes('indisponível')
@@ -286,8 +326,7 @@ function GerenciarAgendamento({ token }) {
                 )}
               </dl>
 
-              {exibindoReagendamento &&
-                agendamento.status !== 'cancelado' && (
+              {exibindoReagendamento && podeSerGerenciado && (
                   <div className="booking-review-card">
                     <div>
                       <p className="step-label">Reagendamento</p>
@@ -297,6 +336,7 @@ function GerenciarAgendamento({ token }) {
                     <label>
                       Nova data
                       <input
+                        disabled={salvandoReagendamento}
                         min={hojeIso()}
                         onChange={(event) =>
                           selecionarNovaData(event.target.value)
@@ -340,8 +380,14 @@ function GerenciarAgendamento({ token }) {
                   </div>
                 )}
 
+              {!podeSerGerenciado && (
+                <p className="message message-info" role="status">
+                  Este agendamento não permite novas alterações.
+                </p>
+              )}
+
               <div className="button-row">
-                {agendamento.status !== 'cancelado' && (
+                {podeSerGerenciado && (
                   <button
                     className="button button-primary"
                     disabled={
@@ -355,7 +401,7 @@ function GerenciarAgendamento({ token }) {
                   </button>
                 )}
 
-                {agendamento.status !== 'cancelado' && (
+                {podeSerGerenciado && (
                   <button
                     className="button button-secondary"
                     disabled={
@@ -369,23 +415,18 @@ function GerenciarAgendamento({ token }) {
                   </button>
                 )}
 
-                <button
-                  className="button button-danger"
-                  disabled={
-                    cancelando ||
-                    confirmando ||
-                    salvandoReagendamento ||
-                    agendamento.status === 'cancelado'
-                  }
-                  onClick={cancelar}
-                  type="button"
-                >
-                  {agendamento.status === 'cancelado'
-                    ? 'Agendamento cancelado'
-                    : cancelando
-                      ? 'Cancelando...'
-                      : 'Cancelar agendamento'}
-                </button>
+                {podeSerGerenciado && (
+                  <button
+                    className="button button-danger"
+                    disabled={
+                      cancelando || confirmando || salvandoReagendamento
+                    }
+                    onClick={cancelar}
+                    type="button"
+                  >
+                    {cancelando ? 'Cancelando...' : 'Cancelar agendamento'}
+                  </button>
+                )}
               </div>
             </section>
           )}

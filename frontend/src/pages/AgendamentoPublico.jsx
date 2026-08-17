@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   CalendarX,
   CheckCircle2,
@@ -56,6 +56,7 @@ function AgendamentoPublico({ slugOuId }) {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
+  const ultimaConsultaHorariosId = useRef(0);
 
   const servicoSelecionado = useMemo(
     () => servicos.find((servico) => String(servico.id) === String(servicoId)),
@@ -137,16 +138,24 @@ function AgendamentoPublico({ slugOuId }) {
   }, [slugOuId]);
 
   useEffect(() => {
-    let ativo = true;
-
     async function carregarHorarios() {
+      const consultaId = ++ultimaConsultaHorariosId.current;
+
       if (!servicoId || !profissionalId || !data) {
-        setHorarios([]);
+        if (consultaId === ultimaConsultaHorariosId.current) {
+          setHorarios([]);
+          setHorarioSelecionado(null);
+          setCarregandoHorarios(false);
+        }
         return;
       }
 
-      setCarregandoHorarios(true);
-      setErro('');
+      if (consultaId === ultimaConsultaHorariosId.current) {
+        setCarregandoHorarios(true);
+        setHorarios([]);
+        setHorarioSelecionado(null);
+        setErro('');
+      }
 
       try {
         const resposta = await listarHorariosDisponiveis(slugOuId, {
@@ -155,18 +164,18 @@ function AgendamentoPublico({ slugOuId }) {
           profissional_id: profissionalId,
         });
 
-        if (ativo) {
+        if (consultaId === ultimaConsultaHorariosId.current) {
           setHorarios(resposta.horarios || []);
           setHorarioSelecionado(null);
         }
       } catch (err) {
-        if (ativo) {
+        if (consultaId === ultimaConsultaHorariosId.current) {
           setHorarios([]);
           setHorarioSelecionado(null);
           setErro(err.message);
         }
       } finally {
-        if (ativo) {
+        if (consultaId === ultimaConsultaHorariosId.current) {
           setCarregandoHorarios(false);
         }
       }
@@ -175,7 +184,7 @@ function AgendamentoPublico({ slugOuId }) {
     carregarHorarios();
 
     return () => {
-      ativo = false;
+      ultimaConsultaHorariosId.current += 1;
     };
   }, [data, profissionalId, servicoId, slugOuId]);
 
@@ -192,18 +201,30 @@ function AgendamentoPublico({ slugOuId }) {
   }
 
   function selecionarServico(id) {
+    if (String(id) !== String(servicoId)) {
+      ultimaConsultaHorariosId.current += 1;
+      setHorarios([]);
+    }
     limparConfirmacao();
     setServicoId(id);
     setHorarioSelecionado(null);
   }
 
   function selecionarProfissional(id) {
+    if (String(id) !== String(profissionalId)) {
+      ultimaConsultaHorariosId.current += 1;
+      setHorarios([]);
+    }
     limparConfirmacao();
     setProfissionalId(id);
     setHorarioSelecionado(null);
   }
 
   function selecionarData(valor) {
+    if (valor !== data) {
+      ultimaConsultaHorariosId.current += 1;
+      setHorarios([]);
+    }
     limparConfirmacao();
     setData(valor);
     setHorarioSelecionado(null);
@@ -219,55 +240,108 @@ function AgendamentoPublico({ slugOuId }) {
       return;
     }
 
+    const geracaoSelecaoAoConfirmar = ++ultimaConsultaHorariosId.current;
     setEnviando(true);
 
+    const horarioConfirmado = horarioSelecionado;
+    const resumo = {
+      cliente_nome: cliente.nome,
+      cliente_telefone: cliente.telefone,
+      cliente_email: cliente.email,
+      data,
+      horario: formatarHorario(horarioConfirmado.data_hora_inicio),
+      profissional: profissionalSelecionado?.nome,
+      servico: servicoSelecionado?.nome,
+    };
+    let resposta;
+
     try {
-      const resumo = {
-        cliente_nome: cliente.nome,
-        cliente_telefone: cliente.telefone,
-        cliente_email: cliente.email,
-        data,
-        horario: formatarHorario(horarioSelecionado.data_hora_inicio),
-        profissional: profissionalSelecionado?.nome,
-        servico: servicoSelecionado?.nome,
-      };
-      const resposta = await criarAgendamentoPublico(slugOuId, {
+      resposta = await criarAgendamentoPublico(slugOuId, {
         servico_id: Number(servicoId),
         profissional_id: Number(profissionalId),
         cliente_nome: cliente.nome,
         cliente_telefone: cliente.telefone,
         cliente_email: cliente.email || undefined,
         observacoes: cliente.observacoes || undefined,
-        data_hora_inicio: horarioSelecionado.data_hora_inicio,
+        data_hora_inicio: horarioConfirmado.data_hora_inicio,
       });
-      const tokenGerenciamento = resposta.agendamento?.token_gerenciamento;
-      const linkGerenciamento = tokenGerenciamento
-        ? `${window.location.origin}/gerenciar-agendamento/${encodeURIComponent(
-            tokenGerenciamento
-          )}`
-        : '';
-
-      setSucesso(
-        resposta.mensagem ||
-          'Agendamento confirmado. Anote o dia e horário escolhidos.'
-      );
-      setResumoConfirmado({ ...resumo, linkGerenciamento });
-      setCliente(CLIENTE_INICIAL);
-      setHorarioSelecionado(null);
-      const horariosResposta = await listarHorariosDisponiveis(slugOuId, {
-        data,
-        servico_id: servicoId,
-        profissional_id: profissionalId,
-      });
-      setHorarios(horariosResposta.horarios || []);
     } catch (err) {
       setErro(
         err.message.includes('indispon') || err.message.includes('conflito')
           ? 'Este horário ficou indisponível. Escolha outro horário.'
           : err.message
       );
-    } finally {
       setEnviando(false);
+      return;
+    }
+
+    const tokenGerenciamento = resposta.agendamento?.token_gerenciamento;
+    const linkGerenciamento = tokenGerenciamento
+      ? `${window.location.origin}/gerenciar-agendamento/${encodeURIComponent(
+          tokenGerenciamento
+        )}`
+      : '';
+    const selecaoPermaneceAtual =
+      geracaoSelecaoAoConfirmar === ultimaConsultaHorariosId.current;
+
+    if (selecaoPermaneceAtual) {
+      setErro('');
+    }
+    setSucesso(
+      resposta.mensagem ||
+        'Agendamento confirmado. Anote o dia e horário escolhidos.'
+    );
+    setResumoConfirmado({ ...resumo, linkGerenciamento });
+    if (selecaoPermaneceAtual) {
+      setCliente(CLIENTE_INICIAL);
+      setHorarioSelecionado(null);
+    }
+    setEnviando(false);
+
+    if (!selecaoPermaneceAtual) {
+      return;
+    }
+
+    setHorarios((atuais) =>
+      atuais.filter(
+        (horario) =>
+          horario.data_hora_inicio !== horarioConfirmado.data_hora_inicio
+      )
+    );
+
+    const consultaId = ++ultimaConsultaHorariosId.current;
+
+    try {
+      const horariosResposta = await listarHorariosDisponiveis(slugOuId, {
+        data,
+        servico_id: servicoId,
+        profissional_id: profissionalId,
+      });
+
+      if (consultaId === ultimaConsultaHorariosId.current) {
+        const horariosAtualizados = horariosResposta.horarios || [];
+        setHorarios(horariosAtualizados);
+        setHorarioSelecionado((horarioAtual) =>
+          horariosAtualizados.find(
+            (horario) =>
+              horario.data_hora_inicio === horarioAtual?.data_hora_inicio
+          ) || null
+        );
+      }
+    } catch {
+      if (consultaId === ultimaConsultaHorariosId.current) {
+        // O POST confirmado é autoritativo; esta atualização é auxiliar.
+        setHorarios((atuais) =>
+          atuais.filter(
+            (horario) =>
+              horario.data_hora_inicio !== horarioConfirmado.data_hora_inicio
+          )
+        );
+      }
+    } finally {
+      if (consultaId === ultimaConsultaHorariosId.current) {
+        setCarregandoHorarios(false);
+      }
     }
   }
 
@@ -536,6 +610,7 @@ function AgendamentoPublico({ slugOuId }) {
                   className={`choice-card booking-choice ${
                     String(servico.id) === String(servicoId) ? 'is-selected' : ''
                   }`}
+                  disabled={enviando}
                   key={servico.id}
                   onClick={() => selecionarServico(String(servico.id))}
                   type="button"
@@ -580,6 +655,7 @@ function AgendamentoPublico({ slugOuId }) {
                         ? 'is-selected'
                         : ''
                     }`}
+                    disabled={enviando}
                     key={profissional.id}
                     onClick={() =>
                       selecionarProfissional(String(profissional.id))
@@ -609,6 +685,7 @@ function AgendamentoPublico({ slugOuId }) {
               <label>
                 Data do agendamento
                 <input
+                  disabled={enviando}
                   min={hojeIso()}
                   onChange={(event) => selecionarData(event.target.value)}
                   required
@@ -653,6 +730,7 @@ function AgendamentoPublico({ slugOuId }) {
                         ? 'is-selected'
                         : ''
                     }`}
+                    disabled={enviando}
                     key={horario.data_hora_inicio}
                     onClick={() => {
                       limparConfirmacao();
@@ -678,6 +756,7 @@ function AgendamentoPublico({ slugOuId }) {
                     Nome
                     <input
                       autoComplete="name"
+                      disabled={enviando}
                       onChange={(event) =>
                         atualizarCliente('nome', event.target.value)
                       }
@@ -691,6 +770,7 @@ function AgendamentoPublico({ slugOuId }) {
                     Telefone
                     <input
                       autoComplete="tel"
+                      disabled={enviando}
                       inputMode="tel"
                       onChange={(event) =>
                         atualizarCliente('telefone', event.target.value)
@@ -706,6 +786,7 @@ function AgendamentoPublico({ slugOuId }) {
                   E-mail opcional
                   <input
                     autoComplete="email"
+                    disabled={enviando}
                     inputMode="email"
                     onChange={(event) =>
                       atualizarCliente('email', event.target.value)
@@ -718,6 +799,7 @@ function AgendamentoPublico({ slugOuId }) {
                 <label>
                   Observações opcionais
                   <textarea
+                    disabled={enviando}
                     onChange={(event) =>
                       atualizarCliente('observacoes', event.target.value)
                     }

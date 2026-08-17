@@ -32,6 +32,14 @@ function criarErro(status, mensagem, code) {
   return error;
 }
 
+function traduzirErroConflitoDeAgendamento(erro) {
+  if (erro.code === '23P01') {
+    return criarErro(409, 'Horário indisponível para este profissional.');
+  }
+
+  return erro;
+}
+
 function validarAgendamentoGerenciavel(agendamento, acao) {
   if (agendamento.status === 'cancelado') {
     throw criarErro(409, `Agendamento cancelado nao pode ser ${acao}.`);
@@ -388,7 +396,7 @@ function formatarAgendamentoGerenciavel(agendamento) {
 
 async function buscarAgendamentoGerenciavelPorHash(tokenHash) {
   const pool = getDatabasePool();
-  const [agendamentos] = await pool.execute(
+  const { rows: agendamentos } = await pool.query(
     `SELECT n.nome AS negocio_nome, s.nome AS servico_nome,
       p.nome AS profissional_nome, a.cliente_nome, a.data_hora_inicio,
       a.data_hora_fim, a.status, a.observacoes
@@ -396,7 +404,7 @@ async function buscarAgendamentoGerenciavelPorHash(tokenHash) {
      INNER JOIN negocios n ON n.id = a.negocio_id
      INNER JOIN servicos s ON s.id = a.servico_id
      INNER JOIN profissionais p ON p.id = a.profissional_id
-     WHERE a.token_publico_hash = ?
+     WHERE a.token_publico_hash = $1
      LIMIT 1`,
     [tokenHash]
   );
@@ -413,13 +421,13 @@ async function buscarDadosAgendamentoPorHash(
   tokenHash,
   bloquear = false
 ) {
-  const [agendamentos] = await executor.execute(
+  const { rows: agendamentos } = await executor.query(
     `SELECT a.id, a.negocio_id, a.servico_id, a.profissional_id, a.status,
       n.ativo AS negocio_ativo, n.horario_abertura, n.horario_fechamento,
       n.intervalo_agendamento_minutos, n.dias_funcionamento
      FROM agendamentos a
      INNER JOIN negocios n ON n.id = a.negocio_id
-     WHERE a.token_publico_hash = ?
+     WHERE a.token_publico_hash = $1
      LIMIT 1${bloquear ? ' FOR UPDATE' : ''}`,
     [tokenHash]
   );
@@ -438,15 +446,15 @@ async function buscarAgendamentoPublicoPorToken(token) {
 async function cancelarAgendamentoPublicoPorToken(token) {
   const tokenHash = obterHashTokenPublico(token);
   const pool = getDatabasePool();
-  const [resultado] = await pool.execute(
+  const resultado = await pool.query(
     `UPDATE agendamentos
      SET status = 'cancelado'
-     WHERE token_publico_hash = ?
+     WHERE token_publico_hash = $1
        AND status NOT IN ('cancelado', 'concluido')`,
     [tokenHash]
   );
 
-  if (resultado.affectedRows === 0) {
+  if (resultado.rowCount === 0) {
     const agendamento = await buscarAgendamentoGerenciavelPorHash(tokenHash);
     validarAgendamentoGerenciavel(agendamento, 'cancelado');
   }
@@ -457,15 +465,21 @@ async function cancelarAgendamentoPublicoPorToken(token) {
 async function confirmarPresencaPublicaPorToken(token) {
   const tokenHash = obterHashTokenPublico(token);
   const pool = getDatabasePool();
-  const [resultado] = await pool.execute(
-    `UPDATE agendamentos
-     SET status = 'confirmado'
-     WHERE token_publico_hash = ?
-       AND status NOT IN ('confirmado', 'cancelado', 'concluido')`,
-    [tokenHash]
-  );
+  let resultado;
 
-  if (resultado.affectedRows === 0) {
+  try {
+    resultado = await pool.query(
+      `UPDATE agendamentos
+       SET status = 'confirmado'
+       WHERE token_publico_hash = $1
+         AND status NOT IN ('confirmado', 'cancelado', 'concluido')`,
+      [tokenHash]
+    );
+  } catch (erro) {
+    throw traduzirErroConflitoDeAgendamento(erro);
+  }
+
+  if (resultado.rowCount === 0) {
     const agendamento = await buscarAgendamentoGerenciavelPorHash(tokenHash);
     validarAgendamentoGerenciavel(agendamento, 'confirmado');
 
@@ -503,10 +517,10 @@ async function reagendarAgendamentoPublicoPorToken(token, dados) {
   const tokenHash = obterHashTokenPublico(token);
   const dataHoraInicio = validarDadosReagendamento(dados);
   const pool = getDatabasePool();
-  const connection = await pool.getConnection();
+  const connection = await pool.connect();
 
   try {
-    await connection.beginTransaction();
+    await connection.query('BEGIN');
 
     const agendamento = await buscarDadosAgendamentoPorHash(
       connection,
@@ -539,15 +553,15 @@ async function reagendarAgendamentoPublicoPorToken(token, dados) {
     validarDentroDoHorario(agendamento, dataHoraInicio, dataHoraFim);
     validarInicioNaGradeAgendamento(agendamento, dataHoraInicio);
 
-    const [conflitos] = await connection.execute(
+    const { rows: conflitos } = await connection.query(
       `SELECT id
        FROM agendamentos
-       WHERE negocio_id = ?
-         AND profissional_id = ?
-         AND id <> ?
+       WHERE negocio_id = $1
+         AND profissional_id = $2
+         AND id <> $3
          AND status IN ('pendente', 'confirmado')
-         AND data_hora_inicio < ?
-         AND data_hora_fim > ?
+         AND data_hora_inicio < $4
+         AND data_hora_fim > $5
        FOR UPDATE`,
       [
         agendamento.negocio_id,
@@ -562,11 +576,11 @@ async function reagendarAgendamentoPublicoPorToken(token, dados) {
       throw criarErro(409, 'Horário indisponível para este profissional.');
     }
 
-    await connection.execute(
+    await connection.query(
       `UPDATE agendamentos
-       SET data_hora_inicio = ?, data_hora_fim = ?
-       WHERE id = ?
-         AND token_publico_hash = ?
+       SET data_hora_inicio = $1, data_hora_fim = $2
+       WHERE id = $3
+         AND token_publico_hash = $4
          AND status NOT IN ('cancelado', 'concluido')`,
       [
         formatarDataHora(dataHoraInicio).replace('T', ' '),
@@ -576,12 +590,12 @@ async function reagendarAgendamentoPublicoPorToken(token, dados) {
       ]
     );
 
-    await connection.commit();
+    await connection.query('COMMIT');
 
     return buscarAgendamentoGerenciavelPorHash(tokenHash);
   } catch (err) {
-    await connection.rollback();
-    throw err;
+    await connection.query('ROLLBACK');
+    throw traduzirErroConflitoDeAgendamento(err);
   } finally {
     connection.release();
   }
@@ -596,8 +610,8 @@ async function buscarNegocioPublico(slugOuId) {
     FROM negocios
     WHERE ativo = true AND `;
 
-  const [negociosPorSlug] = await pool.execute(
-    `${sqlBase}slug_publico = ? LIMIT 1`,
+  const { rows: negociosPorSlug } = await pool.query(
+    `${sqlBase}slug_publico = $1 LIMIT 1`,
     [valor]
   );
 
@@ -606,8 +620,8 @@ async function buscarNegocioPublico(slugOuId) {
   }
 
   if (/^[1-9]\d*$/.test(valor)) {
-    const [negociosPorId] = await pool.execute(
-      `${sqlBase}id = ? LIMIT 1`,
+    const { rows: negociosPorId } = await pool.query(
+      `${sqlBase}id = $1 LIMIT 1`,
       [Number(valor)]
     );
 
@@ -622,10 +636,10 @@ async function buscarNegocioPublico(slugOuId) {
 async function buscarServicoAtivoDoNegocio(negocioId, servicoId) {
   const id = validarIdPositivo(servicoId, 'servico_id deve ser um inteiro positivo.');
   const pool = getDatabasePool();
-  const [servicos] = await pool.execute(
+  const { rows: servicos } = await pool.query(
     `SELECT id, nome, descricao, duracao_minutos, preco
      FROM servicos
-     WHERE id = ? AND negocio_id = ? AND ativo = true
+     WHERE id = $1 AND negocio_id = $2 AND ativo = true
      LIMIT 1`,
     [id, negocioId]
   );
@@ -643,10 +657,10 @@ async function buscarServicoAtivoDoNegocioComConexao(
   servicoId
 ) {
   const id = validarIdPositivo(servicoId, 'servico_id deve ser um inteiro positivo.');
-  const [servicos] = await connection.execute(
+  const { rows: servicos } = await connection.query(
     `SELECT id, nome, descricao, duracao_minutos, preco
      FROM servicos
-     WHERE id = ? AND negocio_id = ? AND ativo = true
+     WHERE id = $1 AND negocio_id = $2 AND ativo = true
      LIMIT 1`,
     [id, negocioId]
   );
@@ -664,10 +678,10 @@ async function buscarProfissionalAtivoDoNegocio(negocioId, profissionalId) {
     'profissional_id deve ser um inteiro positivo.'
   );
   const pool = getDatabasePool();
-  const [profissionais] = await pool.execute(
+  const { rows: profissionais } = await pool.query(
     `SELECT id, nome, especialidade
      FROM profissionais
-     WHERE id = ? AND negocio_id = ? AND ativo = true
+     WHERE id = $1 AND negocio_id = $2 AND ativo = true
      LIMIT 1`,
     [id, negocioId]
   );
@@ -688,10 +702,10 @@ async function buscarProfissionalAtivoDoNegocioComConexao(
     profissionalId,
     'profissional_id deve ser um inteiro positivo.'
   );
-  const [profissionais] = await connection.execute(
+  const { rows: profissionais } = await connection.query(
     `SELECT id, nome, especialidade
      FROM profissionais
-     WHERE id = ? AND negocio_id = ? AND ativo = true
+     WHERE id = $1 AND negocio_id = $2 AND ativo = true
      LIMIT 1`,
     [id, negocioId]
   );
@@ -712,10 +726,10 @@ async function obterNegocio(slugOuId) {
 async function listarServicosPublicos(slugOuId) {
   const negocio = await buscarNegocioPublico(slugOuId);
   const pool = getDatabasePool();
-  const [servicos] = await pool.execute(
+  const { rows: servicos } = await pool.query(
     `SELECT id, nome, descricao, duracao_minutos, preco
      FROM servicos
-     WHERE negocio_id = ? AND ativo = true
+     WHERE negocio_id = $1 AND ativo = true
      ORDER BY nome ASC`,
     [negocio.id]
   );
@@ -726,10 +740,10 @@ async function listarServicosPublicos(slugOuId) {
 async function listarProfissionaisPublicos(slugOuId) {
   const negocio = await buscarNegocioPublico(slugOuId);
   const pool = getDatabasePool();
-  const [profissionais] = await pool.execute(
+  const { rows: profissionais } = await pool.query(
     `SELECT id, nome, especialidade
      FROM profissionais
-     WHERE negocio_id = ? AND ativo = true
+     WHERE negocio_id = $1 AND ativo = true
      ORDER BY nome ASC`,
     [negocio.id]
   );
@@ -771,15 +785,15 @@ async function listarHorariosDisponiveis(
   const intervalo = Number(negocio.intervalo_agendamento_minutos) || 30;
   const agora = new Date();
   const pool = getDatabasePool();
-  const [agendamentos] = await pool.execute(
+  const { rows: agendamentos } = await pool.query(
     `SELECT data_hora_inicio, data_hora_fim
      FROM agendamentos
-     WHERE negocio_id = ?
-       AND profissional_id = ?
-       AND (? IS NULL OR id <> ?)
+     WHERE negocio_id = $1
+       AND profissional_id = $2
+       AND ($3 IS NULL OR id <> $4)
        AND status IN ('pendente', 'confirmado')
-       AND data_hora_inicio < ?
-       AND data_hora_fim > ?`,
+       AND data_hora_inicio < $5
+       AND data_hora_fim > $6`,
     [
       negocio.id,
       profissional.id,
@@ -856,10 +870,10 @@ async function criarAgendamentoPublico(slugOuId, dados) {
   const tokenPublico = gerarTokenPublico();
   const tokenPublicoHash = obterHashTokenPublico(tokenPublico);
   const pool = getDatabasePool();
-  const connection = await pool.getConnection();
+  const connection = await pool.connect();
 
   try {
-    await connection.beginTransaction();
+    await connection.query('BEGIN');
 
     const servico = await buscarServicoAtivoDoNegocioComConexao(
       connection,
@@ -884,14 +898,14 @@ async function criarAgendamentoPublico(slugOuId, dados) {
     );
     validarInicioNaGradeAgendamento(negocio, dadosValidados.dataHoraInicio);
 
-    const [conflitos] = await connection.execute(
+    const { rows: conflitos } = await connection.query(
       `SELECT id
        FROM agendamentos
-       WHERE negocio_id = ?
-         AND profissional_id = ?
+       WHERE negocio_id = $1
+         AND profissional_id = $2
          AND status IN ('pendente', 'confirmado')
-         AND data_hora_inicio < ?
-         AND data_hora_fim > ?
+         AND data_hora_inicio < $3
+         AND data_hora_fim > $4
        FOR UPDATE`,
       [
         negocio.id,
@@ -905,12 +919,13 @@ async function criarAgendamentoPublico(slugOuId, dados) {
       throw criarErro(409, 'Horário indisponível para este profissional.');
     }
 
-    const [resultado] = await connection.execute(
+    const resultado = await connection.query(
       `INSERT INTO agendamentos (
         negocio_id, servico_id, profissional_id, cliente_nome, cliente_telefone,
         cliente_email, data_hora_inicio, data_hora_fim, status, observacoes,
         token_publico_hash
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmado', ?, ?)`,
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'confirmado', $9, $10)
+       RETURNING id`,
       [
         negocio.id,
         servico.id,
@@ -925,24 +940,24 @@ async function criarAgendamentoPublico(slugOuId, dados) {
       ]
     );
 
-    const [agendamentos] = await connection.execute(
+    const { rows: agendamentos } = await connection.query(
       `SELECT id, servico_id, profissional_id, cliente_nome, cliente_telefone,
         cliente_email, data_hora_inicio, data_hora_fim, status, observacoes
        FROM agendamentos
-       WHERE id = ?
+       WHERE id = $1
        LIMIT 1`,
-      [resultado.insertId]
+      [resultado.rows[0].id]
     );
 
-    await connection.commit();
+    await connection.query('COMMIT');
 
     return {
       ...formatarAgendamentoPublico(agendamentos[0]),
       token_gerenciamento: tokenPublico,
     };
   } catch (err) {
-    await connection.rollback();
-    throw err;
+    await connection.query('ROLLBACK');
+    throw traduzirErroConflitoDeAgendamento(err);
   } finally {
     connection.release();
   }

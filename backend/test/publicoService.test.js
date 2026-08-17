@@ -10,15 +10,63 @@ const NEGOCIO_ID = 20;
 const SERVICO_ID = 30;
 const PROFISSIONAL_ID = 40;
 
+function adaptarExecutorPostgres(executor) {
+  if (!executor.query && executor.execute) {
+    executor.query = async (sql, params) => {
+      const [resultado] = await executor.execute(sql, params);
+      return Array.isArray(resultado)
+        ? { rows: resultado, rowCount: resultado.length }
+        : {
+            rows: resultado?.insertId ? [{ id: resultado.insertId }] : [],
+            rowCount: resultado?.affectedRows || 0,
+          };
+    };
+  }
+
+  return executor;
+}
+
+function adaptarPoolPostgres(pool) {
+  adaptarExecutorPostgres(pool);
+
+  if (!pool.connect && pool.getConnection) {
+    pool.connect = async () => {
+      const connection = adaptarExecutorPostgres(await pool.getConnection());
+      const queryOriginal = connection.query;
+
+      connection.query = async (sql, params) => {
+        if (sql === 'BEGIN') {
+          await connection.beginTransaction();
+          return { rows: [], rowCount: 0 };
+        }
+        if (sql === 'COMMIT') {
+          await connection.commit();
+          return { rows: [], rowCount: 0 };
+        }
+        if (sql === 'ROLLBACK') {
+          await connection.rollback();
+          return { rows: [], rowCount: 0 };
+        }
+
+        return queryOriginal(sql, params);
+      };
+
+      return connection;
+    };
+  }
+
+  return pool;
+}
+
 function carregarPublicoServiceComPool(pool) {
   delete require.cache[publicoServicePath];
   require('../src/config/database');
-  require.cache[databasePath].exports.getDatabasePool = () => pool;
+  require.cache[databasePath].exports.getDatabasePool = () => adaptarPoolPostgres(pool);
   return require('../src/services/publicoService');
 }
 
 function normalizarSql(sql) {
-  return sql.replace(/\s+/g, ' ').trim();
+  return sql.replace(/\$\d+/g, '?').replace(/\s+/g, ' ').trim();
 }
 
 function ehConsultaNegocioPublico(sql) {
@@ -380,7 +428,7 @@ test('buscarAgendamentoPublicoPorToken nao expoe token_publico_hash', async () =
   const { buscarAgendamentoPublicoPorToken } = carregarPublicoServiceComPool({
     execute: async (sql, params) => {
       assert.equal(params[0], TOKEN_HASH_VALIDO);
-      assert.match(sql, /WHERE a\.token_publico_hash = \?/);
+      assert.match(sql, /WHERE a\.token_publico_hash = \$1/);
       return [[{ ...agendamentoGerenciavel('confirmado'), token_publico_hash: TOKEN_HASH_VALIDO }]];
     },
   });

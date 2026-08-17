@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: agendai-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 24.14.1
+      - key: NODE_ENV
+        value: production
+      - key: TZ
+        value: America/Sao_Paulo
+      - key: TRUST_PROXY_HOPS
+        value: "1"
+      - key: CORS_ORIGIN
+        value: https://tcc-agendamento.vercel.app
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false

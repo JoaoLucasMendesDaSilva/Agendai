@@ -86,8 +86,8 @@ async function cadastrarUsuario(dados) {
   }
 
   const pool = getDatabasePool();
-  const [usuariosExistentes] = await pool.execute(
-    'SELECT id FROM usuarios WHERE email = ? LIMIT 1',
+  const { rows: usuariosExistentes } = await pool.query(
+    'SELECT id FROM usuarios WHERE email = $1 LIMIT 1',
     [email]
   );
 
@@ -98,19 +98,19 @@ async function cadastrarUsuario(dados) {
   const senhaHash = await bcrypt.hash(senha, BCRYPT_ROUNDS);
 
   try {
-    const [resultado] = await pool.execute(
-      'INSERT INTO usuarios (nome, email, senha_hash, telefone) VALUES (?, ?, ?, ?)',
+    const resultado = await pool.query(
+      'INSERT INTO usuarios (nome, email, senha_hash, telefone) VALUES ($1, $2, $3, $4) RETURNING id',
       [nome, email, senhaHash, telefone]
     );
 
     return formatarUsuarioPublico({
-      id: resultado.insertId,
+      id: resultado.rows[0].id,
       nome,
       email,
       telefone,
     });
   } catch (err) {
-    if (err.code === 'ER_DUP_ENTRY') {
+    if (err.code === '23505') {
       throw criarErro(409, 'E-mail ja cadastrado.');
     }
 
@@ -130,8 +130,8 @@ async function autenticarUsuario(dados) {
     criarErro(401, 'E-mail ou senha invalidos.');
 
   const pool = getDatabasePool();
-  const [usuarios] = await pool.execute(
-    'SELECT id, nome, email, telefone, senha_hash, ativo FROM usuarios WHERE email = ? LIMIT 1',
+  const { rows: usuarios } = await pool.query(
+    'SELECT id, nome, email, telefone, senha_hash, ativo FROM usuarios WHERE email = $1 LIMIT 1',
     [email]
   );
 
@@ -155,8 +155,8 @@ async function autenticarUsuario(dados) {
 
 async function buscarUsuarioAutenticado(usuarioId) {
   const pool = getDatabasePool();
-  const [usuarios] = await pool.execute(
-    'SELECT id, nome, email, telefone, ativo FROM usuarios WHERE id = ? LIMIT 1',
+  const { rows: usuarios } = await pool.query(
+    'SELECT id, nome, email, telefone, ativo FROM usuarios WHERE id = $1 LIMIT 1',
     [usuarioId]
   );
 

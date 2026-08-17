@@ -116,8 +116,8 @@ function formatarProfissional(profissional) {
 
 async function buscarNegocioIdDoUsuario(usuarioId) {
   const pool = getDatabasePool();
-  const [negocios] = await pool.execute(
-    'SELECT id FROM negocios WHERE usuario_id = ? AND ativo = true LIMIT 1',
+  const { rows: negocios } = await pool.query(
+    'SELECT id FROM negocios WHERE usuario_id = $1 AND ativo = true LIMIT 1',
     [usuarioId]
   );
 
@@ -190,10 +190,10 @@ function montarDadosAtualizacao(dados) {
 async function listarProfissionais(usuarioId) {
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const pool = getDatabasePool();
-  const [profissionais] = await pool.execute(
+  const { rows: profissionais } = await pool.query(
     `SELECT id, nome, especialidade, telefone, email, ativo
      FROM profissionais
-     WHERE negocio_id = ? AND ativo = true
+     WHERE negocio_id = $1 AND ativo = true
      ORDER BY nome ASC`,
     [negocioId]
   );
@@ -205,10 +205,10 @@ async function buscarProfissionalPorId(usuarioId, profissionalId) {
   const id = validarId(profissionalId);
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const pool = getDatabasePool();
-  const [profissionais] = await pool.execute(
+  const { rows: profissionais } = await pool.query(
     `SELECT id, nome, especialidade, telefone, email, ativo
      FROM profissionais
-     WHERE id = ? AND negocio_id = ? AND ativo = true
+     WHERE id = $1 AND negocio_id = $2 AND ativo = true
      LIMIT 1`,
     [id, negocioId]
   );
@@ -224,9 +224,10 @@ async function criarProfissional(usuarioId, dados) {
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const dadosValidados = montarDadosCriacao(dados);
   const pool = getDatabasePool();
-  const [resultado] = await pool.execute(
+  const resultado = await pool.query(
     `INSERT INTO profissionais (negocio_id, nome, especialidade, telefone, email)
-     VALUES (?, ?, ?, ?, ?)`,
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id`,
     [
       negocioId,
       dadosValidados.nome,
@@ -236,7 +237,7 @@ async function criarProfissional(usuarioId, dados) {
     ]
   );
 
-  return buscarProfissionalPorId(usuarioId, resultado.insertId);
+  return buscarProfissionalPorId(usuarioId, resultado.rows[0].id);
 }
 
 async function atualizarProfissional(usuarioId, profissionalId, dados) {
@@ -248,7 +249,7 @@ async function atualizarProfissional(usuarioId, profissionalId, dados) {
 
   for (const campo of ['nome', 'especialidade', 'telefone', 'email']) {
     if (atualizacao[campo] !== undefined) {
-      campos.push(`${campo} = ?`);
+      campos.push(`${campo} = $${valores.length + 1}`);
       valores.push(atualizacao[campo]);
     }
   }
@@ -257,17 +258,20 @@ async function atualizarProfissional(usuarioId, profissionalId, dados) {
     return buscarProfissionalPorId(usuarioId, id);
   }
 
-  valores.push(id, negocioId);
+  const idPlaceholder = `$${valores.length + 1}`;
+  valores.push(id);
+  const negocioIdPlaceholder = `$${valores.length + 1}`;
+  valores.push(negocioId);
 
   const pool = getDatabasePool();
-  const [resultado] = await pool.execute(
+  const resultado = await pool.query(
     `UPDATE profissionais
      SET ${campos.join(', ')}
-     WHERE id = ? AND negocio_id = ? AND ativo = true`,
+     WHERE id = ${idPlaceholder} AND negocio_id = ${negocioIdPlaceholder} AND ativo = true`,
     valores
   );
 
-  if (resultado.affectedRows === 0) {
+  if (resultado.rowCount === 0) {
     throw criarErro(404, 'Profissional não encontrado.');
   }
 
@@ -278,14 +282,14 @@ async function desativarProfissional(usuarioId, profissionalId) {
   const id = validarId(profissionalId);
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const pool = getDatabasePool();
-  const [resultado] = await pool.execute(
+  const resultado = await pool.query(
     `UPDATE profissionais
      SET ativo = false
-     WHERE id = ? AND negocio_id = ? AND ativo = true`,
+     WHERE id = $1 AND negocio_id = $2 AND ativo = true`,
     [id, negocioId]
   );
 
-  if (resultado.affectedRows === 0) {
+  if (resultado.rowCount === 0) {
     throw criarErro(404, 'Profissional não encontrado.');
   }
 }
