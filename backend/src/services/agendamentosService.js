@@ -58,8 +58,8 @@ function formatarAgendamento(agendamento) {
 
 async function buscarNegocioIdDoUsuario(usuarioId) {
   const pool = getDatabasePool();
-  const [negocios] = await pool.execute(
-    'SELECT id FROM negocios WHERE usuario_id = ? AND ativo = true LIMIT 1',
+  const { rows: negocios } = await pool.query(
+    'SELECT id FROM negocios WHERE usuario_id = $1 AND ativo = true LIMIT 1',
     [usuarioId]
   );
 
@@ -93,9 +93,9 @@ function consultaAgendamentosBase() {
 async function listarAgendamentos(usuarioId) {
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const pool = getDatabasePool();
-  const [agendamentos] = await pool.execute(
+  const { rows: agendamentos } = await pool.query(
     `${consultaAgendamentosBase()}
-     WHERE a.negocio_id = ?
+     WHERE a.negocio_id = $1
      ORDER BY a.data_hora_inicio ASC`,
     [negocioId]
   );
@@ -125,11 +125,11 @@ async function listarAgendamentosHoje(usuarioId) {
     0
   );
   const pool = getDatabasePool();
-  const [agendamentos] = await pool.execute(
+  const { rows: agendamentos } = await pool.query(
     `${consultaAgendamentosBase()}
-     WHERE a.negocio_id = ?
-       AND a.data_hora_inicio >= ?
-       AND a.data_hora_inicio < ?
+     WHERE a.negocio_id = $1
+       AND a.data_hora_inicio >= $2
+       AND a.data_hora_inicio < $3
      ORDER BY a.data_hora_inicio ASC`,
     [
       negocioId,
@@ -145,9 +145,9 @@ async function buscarAgendamentoPorId(usuarioId, agendamentoId) {
   const id = validarId(agendamentoId);
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const pool = getDatabasePool();
-  const [agendamentos] = await pool.execute(
+  const { rows: agendamentos } = await pool.query(
     `${consultaAgendamentosBase()}
-     WHERE a.id = ? AND a.negocio_id = ?
+     WHERE a.id = $1 AND a.negocio_id = $2
      LIMIT 1`,
     [id, negocioId]
   );
@@ -182,11 +182,19 @@ function statusEhAtivo(status) {
   return STATUS_ATIVOS.includes(status);
 }
 
+function traduzirErroConflitoDeAgendamento(erro) {
+  if (erro.code === '23P01') {
+    return criarErro(409, 'Horario indisponivel para este profissional.');
+  }
+
+  return erro;
+}
+
 async function buscarAgendamentoParaAtualizacaoStatus(pool, id, negocioId) {
-  const [agendamentos] = await pool.execute(
+  const { rows: agendamentos } = await pool.query(
     `SELECT id, profissional_id, data_hora_inicio, data_hora_fim, status
      FROM agendamentos
-     WHERE id = ? AND negocio_id = ?
+     WHERE id = $1 AND negocio_id = $2
      LIMIT 1`,
     [id, negocioId]
   );
@@ -199,15 +207,15 @@ async function buscarAgendamentoParaAtualizacaoStatus(pool, id, negocioId) {
 }
 
 async function rejeitarConflitoStatusAtivo(pool, negocioId, agendamento) {
-  const [conflitos] = await pool.execute(
+  const { rows: conflitos } = await pool.query(
     `SELECT id
      FROM agendamentos
-     WHERE negocio_id = ?
-       AND profissional_id = ?
-       AND id <> ?
+     WHERE negocio_id = $1
+       AND profissional_id = $2
+       AND id <> $3
        AND status IN ('pendente', 'confirmado')
-       AND data_hora_inicio < ?
-       AND data_hora_fim > ?
+       AND data_hora_inicio < $4
+       AND data_hora_fim > $5
      LIMIT 1`,
     [
       negocioId,
@@ -238,12 +246,18 @@ async function atualizarStatusAgendamento(usuarioId, agendamentoId, dados) {
     await rejeitarConflitoStatusAtivo(pool, negocioId, agendamentoAtual);
   }
 
-  const [resultado] = await pool.execute(
-    'UPDATE agendamentos SET status = ? WHERE id = ? AND negocio_id = ?',
-    [status, id, negocioId]
-  );
+  let resultado;
 
-  if (resultado.affectedRows === 0) {
+  try {
+    resultado = await pool.query(
+      'UPDATE agendamentos SET status = $1 WHERE id = $2 AND negocio_id = $3',
+      [status, id, negocioId]
+    );
+  } catch (erro) {
+    throw traduzirErroConflitoDeAgendamento(erro);
+  }
+
+  if (resultado.rowCount === 0) {
     throw criarErro(404, 'Agendamento não encontrado.');
   }
 
@@ -254,12 +268,12 @@ async function cancelarAgendamento(usuarioId, agendamentoId) {
   const id = validarId(agendamentoId);
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const pool = getDatabasePool();
-  const [resultado] = await pool.execute(
-    "UPDATE agendamentos SET status = 'cancelado' WHERE id = ? AND negocio_id = ?",
+  const resultado = await pool.query(
+    "UPDATE agendamentos SET status = 'cancelado' WHERE id = $1 AND negocio_id = $2",
     [id, negocioId]
   );
 
-  if (resultado.affectedRows === 0) {
+  if (resultado.rowCount === 0) {
     throw criarErro(404, 'Agendamento não encontrado.');
   }
 }

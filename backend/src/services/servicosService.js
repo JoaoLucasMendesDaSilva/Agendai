@@ -133,8 +133,8 @@ function formatarServico(servico) {
 
 async function buscarNegocioIdDoUsuario(usuarioId) {
   const pool = getDatabasePool();
-  const [negocios] = await pool.execute(
-    'SELECT id FROM negocios WHERE usuario_id = ? AND ativo = true LIMIT 1',
+  const { rows: negocios } = await pool.query(
+    'SELECT id FROM negocios WHERE usuario_id = $1 AND ativo = true LIMIT 1',
     [usuarioId]
   );
 
@@ -201,10 +201,10 @@ function montarDadosAtualizacao(dados) {
 async function listarServicos(usuarioId) {
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const pool = getDatabasePool();
-  const [servicos] = await pool.execute(
+  const { rows: servicos } = await pool.query(
     `SELECT id, nome, descricao, duracao_minutos, preco, ativo
      FROM servicos
-     WHERE negocio_id = ? AND ativo = true
+     WHERE negocio_id = $1 AND ativo = true
      ORDER BY nome ASC`,
     [negocioId]
   );
@@ -216,10 +216,10 @@ async function buscarServicoPorId(usuarioId, servicoId) {
   const id = validarId(servicoId);
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const pool = getDatabasePool();
-  const [servicos] = await pool.execute(
+  const { rows: servicos } = await pool.query(
     `SELECT id, nome, descricao, duracao_minutos, preco, ativo
      FROM servicos
-     WHERE id = ? AND negocio_id = ? AND ativo = true
+     WHERE id = $1 AND negocio_id = $2 AND ativo = true
      LIMIT 1`,
     [id, negocioId]
   );
@@ -235,9 +235,10 @@ async function criarServico(usuarioId, dados) {
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const dadosValidados = montarDadosCriacao(dados);
   const pool = getDatabasePool();
-  const [resultado] = await pool.execute(
+  const resultado = await pool.query(
     `INSERT INTO servicos (negocio_id, nome, descricao, duracao_minutos, preco)
-     VALUES (?, ?, ?, ?, ?)`,
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id`,
     [
       negocioId,
       dadosValidados.nome,
@@ -247,7 +248,7 @@ async function criarServico(usuarioId, dados) {
     ]
   );
 
-  return buscarServicoPorId(usuarioId, resultado.insertId);
+  return buscarServicoPorId(usuarioId, resultado.rows[0].id);
 }
 
 async function atualizarServico(usuarioId, servicoId, dados) {
@@ -259,7 +260,7 @@ async function atualizarServico(usuarioId, servicoId, dados) {
 
   for (const campo of ['nome', 'descricao', 'duracao_minutos', 'preco']) {
     if (atualizacao[campo] !== undefined) {
-      campos.push(`${campo} = ?`);
+      campos.push(`${campo} = $${valores.length + 1}`);
       valores.push(atualizacao[campo]);
     }
   }
@@ -268,17 +269,20 @@ async function atualizarServico(usuarioId, servicoId, dados) {
     return buscarServicoPorId(usuarioId, id);
   }
 
-  valores.push(id, negocioId);
+  const idPlaceholder = `$${valores.length + 1}`;
+  valores.push(id);
+  const negocioIdPlaceholder = `$${valores.length + 1}`;
+  valores.push(negocioId);
 
   const pool = getDatabasePool();
-  const [resultado] = await pool.execute(
+  const resultado = await pool.query(
     `UPDATE servicos
      SET ${campos.join(', ')}
-     WHERE id = ? AND negocio_id = ? AND ativo = true`,
+     WHERE id = ${idPlaceholder} AND negocio_id = ${negocioIdPlaceholder} AND ativo = true`,
     valores
   );
 
-  if (resultado.affectedRows === 0) {
+  if (resultado.rowCount === 0) {
     throw criarErro(404, 'Serviço não encontrado.');
   }
 
@@ -289,14 +293,14 @@ async function desativarServico(usuarioId, servicoId) {
   const id = validarId(servicoId);
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const pool = getDatabasePool();
-  const [resultado] = await pool.execute(
+  const resultado = await pool.query(
     `UPDATE servicos
      SET ativo = false
-     WHERE id = ? AND negocio_id = ? AND ativo = true`,
+     WHERE id = $1 AND negocio_id = $2 AND ativo = true`,
     [id, negocioId]
   );
 
-  if (resultado.affectedRows === 0) {
+  if (resultado.rowCount === 0) {
     throw criarErro(404, 'Serviço não encontrado.');
   }
 }

@@ -7,15 +7,31 @@ const negocioServicePath = require.resolve('../src/services/negocioService');
 const USUARIO_ID = 7;
 const NEGOCIO_ID = 20;
 
+function adaptarPoolPostgres(pool) {
+  if (!pool.query && pool.execute) {
+    pool.query = async (sql, params) => {
+      const [resultado] = await pool.execute(sql, params);
+      return Array.isArray(resultado)
+        ? { rows: resultado, rowCount: resultado.length }
+        : {
+            rows: resultado?.insertId ? [{ id: resultado.insertId }] : [],
+            rowCount: resultado?.affectedRows || 0,
+          };
+    };
+  }
+
+  return pool;
+}
+
 function carregarNegocioServiceComPool(pool) {
   delete require.cache[negocioServicePath];
   require('../src/config/database');
-  require.cache[databasePath].exports.getDatabasePool = () => pool;
+  require.cache[databasePath].exports.getDatabasePool = () => adaptarPoolPostgres(pool);
   return require('../src/services/negocioService');
 }
 
 function normalizarSql(sql) {
-  return sql.replace(/\s+/g, ' ').trim();
+  return sql.replace(/\$\d+/g, '?').replace(/\s+/g, ' ').trim();
 }
 
 function ehConsultaNegocioUsuario(sql) {

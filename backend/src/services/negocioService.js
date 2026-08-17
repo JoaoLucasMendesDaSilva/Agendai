@@ -194,16 +194,16 @@ async function gerarSlugPublico(nome, idIgnorado = null) {
   while (sufixo <= 100) {
     const candidato = sufixo === 1 ? base : `${base}-${sufixo}`;
     const params = [candidato];
-    let sql = 'SELECT id FROM negocios WHERE slug_publico = ?';
+    let sql = 'SELECT id FROM negocios WHERE slug_publico = $1';
 
     if (idIgnorado) {
-      sql += ' AND id <> ?';
+      sql += ' AND id <> $2';
       params.push(idIgnorado);
     }
 
     sql += ' LIMIT 1';
 
-    const [linhas] = await pool.execute(sql, params);
+    const { rows: linhas } = await pool.query(sql, params);
 
     if (linhas.length === 0) {
       return candidato;
@@ -328,12 +328,12 @@ function montarDadosAtualizacao(dados, negocioAtual) {
 
 async function buscarNegocioDoUsuario(usuarioId) {
   const pool = getDatabasePool();
-  const [linhas] = await pool.execute(
+  const { rows: linhas } = await pool.query(
     `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
       horario_abertura, horario_fechamento, dias_funcionamento, logo_url,
       banner_url, ativo
      FROM negocios
-     WHERE usuario_id = ?
+     WHERE usuario_id = $1
      LIMIT 1`,
     [usuarioId]
   );
@@ -343,8 +343,8 @@ async function buscarNegocioDoUsuario(usuarioId) {
 
 async function criarNegocio(usuarioId, dados) {
   const pool = getDatabasePool();
-  const [negociosExistentes] = await pool.execute(
-    'SELECT id FROM negocios WHERE usuario_id = ? LIMIT 1',
+  const { rows: negociosExistentes } = await pool.query(
+    'SELECT id FROM negocios WHERE usuario_id = $1 LIMIT 1',
     [usuarioId]
   );
 
@@ -355,11 +355,12 @@ async function criarNegocio(usuarioId, dados) {
   const dadosValidados = montarDadosCriacao(dados);
   const slugPublico = await gerarSlugPublico(dadosValidados.nome);
 
-  const [resultado] = await pool.execute(
+  const resultado = await pool.query(
     `INSERT INTO negocios (
       usuario_id, nome, slug_publico, descricao, telefone, endereco, cidade,
       horario_abertura, horario_fechamento, dias_funcionamento
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+     RETURNING id`,
     [
       usuarioId,
       dadosValidados.nome,
@@ -376,14 +377,14 @@ async function criarNegocio(usuarioId, dados) {
     ]
   );
 
-  const [linhas] = await pool.execute(
+  const { rows: linhas } = await pool.query(
     `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
       horario_abertura, horario_fechamento, dias_funcionamento, logo_url,
       banner_url, ativo
      FROM negocios
-     WHERE id = ? AND usuario_id = ?
+     WHERE id = $1 AND usuario_id = $2
      LIMIT 1`,
-    [resultado.insertId, usuarioId]
+    [resultado.rows[0].id, usuarioId]
   );
 
   return formatarNegocio(linhas[0]);
@@ -397,12 +398,12 @@ async function atualizarNegocio(usuarioId, negocioId, dados) {
   }
 
   const pool = getDatabasePool();
-  const [linhas] = await pool.execute(
+  const { rows: linhas } = await pool.query(
     `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
       horario_abertura, horario_fechamento, dias_funcionamento, logo_url,
       banner_url, ativo
      FROM negocios
-     WHERE id = ? AND usuario_id = ?
+     WHERE id = $1 AND usuario_id = $2
      LIMIT 1`,
     [id, usuarioId]
   );
@@ -418,31 +419,31 @@ async function atualizarNegocio(usuarioId, negocioId, dados) {
   const valores = [];
 
   if (atualizacao.nome !== undefined) {
-    campos.push('nome = ?');
+    campos.push(`nome = $${valores.length + 1}`);
     valores.push(atualizacao.nome);
-    campos.push('slug_publico = ?');
+    campos.push(`slug_publico = $${valores.length + 1}`);
     valores.push(await gerarSlugPublico(atualizacao.nome, id));
   }
 
   for (const campo of ['descricao', 'telefone', 'endereco', 'cidade']) {
     if (atualizacao[campo] !== undefined) {
-      campos.push(`${campo} = ?`);
+      campos.push(`${campo} = $${valores.length + 1}`);
       valores.push(atualizacao[campo]);
     }
   }
 
   if (atualizacao.horario_abertura !== undefined) {
-    campos.push('horario_abertura = ?');
+    campos.push(`horario_abertura = $${valores.length + 1}`);
     valores.push(atualizacao.horario_abertura);
   }
 
   if (atualizacao.horario_fechamento !== undefined) {
-    campos.push('horario_fechamento = ?');
+    campos.push(`horario_fechamento = $${valores.length + 1}`);
     valores.push(atualizacao.horario_fechamento);
   }
 
   if (atualizacao.dias_funcionamento !== undefined) {
-    campos.push('dias_funcionamento = ?');
+    campos.push(`dias_funcionamento = $${valores.length + 1}`);
     valores.push(JSON.stringify(atualizacao.dias_funcionamento));
   }
 
@@ -450,23 +451,26 @@ async function atualizarNegocio(usuarioId, negocioId, dados) {
     return formatarNegocio(negocioAtual);
   }
 
-  valores.push(id, usuarioId);
+  const idPlaceholder = `$${valores.length + 1}`;
+  valores.push(id);
+  const usuarioIdPlaceholder = `$${valores.length + 1}`;
+  valores.push(usuarioId);
 
-  const [resultado] = await pool.execute(
-    `UPDATE negocios SET ${campos.join(', ')} WHERE id = ? AND usuario_id = ?`,
+  const resultado = await pool.query(
+    `UPDATE negocios SET ${campos.join(', ')} WHERE id = ${idPlaceholder} AND usuario_id = ${usuarioIdPlaceholder}`,
     valores
   );
 
-  if (resultado.affectedRows === 0) {
+  if (resultado.rowCount === 0) {
     throw criarErro(404, 'Negócio não encontrado.');
   }
 
-  const [negociosAtualizados] = await pool.execute(
+  const { rows: negociosAtualizados } = await pool.query(
     `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
       horario_abertura, horario_fechamento, dias_funcionamento, logo_url,
       banner_url, ativo
      FROM negocios
-     WHERE id = ? AND usuario_id = ?
+     WHERE id = $1 AND usuario_id = $2
      LIMIT 1`,
     [id, usuarioId]
   );
@@ -482,10 +486,10 @@ async function atualizarIdentidadeVisual(usuarioId, negocioId, arquivos) {
   }
 
   const pool = getDatabasePool();
-  const [linhas] = await pool.execute(
+  const { rows: linhas } = await pool.query(
     `SELECT id, logo_url, banner_url
      FROM negocios
-     WHERE id = ? AND usuario_id = ?
+     WHERE id = $1 AND usuario_id = $2
      LIMIT 1`,
     [id, usuarioId]
   );
@@ -500,21 +504,24 @@ async function atualizarIdentidadeVisual(usuarioId, negocioId, arquivos) {
   const valores = [];
 
   for (const imagem of imagensSalvas) {
-    atualizacoes.push(`${imagem.tipo}_url = ?`);
+    atualizacoes.push(`${imagem.tipo}_url = $${valores.length + 1}`);
     valores.push(imagem.url);
   }
 
-  valores.push(id, usuarioId);
+  const idPlaceholder = `$${valores.length + 1}`;
+  valores.push(id);
+  const usuarioIdPlaceholder = `$${valores.length + 1}`;
+  valores.push(usuarioId);
 
   try {
-    const [resultado] = await pool.execute(
+    const resultado = await pool.query(
       `UPDATE negocios
        SET ${atualizacoes.join(', ')}
-       WHERE id = ? AND usuario_id = ?`,
+       WHERE id = ${idPlaceholder} AND usuario_id = ${usuarioIdPlaceholder}`,
       valores
     );
 
-    if (resultado.affectedRows === 0) {
+    if (resultado.rowCount === 0) {
       throw criarErro(404, 'Negocio nao encontrado.');
     }
   } catch (erro) {

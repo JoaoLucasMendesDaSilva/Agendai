@@ -9,15 +9,31 @@ const NEGOCIO_ID = 20;
 const PROFISSIONAL_ID = 30;
 const USUARIO_ID = 40;
 
+function adaptarPoolPostgres(pool) {
+  if (!pool.query && pool.execute) {
+    pool.query = async (sql, params) => {
+      const [resultado] = await pool.execute(sql, params);
+      return Array.isArray(resultado)
+        ? { rows: resultado, rowCount: resultado.length }
+        : {
+            rows: resultado?.insertId ? [{ id: resultado.insertId }] : [],
+            rowCount: resultado?.affectedRows || 0,
+          };
+    };
+  }
+
+  return pool;
+}
+
 function carregarAgendamentosServiceComPool(pool) {
   delete require.cache[agendamentosServicePath];
   require('../src/config/database');
-  require.cache[databasePath].exports.getDatabasePool = () => pool;
+  require.cache[databasePath].exports.getDatabasePool = () => adaptarPoolPostgres(pool);
   return require('../src/services/agendamentosService');
 }
 
 function normalizarSql(sql) {
-  return sql.replace(/\s+/g, ' ').trim();
+  return sql.replace(/\$\d+/g, '?').replace(/\s+/g, ' ').trim();
 }
 
 function ehConsultaNegocio(sql) {
