@@ -47,9 +47,9 @@ Stack atual:
 
 - Frontend: React, Vite, HTML, CSS e JavaScript.
 - Backend: Node.js com Express.
-- Banco de dados: MySQL com migrations SQL.
+- Banco de dados: PostgreSQL no Supabase, com migrations SQL incrementais.
 - Autenticação: JWT e bcrypt.
-- Deploy: Vercel no frontend e Railway no backend.
+- Deploy: Vercel no frontend e Render no backend.
 
 Integrações externas, bibliotecas e provedores devem ser escolhidos conforme necessidade comprovada. Não trocar componentes centrais da stack nem introduzir uma dependência relevante sem:
 
@@ -76,6 +76,11 @@ Integrações externas, bibliotecas e provedores devem ser escolhidos conforme n
 - Validar tipo, tamanho e destino de uploads.
 - Não incluir tokens de provedores externos no código.
 - Tratar concorrência, idempotência e transações nas operações críticas.
+- Verificar certificado e hostname em conexões PostgreSQL remotas; desabilitar
+  TLS é permitido apenas para loopback fora de produção.
+- Manter RLS e privilégios fechados nas tabelas do Supabase expostas pela Data
+  API. RLS é defesa em profundidade e não substitui autorização e isolamento
+  por negócio nas queries do Express.
 
 Mudanças em autenticação, autorização, agendamento público, upload, banco ou integrações exigem revisão de segurança proporcional ao risco.
 
@@ -159,7 +164,9 @@ npm run build
 
 ```txt
 backend/
-  database/migrations/
+  database/
+    postgres-migrations/  # migrations ativas, na ordem numérica
+    migrations/           # histórico MySQL; não aplicar no PostgreSQL
   src/
     config/
     controllers/

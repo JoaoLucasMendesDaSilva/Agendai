@@ -1,5 +1,12 @@
 # Plan 003: Characterize And Fix Appointment Conflict Concurrency
 
+> **STALE / SUPERSEDED (2026-08-17): DO NOT EXECUTE.** Commit `95d181a`
+> migrated the backend from MySQL to PostgreSQL and added the exclusion
+> constraint `ex_agendamentos_profissional_periodo_ativo`. The MySQL row-lock
+> design below no longer matches the codebase. Plan 017 replaces it with real
+> PostgreSQL concurrency verification and permits service changes only if that
+> evidence reveals a remaining gap.
+
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and
@@ -20,11 +27,8 @@
 - **Depends on**: `plans/013-automate-migrations-and-mysql-integration.md`
 - **Category**: bug
 - **Planned at**: commit `5020d22`, 2026-07-10
-- **Disposition**: BLOCKED until plan 013 is `DONE`. Plan 013 supplies the
-  guarded disposable-MySQL harness required to characterize locking behavior.
-  Once `npm.cmd run test:integration` passes against that confirmed test
-  schema, change this plan from `BLOCKED` to `TODO` and execute it. Do not use
-  development, Railway, staging, or production data to unblock it.
+- **Disposition**: REJECTED / SUPERSEDED by plan 017 after the PostgreSQL
+  migration changed the database invariant and locking model.
 
 ## Why this matters
 

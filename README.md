@@ -12,10 +12,10 @@ Sistema web completo para gestão de serviços, profissionais, clientes e horár
 ![Vite](https://img.shields.io/badge/Vite-20232A?style=for-the-badge&logo=vite&logoColor=646CFF)
 ![Node.js](https://img.shields.io/badge/Node.js-20232A?style=for-the-badge&logo=node.js&logoColor=339933)
 ![Express](https://img.shields.io/badge/Express-20232A?style=for-the-badge&logo=express&logoColor=FFFFFF)
-![MySQL](https://img.shields.io/badge/MySQL-20232A?style=for-the-badge&logo=mysql&logoColor=4479A1)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-20232A?style=for-the-badge&logo=postgresql&logoColor=4169E1)
 ![JWT](https://img.shields.io/badge/JWT-20232A?style=for-the-badge&logo=jsonwebtokens&logoColor=FFFFFF)
 ![Vercel](https://img.shields.io/badge/Vercel-20232A?style=for-the-badge&logo=vercel&logoColor=FFFFFF)
-![Railway](https://img.shields.io/badge/Railway-20232A?style=for-the-badge&logo=railway&logoColor=FFFFFF)
+![Render](https://img.shields.io/badge/Render-20232A?style=for-the-badge&logo=render&logoColor=46E3B7)
 
 <br><br>
 
@@ -118,17 +118,17 @@ Além disso, o projeto tem como objetivo demonstrar a construção de uma aplica
 - JWT
 - Bcrypt
 - Multer
-- MySQL
+- `pg`
 
 ### Banco de dados
 
-- MySQL
-- Migrations SQL
+- PostgreSQL no Supabase
+- Migrations PostgreSQL incrementais
 
 ### Deploy
 
 - Vercel
-- Railway
+- Render
 
 ---
 
@@ -144,10 +144,12 @@ Agendai/
 │   │   ├── middlewares/
 │   │   └── config/
 │   ├── database/
-│   │   └── migrations/
-│   │       ├── 001_create_schema.sql
-│   │       ├── 002_add_business_branding.sql
-│   │       └── 003_add_public_appointment_token.sql
+│   │   ├── postgres-migrations/  # migrations ativas
+│   │   │   ├── 001_create_schema.sql
+│   │   │   ├── 002_add_business_branding.sql
+│   │   │   ├── 003_add_public_appointment_token.sql
+│   │   │   └── 004_harden_supabase_data_boundary.sql
+│   │   └── migrations/           # histórico MySQL
 │   └── package.json
 │
 ├── frontend/
@@ -270,7 +272,7 @@ Antes de começar, é necessário ter instalado:
 
 - Node.js 24 LTS;
 - npm;
-- MySQL compatível com as migrations do projeto;
+- acesso a PostgreSQL compatível para preparar ou validar o banco;
 - Git.
 
 O repositório fixa a versão principal em `.nvmrc`. Antes de instalar as
@@ -303,36 +305,45 @@ JWT_SECRET=troque_este_valor_por_um_segredo_seguro
 JWT_EXPIRES_IN=1d
 UPLOAD_DIR=
 
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=tcc_agendamento
+DATABASE_URL=
+DATABASE_SSL_MODE=verify-full
+DATABASE_SSL_CA=
 ```
 
-Nunca versione o `.env` nem use o placeholder de `JWT_SECRET` em produção.
+`DATABASE_URL` é obrigatória e deve permanecer somente no ambiente. Não inclua
+parâmetros ou fragmentos na URI; a política TLS é definida separadamente por
+`DATABASE_SSL_MODE`. `DATABASE_SSL_CA` é opcional e recebe uma CA confiável
+somente quando a cadeia padrão do provedor exigir.
+
+Para um PostgreSQL local sem TLS, `DATABASE_SSL_MODE=disable` é aceito apenas
+com `NODE_ENV` diferente de `production` e host `localhost`, `127.0.0.1` ou
+`::1`. Conexões remotas e de produção sempre validam certificado e hostname.
+
+Nunca versione o `.env`, use o placeholder de `JWT_SECRET` em produção ou
+copie conexão, senha, chave de serviço ou certificado para documentação, logs,
+capturas de tela ou descrições de pull request.
 
 ### Migrations manuais
 
-Ainda não existe um runner com histórico de migrations. Faça backup, confirme
-o schema de destino e execute os arquivos manualmente nesta ordem:
+Ainda não existe um runner com histórico e checksums. Em um banco PostgreSQL
+novo e vazio, execute uma única vez, com parada no primeiro erro e transação por
+arquivo:
 
-1. `backend/database/migrations/001_create_schema.sql`;
-2. `backend/database/migrations/002_add_business_branding.sql`;
-3. `backend/database/migrations/003_add_public_appointment_token.sql`.
+1. `backend/database/postgres-migrations/001_create_schema.sql`;
+2. `backend/database/postgres-migrations/002_add_business_branding.sql`;
+3. `backend/database/postgres-migrations/003_add_public_appointment_token.sql`;
+4. `backend/database/postgres-migrations/004_harden_supabase_data_boundary.sql`.
 
-A migration 001 cria e seleciona `tcc_agendamento`. Em um MySQL gerenciado que
-já forneça outro schema, revise o SQL e o banco configurado antes da execução.
-As migrations 002 e 003 devem ser executadas uma única vez; repeti-las pode
-falhar porque ainda não há tabela de histórico. Não reaplique SQL cegamente em
-um ambiente existente.
+Esses arquivos são ordenados e imutáveis depois de aplicados. Em um ambiente
+existente, faça backup, confirme manualmente o estado e trate a aplicação como
+uma ação deliberada do operador; não reaplique SQL cegamente. As migrations em
+`backend/database/migrations/` documentam a fase histórica MySQL e nunca devem
+ser executadas no PostgreSQL.
 
-Depois, confira as colunas esperadas:
-
-```sql
-DESCRIBE negocios;      -- deve incluir logo_url e banner_url
-DESCRIBE agendamentos;  -- deve incluir token_publico_hash
-```
+A migration 004 habilita RLS e revoga privilégios da Data API sem criar
+políticas permissivas. Essa barreira não substitui JWT, autorização de recurso
+ou filtros de isolamento por negócio no Express. Consulte
+[`docs/POSTGRES-SUPABASE.md`](docs/POSTGRES-SUPABASE.md) antes da operação.
 
 Instale as dependências bloqueadas pelo lockfile e inicie a API:
 
@@ -403,15 +414,18 @@ cd ..
 ```
 
 O workflow `.github/workflows/quality.yml` está configurado para repetir esses
-gates em pull requests e pushes para `main`. A primeira execução remota é a
-validação autoritativa da sintaxe e dos jobs do GitHub Actions.
+gates em pull requests e pushes para `main`. O job
+`postgres-security-boundary` cria bancos PostgreSQL descartáveis, aplica as
+migrations 001 a 004 e valida RLS, privilégios e constraints. A primeira
+execução remota é a validação autoritativa da sintaxe e dos jobs do GitHub
+Actions.
 
 ---
 
 ## 🌐 Deploy
 
-A arquitetura adotada é front-end na **Vercel** e back-end na **Railway**. O
-endereço de demonstração informado é:
+A arquitetura configurada no repositório é front-end na **Vercel**, back-end no
+**Render** e PostgreSQL no **Supabase**. O endereço de demonstração informado é:
 
 ```text
 https://tcc-agendamento.vercel.app/
@@ -422,10 +436,12 @@ runtime e variáveis ativas devem ser confirmados antes de cada entrega.
 
 ### Configuração a conferir nos provedores
 
-O repositório versiona scripts, `engines.node`, `.nvmrc` e o rewrite de SPA em
-`frontend/vercel.json`. Não há `railway.toml`, Dockerfile, Procfile ou outra
-configuração Railway rastreada. Diretórios raiz, runtime efetivo, variáveis e
-volumes abaixo precisam ser configurados e confirmados nos dashboards.
+O repositório versiona scripts, contratos `engines.node`, `.nvmrc`,
+`render.yaml` e o rewrite de SPA em `frontend/vercel.json`. `.nvmrc` expressa o
+contrato móvel da versão principal Node 24 para desenvolvimento e CI. Como o
+serviço Render usa `backend` como diretório raiz, `backend/package.json` e seu
+`engines.node` são a fonte do runtime no provedor. O runtime efetivo e as
+variáveis ainda precisam ser confirmados nos dashboards.
 
 Na Vercel:
 
@@ -436,7 +452,7 @@ Na Vercel:
 - variável pública: `VITE_API_URL=https://<endereco-do-backend>`;
 - rewrite SPA já definido em `frontend/vercel.json`.
 
-Na Railway:
+No Render:
 
 - diretório raiz esperado: `backend`;
 - runtime solicitado por `engines.node`: `>=24 <25`;
@@ -448,10 +464,18 @@ Na Railway:
 - `CORS_ORIGIN=https://<dominio-real>` deve listar somente os domínios reais
   permitidos, separados por vírgula quando houver mais de um;
 - `JWT_SECRET` deve ser um segredo forte, exclusivo e externo ao repositório;
-- `JWT_EXPIRES_IN`, `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`
-  e `UPLOAD_DIR` devem receber valores do serviço configurado;
+- `DATABASE_URL` deve ser configurada como segredo, sem parâmetros de conexão;
+- `DATABASE_SSL_MODE=verify-full` deve permanecer ativo; configure
+  `DATABASE_SSL_CA` somente quando uma CA confiável for necessária;
+- `JWT_EXPIRES_IN` e `UPLOAD_DIR` devem receber os valores aprovados para o
+  ambiente;
 - as migrations devem ser aplicadas na ordem documentada antes de uma versão
   que dependa do novo schema.
+
+O login administrativo padrão do Supabase não deve ser mantido como credencial
+de runtime de longo prazo. Provisionar um login dedicado com privilégios
+mínimos e rotacionar a credencial atual é uma etapa operacional separada, ainda
+não comprovada por este repositório.
 
 Uploads são gravados no filesystem indicado por `UPLOAD_DIR` (ou no diretório
 local padrão quando vazio). Com o código atual, monte um volume persistente e
@@ -462,12 +486,17 @@ ou redeploy. Este repositório não comprova que esse volume já existe.
 ### Verificação operacional
 
 Antes de considerar o deploy pronto, confirme nos dashboards o Node 24, os
-nomes das variáveis, os logs de build/start, o schema MySQL e a persistência de
-uploads. Faça um smoke test de `/api/health`, login, agendamento público, link
-de gerenciamento e upload. Para validar persistência, envie um arquivo,
-registre a URL, faça restart ou redeploy e confirme que o mesmo arquivo continua
-acessível. `/api/db-health` retorna 404 em produção e não deve ser usado como
-health check externo.
+nomes das variáveis, os logs de build/start, o schema PostgreSQL, a aplicação da
+migration 004 e a persistência de uploads. `/api/health` comprova apenas que o
+processo HTTP responde; não consulta o banco. Valide acesso ao banco por um
+fluxo autenticado e faça smoke test de login, agendamento público, link de
+gerenciamento e upload. Para validar persistência, envie um arquivo, registre a
+URL, faça restart ou redeploy e confirme que o mesmo arquivo continua
+acessível. `/api/db-health` retorna 404 em produção e não é um readiness check.
+
+Se a conexão remota não validar a cadeia de certificados, interrompa a
+operação e configure uma CA confiável após revisão. Nunca restaure uma opção
+que desabilite a validação TLS.
 
 Mantenha backup do banco antes das migrations e uma versão anterior implantável
 para rollback da aplicação. Não reverta SQL manualmente sem um plano específico
@@ -496,7 +525,7 @@ Durante o desenvolvimento do Agendai, foram trabalhados conceitos importantes co
 - Criação de API REST;
 - Integração entre front-end e back-end;
 - Autenticação com JWT;
-- Manipulação de banco de dados MySQL;
+- Evolução do banco relacional da fase histórica MySQL para PostgreSQL;
 - Upload de arquivos;
 - Geração de relatórios;
 - Responsividade;
@@ -511,7 +540,10 @@ Durante o desenvolvimento do Agendai, foram trabalhados conceitos importantes co
 Algumas melhorias planejadas para o projeto:
 
 - Runner com histórico, locking e validação de migrations;
-- Banco MySQL descartável para testes de integração e concorrência;
+- Ampliação dos testes em PostgreSQL descartável para integração e
+  concorrência;
+- Login PostgreSQL de runtime dedicado, com privilégios mínimos e rotação
+  operacional da credencial administrativa;
 - Ampliação dos testes HTTP de autorização, isolamento e contratos de erro;
 - Bloqueios de agenda, folgas e indisponibilidades manuais;
 - Simulação e integração progressiva de notificações;
