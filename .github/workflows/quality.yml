@@ -26,6 +26,245 @@ jobs:
       - run: npm ci
       - run: npm test
 
+  postgres-security-boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: agendai_ci_without_roles
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_USER: agendai_ci_owner
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U agendai_ci_owner -d agendai_ci_without_roles"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGDATABASE: agendai_ci_without_roles
+      PGHOST: localhost
+      PGPASSWORD: ci-only-password
+      PGPORT: 5432
+      PGUSER: agendai_ci_owner
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Apply base migrations to fresh databases
+        run: |
+          createdb agendai_ci_with_roles
+          for database in agendai_ci_without_roles agendai_ci_with_roles; do
+            for migration in \
+              database/postgres-migrations/001_create_schema.sql \
+              database/postgres-migrations/002_add_business_branding.sql \
+              database/postgres-migrations/003_add_public_appointment_token.sql; do
+              PGDATABASE="$database" psql -X --single-transaction \
+                -v ON_ERROR_STOP=1 --file="$migration"
+            done
+          done
+      - name: Apply boundary without Supabase roles
+        run: >-
+          PGDATABASE=agendai_ci_without_roles psql -X --single-transaction
+          -v ON_ERROR_STOP=1
+          --file=database/postgres-migrations/004_harden_supabase_data_boundary.sql
+      - name: Seed exposed roles and privileges
+        run: |
+          PGDATABASE=agendai_ci_with_roles psql -X --single-transaction \
+            -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE ROLE anon NOLOGIN;
+          CREATE ROLE authenticated NOLOGIN;
+          CREATE ROLE service_role NOLOGIN;
+
+          GRANT ALL PRIVILEGES ON TABLE
+            public.usuarios,
+            public.negocios,
+            public.servicos,
+            public.profissionais,
+            public.agendamentos
+          TO PUBLIC, anon, authenticated, service_role;
+
+          GRANT ALL PRIVILEGES ON SEQUENCE
+            public.usuarios_id_seq,
+            public.negocios_id_seq,
+            public.servicos_id_seq,
+            public.profissionais_id_seq,
+            public.agendamentos_id_seq
+          TO PUBLIC, anon, authenticated, service_role;
+
+          GRANT EXECUTE ON FUNCTION public.atualizar_updated_at()
+            TO PUBLIC, anon, authenticated, service_role;
+          SQL
+      - name: Apply boundary with seeded Supabase roles
+        run: >-
+          PGDATABASE=agendai_ci_with_roles psql -X --single-transaction
+          -v ON_ERROR_STOP=1
+          --file=database/postgres-migrations/004_harden_supabase_data_boundary.sql
+      - name: Verify PostgreSQL security catalogs
+        run: |
+          for database in agendai_ci_without_roles agendai_ci_with_roles; do
+            PGDATABASE="$database" psql -X --single-transaction \
+              -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          DECLARE
+            application_tables CONSTANT text[] := ARRAY[
+              'usuarios',
+              'negocios',
+              'servicos',
+              'profissionais',
+              'agendamentos'
+            ];
+            application_sequences CONSTANT text[] := ARRAY[
+              'usuarios_id_seq',
+              'negocios_id_seq',
+              'servicos_id_seq',
+              'profissionais_id_seq',
+              'agendamentos_id_seq'
+            ];
+            fixture_id integer;
+          BEGIN
+            IF (
+              SELECT count(*) <> 5 OR NOT bool_and(c.relrowsecurity)
+              FROM pg_class AS c
+              INNER JOIN pg_namespace AS n ON n.oid = c.relnamespace
+              WHERE n.nspname = 'public'
+                AND c.relkind = 'r'
+                AND c.relname = ANY (application_tables)
+            ) THEN
+              RAISE EXCEPTION 'RLS is not enabled on every application table';
+            END IF;
+
+            IF EXISTS (
+              SELECT 1
+              FROM pg_policy AS p
+              INNER JOIN pg_class AS c ON c.oid = p.polrelid
+              INNER JOIN pg_namespace AS n ON n.oid = c.relnamespace
+              WHERE n.nspname = 'public'
+                AND c.relname = ANY (application_tables)
+            ) THEN
+              RAISE EXCEPTION 'Application tables must not expose an RLS policy';
+            END IF;
+
+            IF (
+              SELECT count(*) <> 5
+              FROM pg_class AS c
+              INNER JOIN pg_namespace AS n ON n.oid = c.relnamespace
+              WHERE n.nspname = 'public'
+                AND c.relkind = 'S'
+                AND c.relname = ANY (application_sequences)
+            ) THEN
+              RAISE EXCEPTION 'Application identity sequences are missing';
+            END IF;
+
+            IF EXISTS (
+              SELECT 1
+              FROM pg_class AS c
+              INNER JOIN pg_namespace AS n ON n.oid = c.relnamespace
+              CROSS JOIN LATERAL aclexplode(
+                COALESCE(
+                  c.relacl,
+                  acldefault(
+                    CASE WHEN c.relkind = 'S' THEN 's'::"char" ELSE 'r'::"char" END,
+                    c.relowner
+                  )
+                )
+              ) AS privilege
+              LEFT JOIN pg_roles AS grantee ON grantee.oid = privilege.grantee
+              WHERE n.nspname = 'public'
+                AND (
+                  (c.relkind = 'r' AND c.relname = ANY (application_tables))
+                  OR
+                  (c.relkind = 'S' AND c.relname = ANY (application_sequences))
+                )
+                AND (
+                  privilege.grantee = 0
+                  OR grantee.rolname IN (
+                    'anon',
+                    'authenticated',
+                    'service_role'
+                  )
+                )
+            ) THEN
+              RAISE EXCEPTION 'Data API roles retain table or sequence privileges';
+            END IF;
+
+            IF EXISTS (
+              SELECT 1
+              FROM pg_proc AS p
+              INNER JOIN pg_namespace AS n ON n.oid = p.pronamespace
+              CROSS JOIN LATERAL aclexplode(
+                COALESCE(p.proacl, acldefault('f'::"char", p.proowner))
+              ) AS privilege
+              LEFT JOIN pg_roles AS grantee ON grantee.oid = privilege.grantee
+              WHERE n.nspname = 'public'
+                AND p.proname = 'atualizar_updated_at'
+                AND pg_get_function_identity_arguments(p.oid) = ''
+                AND (
+                  privilege.grantee = 0
+                  OR grantee.rolname IN (
+                    'anon',
+                    'authenticated',
+                    'service_role'
+                  )
+                )
+            ) THEN
+              RAISE EXCEPTION 'Data API roles retain trigger-function execution';
+            END IF;
+
+            IF NOT EXISTS (
+              SELECT 1
+              FROM pg_constraint AS constraint_record
+              INNER JOIN pg_class AS c ON c.oid = constraint_record.conrelid
+              INNER JOIN pg_namespace AS n ON n.oid = c.relnamespace
+              WHERE n.nspname = 'public'
+                AND c.relname = 'agendamentos'
+                AND constraint_record.conname =
+                  'ex_agendamentos_profissional_periodo_ativo'
+                AND constraint_record.contype = 'x'
+            ) THEN
+              RAISE EXCEPTION 'Appointment exclusion constraint is missing';
+            END IF;
+
+            INSERT INTO public.usuarios (
+              nome,
+              email,
+              senha_hash,
+              updated_at
+            ) VALUES (
+              'CI owner',
+              'ci-owner@example.invalid',
+              'ci-hash-not-a-credential',
+              TIMESTAMPTZ '2000-01-01 00:00:00+00'
+            )
+            RETURNING id INTO fixture_id;
+
+            UPDATE public.usuarios
+            SET nome = 'CI owner updated'
+            WHERE id = fixture_id;
+
+            IF NOT EXISTS (
+              SELECT 1
+              FROM public.usuarios
+              WHERE id = fixture_id
+                AND nome = 'CI owner updated'
+                AND updated_at > TIMESTAMPTZ '2000-01-01 00:00:00+00'
+            ) THEN
+              RAISE EXCEPTION 'Owner DML or updated_at trigger is not functional';
+            END IF;
+
+            DELETE FROM public.usuarios WHERE id = fixture_id;
+          END;
+          $$;
+          SQL
+          done
+
   frontend-quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10

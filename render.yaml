@@ -8,8 +8,6 @@ services:
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
-      - key: NODE_VERSION
-        value: 24.14.1
       - key: NODE_ENV
         value: production
       - key: TZ
@@ -24,3 +22,5 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false
+      - key: DATABASE_SSL_MODE
+        value: verify-full
