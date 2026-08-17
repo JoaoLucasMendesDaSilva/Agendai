@@ -1,6 +1,6 @@
 # Backend no Render
 
-O arquivo `render.yaml` cria o serviço `agendai-api` a partir da pasta `backend`.
+O arquivo `render.yaml` cria o serviço `agendai-api` a partir da pasta `backend`, no plano gratuito.
 
 ## Criar o serviço
 
