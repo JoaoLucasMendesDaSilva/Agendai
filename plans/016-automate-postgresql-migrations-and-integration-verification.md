@@ -83,6 +83,7 @@ Every non-help invocation requires
 - `backend/src/config/database.js`
 - `backend/package.json`
 - `backend/test/migrationRunner.test.js` (create)
+- `backend/test/postgresCatalog.test.js` (create)
 - `backend/test/integration/postgresTestHarness.js` (create)
 - `backend/test/integration/postgresTestHarness.test.js` (create)
 - `backend/test/integration/migrationRunner.integration.test.js` (create)

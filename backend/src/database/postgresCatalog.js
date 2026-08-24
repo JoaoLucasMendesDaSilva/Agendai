@@ -53,7 +53,10 @@ async function readForbiddenPrivileges(
        AND attribute.attnum > 0
        AND NOT attribute.attisdropped
       CROSS JOIN LATERAL pg_catalog.aclexplode(
-        COALESCE(attribute.attacl, '{}'::aclitem[])
+        COALESCE(
+          attribute.attacl,
+          pg_catalog.acldefault('c', object_acl.relowner)
+        )
       ) acl
     ),
     sequence_acl AS (
