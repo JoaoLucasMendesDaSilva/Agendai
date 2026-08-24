@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "prune-dead-code": {
+      "source": "lukeberrypi/skills",
+      "sourceType": "github",
+      "skillPath": "skills/prune-dead-code/SKILL.md",
+      "computedHash": "a7ce7690db70bef35b2f67661ad7e78438d1e078b3573d58909336f60b99b319"
+    }
+  }
+}
