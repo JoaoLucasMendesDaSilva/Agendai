@@ -1516,7 +1516,9 @@
   min-width: 0;
 }
 
-.public-new-booking-page .form :where(input, textarea) {
+.public-new-booking-page
+  .form
+  :where(input:not([type="checkbox"]):not([type="radio"]), textarea) {
   width: 100%;
   min-width: 0;
 }
