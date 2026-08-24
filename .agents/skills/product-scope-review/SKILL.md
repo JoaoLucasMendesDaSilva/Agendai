@@ -1,13 +1,13 @@
 ---
-name: tcc-scope-guard
-description: Avalia propostas para o Agendai por valor, risco, custo e alinhamento, buscando a menor entrega profissional completa sem limitar o produto ao MVP original.
+name: product-scope-review
+description: Avalia propostas de evolução do Agendai por valor para o usuário, risco, custo e alinhamento com o produto antes de mudanças relevantes ou estratégicas.
 ---
 
-# Skill: Guarda de Escopo do Produto
+# Skill: Revisão de Escopo do Produto
 
 ## Objetivo
 
-Proteger o foco e a sustentabilidade do Agendai sem impedir sua evolução além do MVP que deu origem ao TCC.
+Orientar a evolução sustentável do Agendai, ajudando a transformar necessidades reais em entregas profissionais, completas e proporcionais ao valor esperado.
 
 ## Critérios de avaliação
 
@@ -29,7 +29,7 @@ Mudanças relevantes devem ter plano e critérios de aceite. Mudanças estratég
 
 ## Cuidados
 
-- Não usar “fora do MVP” como motivo automático para rejeitar uma proposta.
+- Não usar esta revisão para rejeitar automaticamente evoluções do produto.
 - Não confundir qualidade profissional com excesso de arquitetura.
 - Evitar funcionalidades sem usuário, objetivo ou estratégia de manutenção claros.
 - Preservar compatibilidade ou tornar qualquer quebra explícita.

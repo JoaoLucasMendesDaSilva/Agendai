@@ -22,7 +22,7 @@ tcc-agendamento/
 
 ### Planejamento e qualidade
 
-- `tcc-scope-guard`: avalia valor, risco e tamanho das propostas sem usar o MVP como teto.
+- `product-scope-review`: avalia valor, risco, custo e alinhamento das propostas de evolução do produto.
 - `api-design-review`: revisa contratos e consistência da API.
 - `pre-commit-checklist`: verifica qualidade, testes, segurança e documentação.
 - `learning-review`: explica decisões e conceitos técnicos.
@@ -80,7 +80,7 @@ Use backend-express-feature, api-design-review e security-review para implementa
 ```
 
 ```txt
-Use tcc-scope-guard para avaliar valor, riscos, dependências e a menor entrega profissional desta funcionalidade. Não trate o MVP original como limite automático.
+Use product-scope-review para avaliar valor, riscos, dependências e a menor entrega profissional completa desta funcionalidade.
 ```
 
 ```txt
