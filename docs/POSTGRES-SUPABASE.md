@@ -16,10 +16,18 @@ TCC. Não as execute no PostgreSQL. As migrations ativas ficam em
 3. `003_add_public_appointment_token.sql`;
 4. `004_harden_supabase_data_boundary.sql`.
 
-Os arquivos são imutáveis depois de aplicados. Enquanto não houver um runner
-com histórico e checksums, uma mudança em ambiente existente exige backup,
-levantamento prévio do schema e decisão explícita do operador. Não presuma que
-a migration 004 já foi executada em nenhum projeto Supabase.
+Os arquivos são imutáveis depois de aplicados. O runner aceita somente nomes
+`NNN_nome_em_minusculas.sql`, exige sequência contínua desde 001 e rejeita
+arquivos desconhecidos, lacunas e links simbólicos. Migrations e fixtures SQL
+têm LF fixado por `.gitattributes`; o SHA-256 é calculado sobre os bytes exatos,
+antes da leitura UTF-8.
+
+O histórico fica em `public.schema_migrations`, com versão, nome, checksum e
+data de aplicação. O runner valida sua estrutura e proteção antes de confiar
+nos registros. No estado final, a tabela mantém RLS, nenhuma política e nenhum
+privilégio para `PUBLIC` ou papéis disponíveis da Data API. Não presuma que o
+runner, a tabela de histórico ou a migration 004 já existam em qualquer projeto
+Supabase apenas porque estão implementados e testados no repositório.
 
 ## Conexão e TLS
 
@@ -66,25 +74,84 @@ dedicado, conceder somente os privilégios necessários, validar o comportamento
 com RLS e rotacionar a credencial administrativa são atividades operacionais
 posteriores; este repositório não afirma que foram concluídas.
 
-## Aplicação e verificação
+## Runner, aplicação e baseline
 
-Em banco novo e vazio, execute cada migration com parada no primeiro erro e uma
-transação por arquivo. A migration 004 também é exercitada no job
-`postgres-security-boundary`, tanto sem os papéis Supabase quanto com papéis e
-privilégios de teste deliberadamente concedidos.
+O runner usa uma única conexão e transação. Depois de `BEGIN`, adquire um
+advisory lock transacional, confirma a identidade do banco, valida histórico ou
+baseline, aplica o sufixo pendente e registra os checksums antes de `COMMIT`.
+Ele não é chamado pelo start do Express, pelo build nem pelo Render; a aplicação
+é uma etapa de release explícita.
 
-Antes de operar em banco existente:
+O executor exige PostgreSQL 15 ou superior. O workflow autoritativo usa a
+versão 17 descartável; compatibilidade com versões anteriores à 15 não é
+declarada.
 
-1. confirme backup e procedimento de recuperação;
-2. identifique quais migrations já foram aplicadas;
-3. inspecione políticas e privilégios existentes e interrompa se a finalidade
-   deles não puder ser estabelecida;
-4. aplique apenas o próximo arquivo esperado;
-5. valide RLS, ausência de políticas permissivas, revogações, constraints e um
-   fluxo real do backend.
+Antes de qualquer apply, confirme backup restaurável, procedimento de
+recuperação, janela de manutenção e nome do banco. Em banco novo e vazio:
 
-O CI usa somente bancos e credenciais descartáveis. Não execute testes
-destrutivos contra desenvolvimento compartilhado, staging ou produção.
+```bash
+cd backend
+npm run db:migrate -- --confirm-database=<nome-exato-do-banco>
+```
+
+A confirmação precisa ser idêntica ao resultado de `current_database()`. Sem
+histórico, qualquer objeto conhecido faz a execução normal recusar o alvo. Para
+um ambiente existente, primeiro inspecione schema, constraints, índices,
+triggers, RLS, políticas, privilégios e proprietários em modo somente leitura.
+As tabelas, sequências, função e eventual histórico oficiais precisam pertencer
+ao `current_user` da conexão; proprietário diferente é uma condição de parada.
+Depois, somente se houver um prefixo contínuo e estruturalmente compatível,
+execute:
+
+```bash
+npm run db:migrate -- --baseline-existing --confirm-database=<nome-exato-do-banco>
+```
+
+O baseline grava os checksums dos arquivos atuais e aplica o sufixo pendente na
+mesma transação e sob o mesmo lock. Estado parcial ou fora de ordem, definição
+incompatível, linha de histórico desconhecida ou checksum divergente causa
+recusa sem reparo. Preserve a evidência; não edite migration aplicada nem a
+tabela de histórico.
+
+## Rollback e resultado de commit desconhecido
+
+Em falhas conhecidas antes do commit, o runner tenta executar rollback de todo
+DDL, baseline e histórico produzidos naquela execução. Se o rollback não puder
+ser confirmado, ele retorna resultado desconhecido e a execução não deve ser
+repetida automaticamente. O runner não implementa down migrations e não desfaz
+uma execução já confirmada.
+
+Se houver erro ou perda de conexão durante `COMMIT`, o resultado pode ter sido
+confirmado pelo PostgreSQL mesmo sem resposta ao cliente. Não repita o comando
+automaticamente. Preserve os logs sanitizados e faça inspeção somente leitura
+de `schema_migrations` e do catálogo. Restaure o backup ou faça um reparo apenas
+por um plano separado e revisado.
+
+## Integração PostgreSQL destrutiva
+
+`npm run test:integration` só pode abrir conexão quando todos estes controles
+forem satisfeitos:
+
+- `RUN_POSTGRES_INTEGRATION=1` e `NODE_ENV` diferente de `production`;
+- `DATABASE_TEST_URL` local, sem parâmetros ou fragmento;
+- host da URL em loopback e endereço observado também em loopback; somente o
+  serviço descartável do GitHub Actions pode reportar endereço privado interno
+  RFC 1918/IPv6 ULA quando `CI=true` e `GITHUB_ACTIONS=true`;
+- nome do banco contendo o token isolado `test`;
+- `CONFIRM_POSTGRES_TEST_DB` idêntico ao banco da URL e ao banco conectado;
+- usuário conectado idêntico ao usuário da URL.
+
+O cenário opcional que cria papéis globais exige também
+`RUN_POSTGRES_ROLE_FIXTURES=1` e só é permitido no serviço descartável do
+GitHub Actions. Sem o aceite principal, os testes são ignorados sem abrir
+socket; se a execução foi solicitada e um guard falhar, a suíte falha fechado.
+
+O job `postgres-integration` usa somente PostgreSQL 17 e credenciais
+descartáveis de CI. Ele verifica banco novo, repetição, checksums, rollback,
+lock concorrente, baseline e os catálogos do plano 015 com papéis Supabase
+ausentes e com privilégios deliberadamente semeados. Não execute essa suíte
+contra desenvolvimento compartilhado, staging, Supabase ou produção. CI verde
+comprova o comportamento no serviço descartável, não o estado de um provedor.
 
 Os campos de agendamento usam `TIMESTAMP` sem fuso para preservar o horário
 local do negócio. Campos de auditoria usam `TIMESTAMPTZ`, e uma constraint de

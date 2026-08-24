@@ -142,7 +142,11 @@ Agendai/
 │   │   ├── routes/
 │   │   ├── services/
 │   │   ├── middlewares/
-│   │   └── config/
+│   │   ├── config/
+│   │   └── database/             # módulos do runner transacional
+│   ├── scripts/                  # CLI explícita de migrations
+│   ├── test/
+│   │   └── integration/          # PostgreSQL local descartável
 │   ├── database/
 │   │   ├── postgres-migrations/  # migrations ativas
 │   │   │   ├── 001_create_schema.sql
@@ -308,6 +312,13 @@ UPLOAD_DIR=
 DATABASE_URL=
 DATABASE_SSL_MODE=verify-full
 DATABASE_SSL_CA=
+
+# Testes PostgreSQL destrutivos: não são carregados automaticamente deste arquivo
+RUN_POSTGRES_INTEGRATION=
+# Somente no serviço descartável do GitHub Actions; cria papéis globais
+RUN_POSTGRES_ROLE_FIXTURES=
+DATABASE_TEST_URL=
+CONFIRM_POSTGRES_TEST_DB=
 ```
 
 `DATABASE_URL` é obrigatória e deve permanecer somente no ambiente. Não inclua
@@ -319,24 +330,59 @@ Para um PostgreSQL local sem TLS, `DATABASE_SSL_MODE=disable` é aceito apenas
 com `NODE_ENV` diferente de `production` e host `localhost`, `127.0.0.1` ou
 `::1`. Conexões remotas e de produção sempre validam certificado e hostname.
 
+As quatro variáveis de teste nunca devem apontar para Supabase, desenvolvimento
+compartilhado, staging ou produção. O gate destrutivo só é ativado com
+`RUN_POSTGRES_INTEGRATION=1`; a criação dos papéis globais usados para testar as
+revogações da Data API é exclusiva do serviço descartável do GitHub Actions e
+exige ainda `RUN_POSTGRES_ROLE_FIXTURES=1`.
+
 Nunca versione o `.env`, use o placeholder de `JWT_SECRET` em produção ou
 copie conexão, senha, chave de serviço ou certificado para documentação, logs,
 capturas de tela ou descrições de pull request.
 
-### Migrations manuais
+### Runner de migrations PostgreSQL
 
-Ainda não existe um runner com histórico e checksums. Em um banco PostgreSQL
-novo e vazio, execute uma única vez, com parada no primeiro erro e transação por
-arquivo:
+O runner descobre somente arquivos `NNN_nome_em_minusculas.sql`, exige uma
+sequência contínua iniciada em 001 e rejeita nomes desconhecidos, lacunas e
+links simbólicos. As migrations ativas usam LF obrigatório; o SHA-256 é
+calculado sobre os bytes exatos e gravado com versão, nome e data em
+`public.schema_migrations`:
 
 1. `backend/database/postgres-migrations/001_create_schema.sql`;
 2. `backend/database/postgres-migrations/002_add_business_branding.sql`;
 3. `backend/database/postgres-migrations/003_add_public_appointment_token.sql`;
 4. `backend/database/postgres-migrations/004_harden_supabase_data_boundary.sql`.
 
-Esses arquivos são ordenados e imutáveis depois de aplicados. Em um ambiente
-existente, faça backup, confirme manualmente o estado e trate a aplicação como
-uma ação deliberada do operador; não reaplique SQL cegamente. As migrations em
+O executor exige PostgreSQL 15 ou superior; o gate remoto usa PostgreSQL 17.
+
+Esses arquivos são ordenados e imutáveis depois de aplicados. Cada execução usa
+uma única conexão e transação, adquire um advisory lock, valida o banco e o
+histórico, aplica apenas o sufixo pendente e registra os checksums antes do
+`COMMIT`. A tabela de histórico também mantém RLS sem políticas e sem
+privilégios para a Data API.
+
+Revise o alvo e tenha backup e recuperação testada antes de qualquer aplicação.
+Em um banco novo e vazio, execute deliberadamente:
+
+```bash
+cd backend
+npm run db:migrate -- --confirm-database=<nome-exato-do-banco>
+```
+
+Todo apply exige que a confirmação seja idêntica a `current_database()`. Objetos
+do Agendai existentes sem histórico são recusados por padrão. Depois de uma
+inspeção estrutural somente leitura, em janela de manutenção, o operador pode
+solicitar o baseline guardado:
+
+```bash
+npm run db:migrate -- --baseline-existing --confirm-database=<nome-exato-do-banco>
+```
+
+O baseline aceita somente um prefixo contínuo e estruturalmente compatível,
+registra os checksums atuais e aplica o sufixo pendente dentro da mesma
+transação. Estado parcial, ordem ambígua, definição incompatível ou checksum
+divergente interrompem a operação sem reparo automático. Nunca altere migration
+aplicada nem edite `schema_migrations` para contornar a recusa. As migrations em
 `backend/database/migrations/` documentam a fase histórica MySQL e nunca devem
 ser executadas no PostgreSQL.
 
@@ -344,6 +390,14 @@ A migration 004 habilita RLS e revoga privilégios da Data API sem criar
 políticas permissivas. Essa barreira não substitui JWT, autorização de recurso
 ou filtros de isolamento por negócio no Express. Consulte
 [`docs/POSTGRES-SUPABASE.md`](docs/POSTGRES-SUPABASE.md) antes da operação.
+
+O runner não faz parte de `npm start`, do build nem da inicialização do servidor.
+Em falhas conhecidas antes do commit, ele tenta desfazer DDL e histórico na mesma
+transação. Se o `ROLLBACK` não puder ser confirmado, ou se o `COMMIT` falhar, o
+resultado é desconhecido: não repita o comando automaticamente; preserve a
+evidência e inspecione catálogo e histórico em modo somente leitura antes de
+decidir a recuperação. O repositório não comprova que esse runner ou as
+migrations foram executados em qualquer projeto Supabase.
 
 Instale as dependências bloqueadas pelo lockfile e inicie a API:
 
@@ -389,15 +443,31 @@ Back-end:
 ```bash
 cd backend
 npm ci
+npm audit --audit-level=low
 npm test
 cd ..
 ```
+
+Integração PostgreSQL destrutiva, somente depois de configurar um banco local
+descartável e todos os guards descritos em `.env.example`:
+
+```bash
+cd backend
+npm run test:integration
+cd ..
+```
+
+Sem `RUN_POSTGRES_INTEGRATION=1`, essa suíte é marcada como ignorada sem abrir
+conexão. Um pedido de execução com qualquer identidade inválida falha fechado.
+O cenário que cria papéis globais é exclusivo do serviço descartável do GitHub
+Actions e também exige `RUN_POSTGRES_ROLE_FIXTURES=1`.
 
 Front-end:
 
 ```bash
 cd frontend
 npm ci
+npm audit --audit-level=low
 npm run lint
 npm test
 npm run build
@@ -409,16 +479,18 @@ Protótipo de design:
 ```bash
 cd design-prototype
 npm ci
+npm audit --audit-level=low
 npm run build
 cd ..
 ```
 
 O workflow `.github/workflows/quality.yml` está configurado para repetir esses
-gates em pull requests e pushes para `main`. O job
-`postgres-security-boundary` cria bancos PostgreSQL descartáveis, aplica as
-migrations 001 a 004 e valida RLS, privilégios e constraints. A primeira
-execução remota é a validação autoritativa da sintaxe e dos jobs do GitHub
-Actions.
+gates em pull requests e pushes para `main`, incluindo auditoria full-tree no
+nível `low` para os três lockfiles. O job `postgres-integration` usa PostgreSQL
+17 descartável e executa migrations, repetição idempotente, drift de checksum,
+rollback, concorrência, baseline e os limites de RLS, privilégios, triggers e
+constraints do plano 015. A execução remota é a validação autoritativa da
+sintaxe e dos jobs do GitHub Actions; não comprova o estado do Supabase.
 
 ---
 
@@ -469,8 +541,9 @@ No Render:
   `DATABASE_SSL_CA` somente quando uma CA confiável for necessária;
 - `JWT_EXPIRES_IN` e `UPLOAD_DIR` devem receber os valores aprovados para o
   ambiente;
-- as migrations devem ser aplicadas na ordem documentada antes de uma versão
-  que dependa do novo schema.
+- execute `npm run db:migrate -- --confirm-database=<nome-exato-do-banco>` como
+  etapa de release explícita, depois do backup e antes de uma versão que dependa
+  do novo schema; nunca inclua o comando no build ou no start do Render.
 
 O login administrativo padrão do Supabase não deve ser mantido como credencial
 de runtime de longo prazo. Provisionar um login dedicado com privilégios
@@ -486,21 +559,27 @@ ou redeploy. Este repositório não comprova que esse volume já existe.
 ### Verificação operacional
 
 Antes de considerar o deploy pronto, confirme nos dashboards o Node 24, os
-nomes das variáveis, os logs de build/start, o schema PostgreSQL, a aplicação da
-migration 004 e a persistência de uploads. `/api/health` comprova apenas que o
-processo HTTP responde; não consulta o banco. Valide acesso ao banco por um
-fluxo autenticado e faça smoke test de login, agendamento público, link de
-gerenciamento e upload. Para validar persistência, envie um arquivo, registre a
-URL, faça restart ou redeploy e confirme que o mesmo arquivo continua
-acessível. `/api/db-health` retorna 404 em produção e não é um readiness check.
+nomes das variáveis, os logs de build/start, o schema PostgreSQL, o histórico
+registrado pelo runner, a aplicação da migration 004 e a persistência de
+uploads. `/api/health` comprova apenas que o processo HTTP responde; não
+consulta o banco. Valide acesso ao banco por um fluxo autenticado e faça smoke
+test de login, agendamento público, link de gerenciamento e upload. Para
+validar persistência, envie um arquivo, registre a URL, faça restart ou
+redeploy e confirme que o mesmo arquivo continua acessível. `/api/db-health`
+retorna 404 em produção e não é um readiness check.
 
 Se a conexão remota não validar a cadeia de certificados, interrompa a
 operação e configure uma CA confiável após revisão. Nunca restaure uma opção
 que desabilite a validação TLS.
 
-Mantenha backup do banco antes das migrations e uma versão anterior implantável
-para rollback da aplicação. Não reverta SQL manualmente sem um plano específico
-de recuperação.
+Mantenha backup verificado antes das migrations e uma versão anterior
+implantável para rollback da aplicação. O runner reverte somente a transação
+cujo erro teve resultado conhecido. Ele não oferece down migration. Falha ou
+perda de conexão durante `COMMIT` deixa o resultado desconhecido: não tente de
+novo até conferir `schema_migrations` e o catálogo em modo somente leitura. Para
+falha descoberta após commit, preserve evidências e restaure o backup ou siga
+um plano de recuperação revisado; nunca reverta SQL ou altere o histórico
+manualmente.
 
 Referência de runtime da Vercel:
 [versões Node.js suportadas](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions).
@@ -539,9 +618,6 @@ Durante o desenvolvimento do Agendai, foram trabalhados conceitos importantes co
 
 Algumas melhorias planejadas para o projeto:
 
-- Runner com histórico, locking e validação de migrations;
-- Ampliação dos testes em PostgreSQL descartável para integração e
-  concorrência;
 - Login PostgreSQL de runtime dedicado, com privilégios mínimos e rotação
   operacional da credencial administrativa;
 - Ampliação dos testes HTTP de autorização, isolamento e contratos de erro;

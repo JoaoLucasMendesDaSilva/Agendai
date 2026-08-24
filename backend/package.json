@@ -5,9 +5,11 @@
   "description": "Backend da plataforma profissional de agendamento online Agendai.",
   "main": "src/server.js",
   "scripts": {
+    "db:migrate": "node scripts/migrate.js",
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "test": "node --test"
+    "test": "node --test test/*.test.js",
+    "test:integration": "node --test test/integration/*.test.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
