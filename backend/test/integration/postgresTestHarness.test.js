@@ -207,18 +207,62 @@ test('guard constrói somente campos discretos a partir de ambiente isolado', ()
 });
 
 test('guard aceita endereço privado do serviço somente no GitHub Actions', () => {
+  const githubActionsEnvironment = {
+    CI: 'true',
+    GITHUB_ACTIONS: 'true',
+  };
+
   assert.equal(
-    isAllowedServerAddress('172.18.0.2', {
-      CI: 'true',
-      GITHUB_ACTIONS: 'true',
-    }),
+    isAllowedServerAddress('172.18.0.2', githubActionsEnvironment),
+    true
+  );
+  assert.equal(
+    isAllowedServerAddress(
+      '::ffff:172.18.0.2',
+      githubActionsEnvironment
+    ),
     true
   );
   assert.equal(
     isAllowedServerAddress('172.18.0.2', { CI: 'true' }),
     false
   );
+  assert.equal(
+    isAllowedServerAddress('::ffff:172.18.0.2', { CI: 'true' }),
+    false
+  );
   assert.equal(isAllowedServerAddress('203.0.113.10', {}), false);
+});
+
+test('guard valida o IP completo e mantém endereço ausente fail-closed', () => {
+  const githubActionsEnvironment = {
+    CI: 'true',
+    GITHUB_ACTIONS: 'true',
+  };
+
+  for (const address of [
+    null,
+    undefined,
+    ['127.0.0.1'],
+    '',
+    'null',
+    '127.evil',
+    '127.0.0.1.example',
+    '::ffff:127.evil',
+    '172.18.0.2/32',
+    '::ffff:203.0.113.10',
+  ]) {
+    assert.equal(
+      isAllowedServerAddress(address, githubActionsEnvironment),
+      false,
+      String(address)
+    );
+  }
+
+  assert.equal(isAllowedServerAddress('127.0.0.1', {}), true);
+  assert.equal(isAllowedServerAddress('127.7.8.9', {}), true);
+  assert.equal(isAllowedServerAddress('::1', {}), true);
+  assert.equal(isAllowedServerAddress('::ffff:127.0.0.1', {}), true);
 });
 
 test('harness confirma identidade antes de permitir limpeza', async () => {
@@ -235,6 +279,11 @@ test('harness confirma identidade antes de permitir limpeza', async () => {
 
     async query(sql) {
       if (sql.includes('current_database()')) {
+        assert.match(
+          sql,
+          /pg_catalog\.host\(pg_catalog\.inet_server_addr\(\)\)/
+        );
+        assert.doesNotMatch(sql, /inet_server_addr\(\)::text/);
         calls.push('identity');
         return {
           rows: [

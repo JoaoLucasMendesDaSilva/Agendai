@@ -30,8 +30,31 @@ function hasStandaloneTestToken(databaseName) {
   return TEST_DATABASE_PATTERN.test(String(databaseName || ''));
 }
 
+function normalizeServerAddress(address) {
+  if (typeof address !== 'string') return null;
+
+  const normalized = address.trim().toLowerCase();
+  const ipVersion = net.isIP(normalized);
+
+  if (ipVersion === 4) return normalized;
+  if (ipVersion !== 6) return null;
+
+  const mappedIpv4 = normalized.match(
+    /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/
+  );
+
+  if (mappedIpv4 && net.isIP(mappedIpv4[1]) === 4) {
+    return mappedIpv4[1];
+  }
+
+  return normalized;
+}
+
 function isGithubActionsPrivateAddress(address) {
-  const normalized = String(address || '').toLowerCase();
+  const normalized = normalizeServerAddress(address);
+
+  if (!normalized) return false;
+
   const ipVersion = net.isIP(normalized);
 
   if (ipVersion === 4) {
@@ -51,13 +74,13 @@ function isGithubActionsPrivateAddress(address) {
 }
 
 function isAllowedServerAddress(address, environment) {
-  const normalized = String(address || '').toLowerCase();
+  const normalized = normalizeServerAddress(address);
+
+  if (!normalized) return false;
 
   if (
-    normalized === '127.0.0.1' ||
     normalized === '::1' ||
-    normalized.startsWith('127.') ||
-    normalized.startsWith('::ffff:127.')
+    (net.isIP(normalized) === 4 && Number(normalized.split('.')[0]) === 127)
   ) {
     return true;
   }
@@ -270,9 +293,9 @@ function validatePostgresTestEnvironment(environment = process.env, options = {}
 async function verifyConnectedIdentity(client, guard) {
   const result = await client.query(`
     SELECT
-      current_database() AS database_name,
+      pg_catalog.current_database() AS database_name,
       session_user AS session_user_name,
-      inet_server_addr()::text AS server_address
+      pg_catalog.host(pg_catalog.inet_server_addr()) AS server_address
   `);
   const identity = result.rows[0];
 
