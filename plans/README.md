@@ -27,7 +27,7 @@ The evidence and prioritization for this wave are recorded in
 | 013 | Automate Migrations And MySQL Integration | P1 | L | 012 | REJECTED - superseded by PostgreSQL plan 016 |
 | 014 | Enforce Durable Business Identity | P1 | M | 013 | REJECTED - MySQL version superseded by plan 018 |
 | 015 | Harden PostgreSQL Transport And Supabase Data Boundary | P1 | L | 012 | DONE |
-| 016 | Automate PostgreSQL Migrations And Integration Verification | P1 | L | 015 | TODO |
+| 016 | Automate PostgreSQL Migrations And Integration Verification | P1 | L | 015 | DONE |
 | 017 | Prove PostgreSQL Appointment Conflict Enforcement | P1 | M | 016 | TODO |
 | 018 | Enforce Durable Business Identity On PostgreSQL | P1 | M | 016 | TODO |
 | 019 | Enforce Tenant-Consistent Appointment Relationships | P1 | M | 018 | TODO |
