@@ -802,14 +802,13 @@ async function listarHorariosDisponiveis(
      FROM agendamentos
      WHERE negocio_id = $1
        AND profissional_id = $2
-       AND ($3 IS NULL OR id <> $4)
+       AND ($3::integer IS NULL OR id <> $3)
        AND status IN ('pendente', 'confirmado')
-       AND data_hora_inicio < $5
-       AND data_hora_fim > $6`,
+       AND data_hora_inicio < $4
+       AND data_hora_fim > $5`,
     [
       negocio.id,
       profissional.id,
-      agendamentoIgnoradoId,
       agendamentoIgnoradoId,
       formatarDataHora(fechamento).replace('T', ' '),
       formatarDataHora(abertura).replace('T', ' '),

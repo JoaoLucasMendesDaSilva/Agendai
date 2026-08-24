@@ -406,6 +406,10 @@ function criarPoolListagemPublica(negocio = negocioPublico()) {
         return [[profissionalPublico()]];
       }
 
+      if (ehConsultaHorariosOcupados(sql)) {
+        return [[]];
+      }
+
       throw new Error(`Consulta inesperada: ${normalizarSql(sql)}`);
     },
   };
@@ -749,4 +753,27 @@ test('listarHorariosDisponiveis retorna vazio para negocio sem dias de funcionam
     pool.chamadas.some(({ sql }) => ehConsultaHorariosOcupados(sql)),
     false
   );
+});
+
+test('listarHorariosDisponiveis tipa parametro nulo de agendamento ignorado', async () => {
+  const pool = criarPoolListagemPublica();
+  const { listarHorariosDisponiveis } = carregarPublicoServiceComPool(pool);
+
+  await listarHorariosDisponiveis('studio-teste', {
+    data: '2099-07-01',
+    servico_id: SERVICO_ID,
+    profissional_id: PROFISSIONAL_ID,
+  });
+
+  const chamadaHorarios = pool.chamadas.find(({ sql }) =>
+    ehConsultaHorariosOcupados(sql)
+  );
+
+  assert.ok(chamadaHorarios.sql.includes('$3::integer IS NULL OR id <> $3'));
+  assert.deepEqual(chamadaHorarios.params.slice(0, 3), [
+    NEGOCIO_ID,
+    PROFISSIONAL_ID,
+    null,
+  ]);
+  assert.equal(chamadaHorarios.params.length, 5);
 });
