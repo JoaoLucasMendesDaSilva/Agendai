@@ -1535,33 +1535,49 @@
 .public-new-booking-page .booking-review-card {
   display: grid;
   gap: 8px;
-  border: 0;
+  border: 1px solid var(--gray-300);
   border-radius: 12px;
   padding: 16px;
-  color: #ffffff;
-  background: #093e2a;
+  color: var(--gray-900);
+  background: var(--panel-bg-soft);
 }
 
 .public-new-booking-page .booking-review-card > span {
   display: grid;
   gap: 2px;
-  color: rgba(255, 255, 255, 0.84);
+  color: var(--gray-700);
   font-size: 0.84rem;
 }
 
 .public-new-booking-page .booking-review-card small {
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--gray-500);
   font-size: 0.75rem;
 }
 
 .public-new-booking-page .booking-review-card strong {
-  color: #ffffff;
+  color: var(--gray-900);
   font-size: 1.05rem;
 }
 
 .public-new-booking-page .form > .button-primary {
   width: 100%;
   min-height: 52px;
+  color: var(--action-text);
+  background: var(--action-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+.public-new-booking-page .form > .button-primary:hover:not(:disabled),
+.public-new-booking-page .form > .button-primary:active:not(:disabled) {
+  background: var(--action-bg-hover);
+  box-shadow: none;
+  transform: none;
+}
+
+.public-new-booking-page .form > .button-primary:focus-visible {
+  outline: 3px solid var(--green-700);
+  outline-offset: 3px;
   box-shadow: none;
 }
 
