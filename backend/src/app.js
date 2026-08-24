@@ -65,6 +65,14 @@ app.use(
   })
 );
 
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    mensagem: 'API do sistema de agendamento em funcionamento',
+    ambiente: process.env.NODE_ENV || 'development',
+  });
+});
+
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -98,14 +106,6 @@ app.use('/api/servicos', servicosRoutes);
 app.use('/api/profissionais', profissionaisRoutes);
 app.use('/api/publico', publicoRoutes);
 app.use('/api/agendamentos', agendamentosRoutes);
-
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    mensagem: 'API do sistema de agendamento em funcionamento',
-    ambiente: process.env.NODE_ENV || 'development',
-  });
-});
 
 app.get('/api/db-health', async (req, res, next) => {
   if (process.env.NODE_ENV === 'production') {
