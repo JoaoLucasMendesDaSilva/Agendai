@@ -17,12 +17,14 @@ if (timezoneConfigurado !== TIMEZONE_APLICACAO) {
 process.env.TZ = timezoneConfigurado;
 
 const { testDatabaseConnection } = require('./config/database');
+const { criarRegistroErroSeguro } = require('./utils/errorLogging');
 const authRoutes = require('./routes/authRoutes');
 const negocioRoutes = require('./routes/negocioRoutes');
 const servicosRoutes = require('./routes/servicosRoutes');
 const profissionaisRoutes = require('./routes/profissionaisRoutes');
 const publicoRoutes = require('./routes/publicoRoutes');
 const agendamentosRoutes = require('./routes/agendamentosRoutes');
+const privacidadeRoutes = require('./routes/privacidadeRoutes');
 
 const { UPLOAD_ROOT } = require('./utils/imageStorage');
 
@@ -98,6 +100,7 @@ app.use('/api/servicos', servicosRoutes);
 app.use('/api/profissionais', profissionaisRoutes);
 app.use('/api/publico', publicoRoutes);
 app.use('/api/agendamentos', agendamentosRoutes);
+app.use('/api/privacidade', privacidadeRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({
@@ -138,13 +141,7 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   const statusCode = err.status || 500;
 
-  const errorLog = {
-    codigo: err.code,
-    status: statusCode,
-    metodo: req.method,
-    rota: req.originalUrl,
-    mensagem: err.message,
-  };
+  const errorLog = criarRegistroErroSeguro(err, req, statusCode);
 
   if (statusCode >= 500 || process.env.NODE_ENV !== 'production') {
     console.error(errorLog);

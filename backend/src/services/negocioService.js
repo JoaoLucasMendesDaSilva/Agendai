@@ -19,6 +19,7 @@ const CAMPOS_PERMITIDOS = [
   'telefone',
   'endereco',
   'cidade',
+  'contato_privacidade',
   'horario_abertura',
   'horario_fechamento',
   'dias_funcionamento',
@@ -162,6 +163,7 @@ function formatarNegocio(negocio) {
     telefone: negocio.telefone,
     endereco: negocio.endereco,
     cidade: negocio.cidade,
+    contato_privacidade: negocio.contato_privacidade,
     horario_abertura: negocio.horario_abertura,
     horario_fechamento: negocio.horario_fechamento,
     dias_funcionamento: parseDiasFuncionamento(negocio.dias_funcionamento),
@@ -232,6 +234,7 @@ function montarDadosCriacao(dados) {
   const telefone = normalizarTexto(dados.telefone) || null;
   const endereco = normalizarTexto(dados.endereco) || null;
   const cidade = normalizarTexto(dados.cidade) || 'Cubatao';
+  const contatoPrivacidade = normalizarTexto(dados.contato_privacidade);
   const horarioAbertura =
     normalizarHorario(dados.horario_abertura || '08:00', 'horario_abertura') ||
     '08:00:00';
@@ -244,6 +247,10 @@ function montarDadosCriacao(dados) {
   validarTamanho('Telefone', telefone, 30);
   validarTamanho('Endereco', endereco, 255);
   validarTamanho('Cidade', cidade, 100);
+  validarTamanho('Contato de privacidade', contatoPrivacidade, 180);
+  if (!contatoPrivacidade || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contatoPrivacidade)) {
+    throw criarErro(400, 'Informe um e-mail valido para contato de privacidade.');
+  }
   validarOrdemHorarios(horarioAbertura, horarioFechamento);
 
   return {
@@ -252,6 +259,7 @@ function montarDadosCriacao(dados) {
     telefone,
     endereco,
     cidade,
+    contatoPrivacidade: contatoPrivacidade.toLowerCase(),
     horarioAbertura,
     horarioFechamento,
     diasFuncionamento: diasFuncionamento === undefined ? null : diasFuncionamento,
@@ -288,11 +296,17 @@ function montarDadosAtualizacao(dados, negocioAtual) {
     ['telefone', 30],
     ['endereco', 255],
     ['cidade', 100],
+    ['contato_privacidade', 180],
   ]) {
     if (dados[campo] !== undefined) {
       const valor = normalizarTexto(dados[campo]);
       validarTamanho(campo, valor, maximo);
-      atualizacao[campo] = valor;
+      if (campo === 'contato_privacidade' && (!valor || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor))) {
+        throw criarErro(400, 'Informe um e-mail valido para contato de privacidade.');
+      }
+      atualizacao[campo] = campo === 'contato_privacidade' && valor
+        ? valor.toLowerCase()
+        : valor;
     }
   }
 
@@ -329,7 +343,7 @@ function montarDadosAtualizacao(dados, negocioAtual) {
 async function buscarNegocioDoUsuario(usuarioId) {
   const pool = getDatabasePool();
   const { rows: linhas } = await pool.query(
-    `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
+    `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade, contato_privacidade,
       horario_abertura, horario_fechamento, dias_funcionamento, logo_url,
       banner_url, ativo
      FROM negocios
@@ -358,8 +372,8 @@ async function criarNegocio(usuarioId, dados) {
   const resultado = await pool.query(
     `INSERT INTO negocios (
       usuario_id, nome, slug_publico, descricao, telefone, endereco, cidade,
-      horario_abertura, horario_fechamento, dias_funcionamento
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      contato_privacidade, horario_abertura, horario_fechamento, dias_funcionamento
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
      RETURNING id`,
     [
       usuarioId,
@@ -369,6 +383,7 @@ async function criarNegocio(usuarioId, dados) {
       dadosValidados.telefone,
       dadosValidados.endereco,
       dadosValidados.cidade,
+      dadosValidados.contatoPrivacidade,
       dadosValidados.horarioAbertura,
       dadosValidados.horarioFechamento,
       dadosValidados.diasFuncionamento === null
@@ -378,7 +393,7 @@ async function criarNegocio(usuarioId, dados) {
   );
 
   const { rows: linhas } = await pool.query(
-    `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
+    `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade, contato_privacidade,
       horario_abertura, horario_fechamento, dias_funcionamento, logo_url,
       banner_url, ativo
      FROM negocios
@@ -399,7 +414,7 @@ async function atualizarNegocio(usuarioId, negocioId, dados) {
 
   const pool = getDatabasePool();
   const { rows: linhas } = await pool.query(
-    `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
+    `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade, contato_privacidade,
       horario_abertura, horario_fechamento, dias_funcionamento, logo_url,
       banner_url, ativo
      FROM negocios
@@ -425,7 +440,7 @@ async function atualizarNegocio(usuarioId, negocioId, dados) {
     valores.push(await gerarSlugPublico(atualizacao.nome, id));
   }
 
-  for (const campo of ['descricao', 'telefone', 'endereco', 'cidade']) {
+  for (const campo of ['descricao', 'telefone', 'endereco', 'cidade', 'contato_privacidade']) {
     if (atualizacao[campo] !== undefined) {
       campos.push(`${campo} = $${valores.length + 1}`);
       valores.push(atualizacao[campo]);
@@ -466,7 +481,7 @@ async function atualizarNegocio(usuarioId, negocioId, dados) {
   }
 
   const { rows: negociosAtualizados } = await pool.query(
-    `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
+    `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade, contato_privacidade,
       horario_abertura, horario_fechamento, dias_funcionamento, logo_url,
       banner_url, ativo
      FROM negocios

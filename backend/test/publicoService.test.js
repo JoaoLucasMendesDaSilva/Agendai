@@ -194,6 +194,7 @@ function negocioPublico(sobrescritos = {}) {
     dias_funcionamento: '[0,1,2,3,4,5,6]',
     logo_url: null,
     banner_url: null,
+    contato_privacidade: 'privacidade@studio-teste.com',
     ...sobrescritos,
   };
 }
@@ -225,6 +226,7 @@ function payloadAgendamento(dataHoraInicio) {
     cliente_email: 'cliente@teste.com',
     data_hora_inicio: dataHoraInicio,
     observacoes: null,
+    aviso_privacidade_aceito: true,
   };
 }
 
@@ -421,6 +423,22 @@ test('token publico invalido retorna erro 404 publico', async () => {
   await assert.rejects(
     () => buscarAgendamentoPublicoPorToken('token-invalido'),
     (err) => err.status === 404
+  );
+});
+
+test('criarAgendamentoPublico exige leitura do aviso de privacidade', async () => {
+  const { criarAgendamentoPublico } = carregarPublicoServiceComPool({
+    execute: async () => {
+      throw new Error('Banco nao deveria ser consultado.');
+    },
+  });
+
+  await assert.rejects(
+    () => criarAgendamentoPublico('studio-teste', {
+      ...payloadAgendamento('2099-07-01T08:30:00'),
+      aviso_privacidade_aceito: false,
+    }),
+    (err) => err.status === 400 && err.publicMessage.includes('Aviso de Privacidade')
   );
 });
 

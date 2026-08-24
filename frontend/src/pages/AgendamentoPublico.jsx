@@ -37,6 +37,7 @@ const CLIENTE_INICIAL = {
   telefone: '',
   email: '',
   observacoes: '',
+  aviso_privacidade_aceito: false,
 };
 
 function PublicBookingShell({ children, statePage = false }) {
@@ -293,6 +294,7 @@ function AgendamentoPublico({ slugOuId }) {
         cliente_telefone: cliente.telefone,
         cliente_email: cliente.email || undefined,
         observacoes: cliente.observacoes || undefined,
+        aviso_privacidade_aceito: cliente.aviso_privacidade_aceito,
         data_hora_inicio: horarioConfirmado.data_hora_inicio,
       });
     } catch (err) {
@@ -793,7 +795,7 @@ function AgendamentoPublico({ slugOuId }) {
                 <span className="booking-section-number">4</span>
                 <div>
                   <h2 id="cliente-title">Informe seus dados</h2>
-                  <p>Usaremos estes dados para identificar seu agendamento.</p>
+                  <p>Usaremos estes dados para viabilizar e identificar seu agendamento.</p>
                 </div>
               </div>
 
@@ -857,7 +859,20 @@ function AgendamentoPublico({ slugOuId }) {
                     rows="3"
                     value={cliente.observacoes}
                   />
+                  <small>Nao informe dados de saude ou outros dados pessoais sensiveis.</small>
                 </label>
+
+                <div className="legal-checkbox">
+                  <input
+                    aria-label="Ler Aviso de Privacidade"
+                    checked={cliente.aviso_privacidade_aceito}
+                    disabled={enviando}
+                    onChange={(event) => atualizarCliente('aviso_privacidade_aceito', event.target.checked)}
+                    required
+                    type="checkbox"
+                  />
+                  <span>Li o <a href={`/privacidade?negocio=${encodeURIComponent(negocio?.id || '')}`}>Aviso de Privacidade</a>. O controlador destes dados e {negocio?.nome}; contato: {negocio?.contato_privacidade || 'canal do Agendai'}.</span>
+                </div>
 
                 <div className="booking-review-card">
                   <span>

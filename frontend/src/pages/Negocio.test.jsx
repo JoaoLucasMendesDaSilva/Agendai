@@ -49,6 +49,10 @@ describe('Negocio', () => {
 
     const botaoSalvar = await screen.findByRole('button', { name: /Salvar/i });
     await user.type(screen.getByLabelText(/Nome/i), 'Studio Teste');
+    await user.type(
+      screen.getByLabelText(/E-mail para privacidade/i),
+      'privacidade@studio-teste.com',
+    );
 
     const checkboxes = screen.getAllByRole('checkbox');
     for (const checkbox of checkboxes.filter((item) => item.checked)) {

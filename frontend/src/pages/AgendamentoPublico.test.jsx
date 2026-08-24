@@ -198,6 +198,7 @@ describe('AgendamentoPublico', () => {
       screen.getByRole('textbox', { name: /^Telefone$/i }),
       '13999990000',
     );
+    await user.click(screen.getByRole('checkbox'));
     await user.click(
       screen.getByRole('button', { name: /Confirmar agendamento/i }),
     );
@@ -235,6 +236,7 @@ describe('AgendamentoPublico', () => {
       screen.getByRole('textbox', { name: /^Telefone$/i }),
       '13999990000',
     );
+    await user.click(screen.getByRole('checkbox'));
     await user.click(
       screen.getByRole('button', { name: /Confirmar agendamento/i }),
     );

@@ -24,3 +24,7 @@ services:
         sync: false
       - key: DATABASE_SSL_MODE
         value: verify-full
+      - key: LGPD_AGENDAMENTOS_RETENCAO_DIAS
+        value: "730"
+      - key: LGPD_SOLICITACOES_RETENCAO_DIAS
+        value: "1825"

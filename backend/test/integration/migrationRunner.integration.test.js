@@ -18,6 +18,7 @@ const APPLICATION_TABLES = [
   'negocios',
   'profissionais',
   'servicos',
+  'solicitacoes_lgpd',
   'usuarios',
 ];
 const DATA_API_ROLES = ['anon', 'authenticated', 'service_role'];
@@ -405,7 +406,7 @@ describe(
           version,
         }))
       );
-      assert.equal(firstHistory.length, 4);
+      assert.equal(firstHistory.length, 5);
       await assertSecurityCatalog();
       await assertOwnerTriggerStillWorks();
 
@@ -550,7 +551,7 @@ describe(
 
       await runMigrations({ baselineExisting: true });
 
-      assert.equal((await readHistory()).length, 4);
+      assert.equal((await readHistory()).length, 5);
       const branding = await harness.client.query(`
         SELECT column_name
         FROM information_schema.columns
@@ -661,7 +662,7 @@ describe(
 
         await runMigrations({ baselineExisting: true });
 
-        assert.equal((await readHistory()).length, 4);
+        assert.equal((await readHistory()).length, 5);
         await assertSecurityCatalog();
         await assertOwnerTriggerStillWorks();
       }

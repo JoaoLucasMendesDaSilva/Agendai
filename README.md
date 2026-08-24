@@ -351,7 +351,8 @@ calculado sobre os bytes exatos e gravado com versão, nome e data em
 1. `backend/database/postgres-migrations/001_create_schema.sql`;
 2. `backend/database/postgres-migrations/002_add_business_branding.sql`;
 3. `backend/database/postgres-migrations/003_add_public_appointment_token.sql`;
-4. `backend/database/postgres-migrations/004_harden_supabase_data_boundary.sql`.
+4. `backend/database/postgres-migrations/004_harden_supabase_data_boundary.sql`;
+5. `backend/database/postgres-migrations/005_add_privacy_governance.sql`.
 
 O executor exige PostgreSQL 15 ou superior; o gate remoto usa PostgreSQL 17.
 
@@ -390,6 +391,15 @@ A migration 004 habilita RLS e revoga privilégios da Data API sem criar
 políticas permissivas. Essa barreira não substitui JWT, autorização de recurso
 ou filtros de isolamento por negócio no Express. Consulte
 [`docs/POSTGRES-SUPABASE.md`](docs/POSTGRES-SUPABASE.md) antes da operação.
+
+### Privacidade e LGPD
+
+O projeto mantém o mapa de dados, a definição de papéis, as bases legais
+consideradas e as limitações pendentes em [`docs/LGPD.md`](docs/LGPD.md). O
+procedimento de atendimento de solicitações, retenção e resposta a incidentes
+está em [`docs/OPERACAO-LGPD.md`](docs/OPERACAO-LGPD.md). A adequação técnica
+não substitui a validação jurídica, a formalização de contratos com operadores
+ou a definição do canal oficial pelo controlador.
 
 O runner não faz parte de `npm start`, do build nem da inicialização do servidor.
 Em falhas conhecidas antes do commit, ele tenta desfazer DDL e histórico na mesma
@@ -560,7 +570,7 @@ ou redeploy. Este repositório não comprova que esse volume já existe.
 
 Antes de considerar o deploy pronto, confirme nos dashboards o Node 24, os
 nomes das variáveis, os logs de build/start, o schema PostgreSQL, o histórico
-registrado pelo runner, a aplicação da migration 004 e a persistência de
+registrado pelo runner, a aplicação da migration 005 e a persistência de
 uploads. `/api/health` comprova apenas que o processo HTTP responde; não
 consulta o banco. Valide acesso ao banco por um fluxo autenticado e faça smoke
 test de login, agendamento público, link de gerenciamento e upload. Para

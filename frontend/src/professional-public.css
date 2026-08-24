@@ -77,6 +77,81 @@
   min-height: 48px;
 }
 
+.legal-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--gray-700);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.legal-checkbox input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex: 0 0 auto;
+}
+
+.legal-checkbox a,
+.legal-content a,
+.legal-header a {
+  color: var(--green-800);
+  text-decoration: underline;
+}
+
+.legal-page {
+  min-height: 100dvh;
+  padding: 20px;
+  background: var(--page-bg);
+}
+
+.legal-header,
+.legal-content {
+  width: min(100%, 760px);
+  margin-inline: auto;
+}
+
+.legal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 12px 24px;
+}
+
+.legal-header .brand-logo {
+  margin: 0;
+}
+
+.legal-content {
+  padding-bottom: 56px;
+}
+
+.legal-content h1 {
+  margin-block: 8px 20px;
+  color: var(--gray-900);
+}
+
+.legal-content h2 {
+  margin-top: 28px;
+  color: var(--gray-900);
+  font-size: 1.2rem;
+}
+
+.legal-content p {
+  color: var(--gray-700);
+  line-height: 1.65;
+}
+
+.legal-request-form {
+  margin-top: 16px;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  padding: 18px;
+  background: var(--panel-bg);
+}
+
 .auth-visual-panel {
   color: #ffffff;
   background: var(--green-900);

@@ -102,7 +102,8 @@ function criarPoolCriacaoValida() {
       if (ehInsercaoNegocio(sql)) {
         assert.equal(params[0], USUARIO_ID);
         assert.equal(params[1], 'Studio Teste');
-        assert.equal(params[9], '[1,3,5]');
+        assert.equal(params[7], 'privacidade@studio-teste.com');
+        assert.equal(params[10], '[1,3,5]');
         return [{ insertId: NEGOCIO_ID }];
       }
 
@@ -214,6 +215,7 @@ test('criarNegocio aceita dias_funcionamento valido', async () => {
   const negocio = await criarNegocio(USUARIO_ID, {
     nome: 'Studio Teste',
     dias_funcionamento: [1, 3, 5],
+    contato_privacidade: 'privacidade@studio-teste.com',
   });
 
   assert.deepEqual(negocio.dias_funcionamento, [1, 3, 5]);
@@ -265,6 +267,7 @@ test('criarNegocio evita slug publico apenas numerico', async () => {
   const negocio = await criarNegocio(USUARIO_ID, {
     nome: '123',
     dias_funcionamento: [1, 3, 5],
+    contato_privacidade: 'privacidade@studio-teste.com',
   });
 
   assert.equal(negocio.slug_publico, 'negocio-123');
@@ -318,6 +321,7 @@ test('criarNegocio mantem sufixo em slug numerico com colisao', async () => {
   const negocio = await criarNegocio(USUARIO_ID, {
     nome: '123',
     dias_funcionamento: [1, 3, 5],
+    contato_privacidade: 'privacidade@studio-teste.com',
   });
 
   assert.deepEqual(slugsConsultados, ['negocio-123', 'negocio-123-2']);

@@ -79,9 +79,9 @@ test('histórico aceita somente o prefixo exato de nome e checksum', async () =>
 });
 
 test('baseline aceita apenas prefixos estruturais completos e contíguos', () => {
-  for (let prefix = 0; prefix <= 4; prefix += 1) {
+  for (let prefix = 0; prefix <= 5; prefix += 1) {
     const signatures = Array.from(
-      { length: 4 },
+      { length: 5 },
       (_, index) => (index < prefix ? 'complete' : 'absent')
     );
     assert.equal(classifyBaselineSignatures(signatures).prefix, prefix);
@@ -555,6 +555,7 @@ test('conjunto oficial futuro exige atualização explícita do inspetor', () =>
     '002_add_business_branding.sql',
     '003_add_public_appointment_token.sql',
     '004_harden_supabase_data_boundary.sql',
+    '005_add_privacy_governance.sql',
   ].map((name) => ({ name }));
 
   assert.equal(migrationSetKind(active), 'active');

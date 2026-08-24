@@ -24,6 +24,19 @@ test('cadastrarUsuario rejeita campos obrigatorios ausentes', async () => {
   );
 });
 
+test('cadastrarUsuario exige aceite dos documentos', async () => {
+  const { cadastrarUsuario } = carregarAuthServiceComPool({
+    query: async () => {
+      throw new Error('Banco nao deveria ser consultado.');
+    },
+  });
+
+  await assert.rejects(
+    () => cadastrarUsuario({ nome: 'Ana', email: 'ana@teste.com', senha: 'senha123' }),
+    (err) => err.status === 400 && err.publicMessage.includes('Aceite os Termos')
+  );
+});
+
 test('cadastrarUsuario rejeita e-mail invalido', async () => {
   const { cadastrarUsuario } = carregarAuthServiceComPool({
     execute: async () => {
@@ -32,7 +45,7 @@ test('cadastrarUsuario rejeita e-mail invalido', async () => {
   });
 
   await assert.rejects(
-    () => cadastrarUsuario({ nome: 'Ana', email: 'email-invalido', senha: 'senha123' }),
+    () => cadastrarUsuario({ nome: 'Ana', email: 'email-invalido', senha: 'senha123', documentos_aceitos: true }),
     (err) => err.status === 400 && err.publicMessage === 'Informe um e-mail valido.'
   );
 });
@@ -45,7 +58,7 @@ test('cadastrarUsuario rejeita senha curta', async () => {
   });
 
   await assert.rejects(
-    () => cadastrarUsuario({ nome: 'Ana', email: 'ana@teste.com', senha: '1234567' }),
+    () => cadastrarUsuario({ nome: 'Ana', email: 'ana@teste.com', senha: '1234567', documentos_aceitos: true }),
     (err) => err.status === 400 && err.publicMessage === 'A senha deve ter pelo menos 8 caracteres.'
   );
 });

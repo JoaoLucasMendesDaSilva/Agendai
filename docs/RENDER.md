@@ -25,6 +25,8 @@ versioná-los. Confirme no dashboard:
 - `DATABASE_URL` configurada como segredo, sem parâmetros ou fragmentos;
 - `DATABASE_SSL_MODE=verify-full`;
 - `DATABASE_SSL_CA` somente se uma CA confiável adicional for necessária;
+- `LGPD_AGENDAMENTOS_RETENCAO_DIAS=730` e
+  `LGPD_SOLICITACOES_RETENCAO_DIAS=1825`, salvo prazo revisado juridicamente;
 - `UPLOAD_DIR` compatível com a estratégia de persistência aprovada.
 
 Nunca copie conexão, senha, chave de serviço ou certificado para commits,
@@ -39,16 +41,17 @@ não são declarados como concluídos aqui.
 
 ## Banco e ordem operacional
 
-As migrations PostgreSQL ativas são 001 a 004 em
+As migrations PostgreSQL ativas são 001 a 005 em
 `backend/database/postgres-migrations/`. As migrations MySQL no diretório
 `backend/database/migrations/` são históricas e não devem ser executadas no
 Supabase.
 
-Até existir um runner com histórico e checksums, a aplicação em ambiente
-existente é manual e deliberada: faça backup, confirme o estado do schema,
-aplique somente o próximo arquivo esperado e valide o resultado antes de
-liberar a aplicação. A migration 004 fecha privilégios da Data API, mas não
-substitui JWT e isolamento por negócio no Express.
+O runner com histórico e checksums aplica somente o sufixo pendente. Em ambiente
+existente, a aplicação continua deliberada: faça backup, confirme o estado do
+schema, execute `npm run db:migrate -- --confirm-database=<nome-exato-do-banco>`
+e valide o resultado antes de liberar a aplicação. A migration 004 fecha
+privilégios da Data API e a 005 adiciona os controles de privacidade; ambas não
+substituem JWT e isolamento por negócio no Express.
 
 ## Deploy e smoke test
 
@@ -81,3 +84,11 @@ Mantenha backup anterior às migrations e uma versão implantável da aplicaçã
 Não reverta RLS, revogações ou TLS verificado para recuperar disponibilidade;
 uma recuperação deve preservar a barreira de segurança e seguir um plano
 específico revisado.
+
+## Privacidade
+
+O job de retenção não deve ser incluído no processo de inicialização do web
+service. Configure uma execução mensal controlada, com as mesmas variáveis de
+banco do backend, para `npm run privacy:retention -- --confirm-retention` e
+registre seu resultado conforme `docs/OPERACAO-LGPD.md`. A criação desse job e
+o acesso às credenciais de produção dependem de aprovação operacional.

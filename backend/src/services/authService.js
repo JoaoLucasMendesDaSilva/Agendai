@@ -4,6 +4,7 @@ const { getDatabasePool } = require('../config/database');
 
 const PASSWORD_MIN_LENGTH = 8;
 const BCRYPT_ROUNDS = 10;
+const VERSAO_DOCUMENTOS = '2026-08-24';
 
 function criarErro(status, mensagem, code) {
   const error = new Error(mensagem);
@@ -64,9 +65,14 @@ async function cadastrarUsuario(dados) {
   const email = normalizarEmail(dados.email);
   const senha = String(dados.senha || '');
   const telefone = dados.telefone ? String(dados.telefone).trim() : null;
+  const documentosAceitos = dados.documentos_aceitos === true;
 
   if (!nome || !email || !senha) {
     throw criarErro(400, 'Nome, e-mail e senha sao obrigatorios.');
+  }
+
+  if (!documentosAceitos) {
+    throw criarErro(400, 'Aceite os Termos de Uso e a Politica de Privacidade para criar a conta.');
   }
 
   if (nome.length < 2 || nome.length > 120) {
@@ -102,8 +108,11 @@ async function cadastrarUsuario(dados) {
 
   try {
     const resultado = await pool.query(
-      'INSERT INTO usuarios (nome, email, senha_hash, telefone) VALUES ($1, $2, $3, $4) RETURNING id',
-      [nome, email, senhaHash, telefone]
+      `INSERT INTO usuarios (
+        nome, email, senha_hash, telefone, documentos_aceitos_em,
+        versao_documentos_aceita
+      ) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, $5) RETURNING id`,
+      [nome, email, senhaHash, telefone, VERSAO_DOCUMENTOS]
     );
 
     return formatarUsuarioPublico({
@@ -177,4 +186,5 @@ module.exports = {
   buscarUsuarioAutenticado,
   cadastrarUsuario,
   formatarUsuarioPublico,
+  VERSAO_DOCUMENTOS,
 };

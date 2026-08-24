@@ -6,6 +6,13 @@ const {
   migrationError,
 } = require('./migrationContracts');
 
+const BASE_APPLICATION_TABLES = Object.freeze([
+  'usuarios', 'negocios', 'servicos', 'profissionais', 'agendamentos',
+]);
+const BASE_APPLICATION_SEQUENCES = Object.freeze(
+  BASE_APPLICATION_TABLES.map((tableName) => `${tableName}_id_seq`)
+);
+
 const COLUMN_SPECS = Object.freeze({
   usuarios: [
     ['id', 'integer', true, 'd', null, 1],
@@ -16,6 +23,8 @@ const COLUMN_SPECS = Object.freeze({
     ['ativo', 'boolean', true, '', 'true', 1],
     ['created_at', 'timestamp with time zone', true, '', 'current_timestamp', 1],
     ['updated_at', 'timestamp with time zone', true, '', 'current_timestamp', 1],
+    ['documentos_aceitos_em', 'timestamp with time zone', false, '', null, 5],
+    ['versao_documentos_aceita', 'character varying(40)', false, '', null, 5],
   ],
   negocios: [
     ['id', 'integer', true, 'd', null, 1],
@@ -35,6 +44,7 @@ const COLUMN_SPECS = Object.freeze({
     ['updated_at', 'timestamp with time zone', true, '', 'current_timestamp', 1],
     ['logo_url', 'character varying(500)', false, '', null, 2],
     ['banner_url', 'character varying(500)', false, '', null, 2],
+    ['contato_privacidade', 'character varying(180)', false, '', null, 5],
   ],
   servicos: [
     ['id', 'integer', true, 'd', null, 1],
@@ -73,6 +83,19 @@ const COLUMN_SPECS = Object.freeze({
     ['created_at', 'timestamp with time zone', true, '', 'current_timestamp', 1],
     ['updated_at', 'timestamp with time zone', true, '', 'current_timestamp', 1],
     ['token_publico_hash', 'character(64)', false, '', null, 3],
+    ['aviso_privacidade_versao', 'character varying(40)', false, '', null, 5],
+  ],
+  solicitacoes_lgpd: [
+    ['id', 'integer', true, 'd', null, 5],
+    ['negocio_id', 'integer', false, '', null, 5],
+    ['tipo', 'character varying(30)', true, '', null, 5],
+    ['nome', 'character varying(120)', true, '', null, 5],
+    ['email', 'character varying(180)', true, '', null, 5],
+    ['mensagem', 'character varying(2000)', false, '', null, 5],
+    ['status', 'character varying(20)', true, '', 'recebida', 5],
+    ['concluida_at', 'timestamp with time zone', false, '', null, 5],
+    ['created_at', 'timestamp with time zone', true, '', 'current_timestamp', 5],
+    ['updated_at', 'timestamp with time zone', true, '', 'current_timestamp', 5],
   ],
 });
 
@@ -99,6 +122,11 @@ const CONSTRAINT_SPECS = Object.freeze({
   chk_agendamentos_status: ['agendamentos', 'c', ['status'], null, null, 1, ['status', 'pendente', 'confirmado', 'cancelado', 'concluido']],
   ex_agendamentos_profissional_periodo_ativo: ['agendamentos', 'x', ['profissional_id', null], null, null, 1, ['exclude using gist', 'profissional_id with =', 'tsrange', "'[)'", 'with &&', 'pendente', 'confirmado']],
   uk_agendamentos_token_publico_hash: ['agendamentos', 'u', ['token_publico_hash'], null, null, 3, []],
+  solicitacoes_lgpd_pkey: ['solicitacoes_lgpd', 'p', ['id'], null, null, 5, []],
+  fk_solicitacoes_lgpd_negocio: ['solicitacoes_lgpd', 'f', ['negocio_id'], 'negocios', ['id'], 5, []],
+  chk_solicitacoes_lgpd_tipo: ['solicitacoes_lgpd', 'c', ['tipo'], null, null, 5, ['tipo', 'acesso', 'correcao', 'eliminacao', 'portabilidade', 'informacao', 'revogacao', 'oposicao']],
+  chk_solicitacoes_lgpd_status: ['solicitacoes_lgpd', 'c', ['status'], null, null, 5, ['status', 'recebida', 'em_analise', 'concluida', 'recusada']],
+  chk_solicitacoes_lgpd_conclusao: ['solicitacoes_lgpd', 'c', ['status', 'concluida_at'], null, null, 5, ['concluida_at', 'status']],
 });
 
 const INDEX_SPECS = Object.freeze({
@@ -115,6 +143,8 @@ const INDEX_SPECS = Object.freeze({
   idx_agendamentos_negocio_inicio: ['agendamentos', ['negocio_id', 'data_hora_inicio']],
   idx_agendamentos_profissional_periodo: ['agendamentos', ['profissional_id', 'data_hora_inicio', 'data_hora_fim']],
   idx_agendamentos_profissional_status_periodo: ['agendamentos', ['profissional_id', 'status', 'data_hora_inicio', 'data_hora_fim']],
+  idx_solicitacoes_lgpd_status_created_at: ['solicitacoes_lgpd', ['status', 'created_at']],
+  idx_solicitacoes_lgpd_negocio_id: ['solicitacoes_lgpd', ['negocio_id']],
 });
 
 const TRIGGER_SPECS = Object.freeze({
@@ -123,6 +153,7 @@ const TRIGGER_SPECS = Object.freeze({
   trg_servicos_updated_at: 'servicos',
   trg_profissionais_updated_at: 'profissionais',
   trg_agendamentos_updated_at: 'agendamentos',
+  trg_solicitacoes_lgpd_updated_at: 'solicitacoes_lgpd',
 });
 
 const CONSTRAINT_NO_INHERIT = Object.freeze({
@@ -257,6 +288,12 @@ function expectedConstraintDefinition(name, spec) {
       "CHECK (status = ANY (ARRAY['pendente', 'confirmado', 'cancelado', 'concluido']))",
     ex_agendamentos_profissional_periodo_ativo:
       "EXCLUDE USING gist (profissional_id WITH =, tsrange(data_hora_inicio, data_hora_fim, '[)') WITH &&) WHERE (status = ANY (ARRAY['pendente', 'confirmado']))",
+    chk_solicitacoes_lgpd_tipo:
+      "CHECK (tipo = ANY (ARRAY['acesso', 'correcao', 'eliminacao', 'portabilidade', 'informacao', 'revogacao', 'oposicao']))",
+    chk_solicitacoes_lgpd_status:
+      "CHECK (status = ANY (ARRAY['recebida', 'em_analise', 'concluida', 'recusada']))",
+    chk_solicitacoes_lgpd_conclusao:
+      "CHECK (((status = ANY (ARRAY['concluida', 'recusada'])) = (concluida_at IS NOT NULL)))",
   };
 
   if (!definitions[name]) return null;
@@ -445,6 +482,18 @@ function columnsStatus(snapshot, version) {
         candidate.table_name === entry.tableName &&
         candidate.column_name === entry.spec[0]
     );
+    if (
+      version === 1 &&
+      entry.tableName === 'agendamentos' &&
+      entry.spec[0] === 'cliente_telefone' &&
+      row?.not_null === false
+    ) {
+      return columnMatches(
+        row,
+        [...entry.spec.slice(0, 2), false, ...entry.spec.slice(3)],
+        entry.ordinal
+      );
+    }
     return columnMatches(row, entry.spec, entry.ordinal);
   })
     ? 'complete'
@@ -489,8 +538,8 @@ function migrationOneStatus(snapshot) {
   if (!hasOnlyKnownDomainObjects(snapshot)) return 'partial';
 
   const relationsComplete =
-    snapshot.relations.length === APPLICATION_TABLES.length &&
-    APPLICATION_TABLES.every((tableName) => {
+    snapshot.relations.filter((row) => BASE_APPLICATION_TABLES.includes(row.table_name)).length === BASE_APPLICATION_TABLES.length &&
+    BASE_APPLICATION_TABLES.every((tableName) => {
       const relation = snapshot.relations.find(
         (candidate) => candidate.table_name === tableName
       );
@@ -514,10 +563,15 @@ function migrationOneStatus(snapshot) {
     }) &&
     snapshot.constraints.every((row) => CONSTRAINT_SPECS[row.constraint_name]) &&
     new Set(constraintNames).size === constraintNames.length;
-  const explicitIndexes = snapshot.indexes.filter((row) => !row.constraint_name);
+  const baseIndexSpecs = Object.entries(INDEX_SPECS).filter(([name]) =>
+    BASE_APPLICATION_TABLES.includes(INDEX_SPECS[name][0])
+  );
+  const explicitIndexes = snapshot.indexes.filter(
+    (row) => !row.constraint_name && BASE_APPLICATION_TABLES.includes(row.table_name)
+  );
   const indexesComplete =
-    explicitIndexes.length === Object.keys(INDEX_SPECS).length &&
-    Object.entries(INDEX_SPECS).every(([name, [tableName, columns]]) => {
+    explicitIndexes.length === baseIndexSpecs.length &&
+    baseIndexSpecs.every(([name, [tableName, columns]]) => {
       const row = explicitIndexes.find((candidate) => candidate.index_name === name);
       return (
         row?.table_name === tableName &&
@@ -555,8 +609,8 @@ function migrationOneStatus(snapshot) {
     }
   );
   const sequencesComplete =
-    snapshot.sequences.length === APPLICATION_SEQUENCES.length &&
-    APPLICATION_TABLES.every((tableName) => {
+    snapshot.sequences.filter((row) => BASE_APPLICATION_SEQUENCES.includes(row.sequence_name)).length === BASE_APPLICATION_SEQUENCES.length &&
+    BASE_APPLICATION_TABLES.every((tableName) => {
       const row = snapshot.sequences.find(
         (candidate) => candidate.sequence_name === `${tableName}_id_seq`
       );
@@ -570,8 +624,8 @@ function migrationOneStatus(snapshot) {
     snapshot.functions.length === 1 &&
     matchesUpdateFunction(functionRow, snapshot.currentUser);
   const triggersComplete =
-    snapshot.triggers.length === Object.keys(TRIGGER_SPECS).length &&
-    Object.entries(TRIGGER_SPECS).every(([name, tableName]) => {
+    snapshot.triggers.filter((row) => BASE_APPLICATION_TABLES.includes(row.table_name)).length === BASE_APPLICATION_TABLES.length &&
+    Object.entries(TRIGGER_SPECS).filter(([, tableName]) => BASE_APPLICATION_TABLES.includes(tableName)).every(([name, tableName]) => {
       const row = snapshot.triggers.find(
         (candidate) => candidate.trigger_name === name
       );
@@ -623,7 +677,9 @@ function migrationThreeStatus(snapshot) {
 }
 
 function migrationFourStatus(snapshot) {
-  const enabledCount = snapshot.relations.filter((row) => row.rls_enabled).length;
+  const enabledCount = snapshot.relations.filter(
+    (row) => BASE_APPLICATION_TABLES.includes(row.table_name) && row.rls_enabled
+  ).length;
 
   if (enabledCount === 0 && snapshot.policies.length === 0) {
     if (snapshot.functions.length === 0 && snapshot.relations.length === 0) {
@@ -644,7 +700,7 @@ function migrationFourStatus(snapshot) {
     return publicFunctionExecute ? 'absent' : 'partial';
   }
   if (
-    enabledCount !== APPLICATION_TABLES.length ||
+    enabledCount !== BASE_APPLICATION_TABLES.length ||
     snapshot.relations.some((row) => row.rls_forced) ||
     snapshot.policies.length > 0 ||
     snapshot.privileges.length > 0
@@ -653,6 +709,82 @@ function migrationFourStatus(snapshot) {
   }
 
   return 'complete';
+}
+
+function migrationFiveStatus(snapshot) {
+  const relation = snapshot.relations.find(
+    (row) => row.table_name === 'solicitacoes_lgpd'
+  );
+  const hasPrivacyColumns = snapshot.columns.some(
+    (row) =>
+      row.table_name === 'solicitacoes_lgpd' ||
+      ['documentos_aceitos_em', 'versao_documentos_aceita', 'contato_privacidade', 'aviso_privacidade_versao'].includes(row.column_name)
+  );
+  const constraints = Object.entries(CONSTRAINT_SPECS).filter(
+    ([, spec]) => spec[5] === 5
+  );
+
+  if (!relation && !hasPrivacyColumns && !constraints.some(([name]) =>
+    snapshot.constraints.some((row) => row.constraint_name === name)
+  )) {
+    return 'absent';
+  }
+
+  const columnsComplete = columnsStatus(snapshot, 5) === 'complete';
+  const telefone = snapshot.columns.find(
+    (row) => row.table_name === 'agendamentos' && row.column_name === 'cliente_telefone'
+  );
+  const constraintsComplete = constraints.every(([name, spec]) =>
+    constraintMatches(
+      snapshot.constraints.find((row) => row.constraint_name === name),
+      spec,
+      name
+    )
+  );
+  const expectedIndexes = Object.entries(INDEX_SPECS).filter(
+    ([, spec]) => spec[0] === 'solicitacoes_lgpd'
+  );
+  const indexesComplete = expectedIndexes.every(([name, [tableName, columns]]) => {
+    const row = snapshot.indexes.find((candidate) => candidate.index_name === name);
+    return (
+      row?.table_name === tableName &&
+      row?.access_method === 'btree' &&
+      row?.is_unique === false &&
+      row?.is_primary === false &&
+      row?.is_exclusion === false &&
+      row?.nulls_not_distinct === false &&
+      row?.is_valid === true &&
+      row?.predicate === null &&
+      sameArray(row?.columns || [], columns) &&
+      canonicalSqlDefinition(row?.definition) === canonicalSqlDefinition(
+        `CREATE INDEX ${name} ON ${tableName} USING btree (${columns.join(', ')})`
+      )
+    );
+  });
+  const sequence = snapshot.sequences.find(
+    (row) => row.sequence_name === 'solicitacoes_lgpd_id_seq'
+  );
+  const trigger = snapshot.triggers.find(
+    (row) => row.trigger_name === 'trg_solicitacoes_lgpd_updated_at'
+  );
+
+  return (
+    matchesPersistentOwnedRelation(relation, 'solicitacoes_lgpd', snapshot.currentUser) &&
+    relation.rls_enabled === true &&
+    relation.rls_forced === false &&
+    columnsComplete &&
+    telefone?.not_null === false &&
+    constraintsComplete &&
+    indexesComplete &&
+    matchesIdentitySequence(sequence, 'solicitacoes_lgpd', snapshot.currentUser) &&
+    matchesUpdateTrigger(
+      trigger,
+      'trg_solicitacoes_lgpd_updated_at',
+      'solicitacoes_lgpd'
+    ) &&
+    snapshot.policies.length === 0 &&
+    snapshot.privileges.length === 0
+  ) ? 'complete' : 'partial';
 }
 
 function classifyBaselineSnapshot(snapshot) {
@@ -668,6 +800,7 @@ function classifyBaselineSnapshot(snapshot) {
     columnsStatus(snapshot, 2),
     migrationThreeStatus(snapshot),
     migrationFourStatus(snapshot),
+    migrationFiveStatus(snapshot),
   ];
   const classification = classifyBaselineSignatures(signatures);
 
