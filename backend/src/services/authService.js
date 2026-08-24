@@ -78,7 +78,10 @@ async function cadastrarUsuario(dados) {
   }
 
   if (senha.length < PASSWORD_MIN_LENGTH) {
-    throw criarErro(400, 'A senha deve ter pelo menos 8 caracteres.');
+    throw criarErro(
+      400,
+      `A senha deve ter pelo menos ${PASSWORD_MIN_LENGTH} caracteres.`
+    );
   }
 
   if (telefone && telefone.length > 30) {

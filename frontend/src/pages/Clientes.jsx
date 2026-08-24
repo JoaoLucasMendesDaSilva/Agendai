@@ -16,14 +16,8 @@ import PanelSkeleton from '../components/ui/PanelSkeleton';
 import { useAuth } from '../contexts/AuthContext';
 import { listarAgendamentos } from '../services/agendamentosService';
 import { listarServicos } from '../services/servicosService';
+import { STATUS_LABELS } from './agendamentoConstants';
 import { agruparClientes, normalizarTexto, obterData } from './clientesUtils';
-
-const STATUS_LABELS = {
-  pendente: 'Pendente',
-  confirmado: 'Confirmado',
-  cancelado: 'Cancelado',
-  concluido: 'Concluído',
-};
 
 function formatarData(valor) {
   const data = valor instanceof Date ? valor : obterData(valor);

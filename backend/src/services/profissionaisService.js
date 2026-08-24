@@ -1,12 +1,5 @@
 const { getDatabasePool } = require('../config/database');
-
-const CAMPOS_PROIBIDOS = [
-  'id',
-  'negocio_id',
-  'ativo',
-  'created_at',
-  'updated_at',
-];
+const { CAMPOS_PROIBIDOS } = require('../utils/payloadFields');
 
 const CAMPOS_PERMITIDOS = ['nome', 'especialidade', 'telefone', 'email'];
 

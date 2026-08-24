@@ -19,6 +19,7 @@ const CAMPOS_AGENDAMENTO_PERMITIDOS = [
   'data_hora_inicio',
   'observacoes',
 ];
+const INTERVALO_PADRAO_MINUTOS = 30;
 
 function criarErro(status, mensagem, code) {
   const error = new Error(mensagem);
@@ -212,7 +213,8 @@ function adicionarMinutos(data, minutos) {
 
 function validarInicioNaGradeAgendamento(negocio, dataHoraInicio) {
   const abertura = aplicarHorario(dataHoraInicio, negocio.horario_abertura);
-  const intervalo = Number(negocio.intervalo_agendamento_minutos) || 30;
+  const intervalo =
+    Number(negocio.intervalo_agendamento_minutos) || INTERVALO_PADRAO_MINUTOS;
   const diferencaMs = dataHoraInicio.getTime() - abertura.getTime();
   const minutoMs = 60 * 1000;
 
@@ -782,7 +784,8 @@ async function listarHorariosDisponiveis(
 
   const abertura = aplicarHorario(data, negocio.horario_abertura);
   const fechamento = aplicarHorario(data, negocio.horario_fechamento);
-  const intervalo = Number(negocio.intervalo_agendamento_minutos) || 30;
+  const intervalo =
+    Number(negocio.intervalo_agendamento_minutos) || INTERVALO_PADRAO_MINUTOS;
   const agora = new Date();
   const pool = getDatabasePool();
   const { rows: agendamentos } = await pool.query(

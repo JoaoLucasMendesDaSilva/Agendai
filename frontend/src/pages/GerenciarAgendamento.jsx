@@ -14,13 +14,7 @@ import {
   listarHorariosReagendamento,
   reagendarAgendamentoPublico,
 } from '../services/publicoService';
-
-const STATUS_LABELS = {
-  cancelado: 'Cancelado',
-  concluido: 'Concluído',
-  confirmado: 'Confirmado',
-  pendente: 'Pendente',
-};
+import { STATUS_LABELS } from './agendamentoConstants';
 
 const STATUS_TERMINAIS = new Set(['cancelado', 'concluido']);
 

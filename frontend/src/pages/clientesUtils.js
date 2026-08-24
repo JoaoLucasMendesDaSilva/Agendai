@@ -84,7 +84,6 @@ function agruparClientes(agendamentos) {
 
 export {
   agruparClientes,
-  criarChaveCliente,
   normalizarTexto,
   obterData,
 };

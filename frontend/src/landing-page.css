@@ -10,7 +10,6 @@
   --landing-green-fresh: #75d99a;
   --landing-green-soft: #e8f6ed;
   --landing-surface: var(--panel-bg);
-  --landing-surface-raised: var(--panel-bg);
   --landing-ink: var(--gray-900);
   --landing-text: var(--gray-700);
   --landing-action-text: var(--green-800);
@@ -1142,7 +1141,6 @@
 /* Tema escuro */
 [data-theme='dark'] .landing-page {
   --landing-surface: var(--panel-bg);
-  --landing-surface-raised: var(--panel-bg-soft);
   --landing-ink: var(--gray-900);
   --landing-text: var(--gray-700);
   --landing-action-text: var(--green-800);

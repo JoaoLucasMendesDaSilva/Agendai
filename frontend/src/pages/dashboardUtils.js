@@ -37,7 +37,6 @@ function filtrarAgendamentosPorPeriodo(agendamentos, inicio, fim) {
 
 export {
   contarClientesUnicos,
-  criarChaveCliente,
   filtrarAgendamentosPorPeriodo,
   obterData,
 };

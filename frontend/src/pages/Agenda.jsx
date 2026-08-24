@@ -21,14 +21,9 @@ import {
   cancelarAgendamento,
   listarAgendamentos,
 } from '../services/agendamentosService';
+import { STATUS_LABELS } from './agendamentoConstants';
 
 const STATUS = ['pendente', 'confirmado', 'cancelado', 'concluido'];
-const STATUS_LABELS = {
-  pendente: 'Pendente',
-  confirmado: 'Confirmado',
-  cancelado: 'Cancelado',
-  concluido: 'Concluído',
-};
 
 const FILTROS = [
   { valor: 'todos', label: 'Todos' },

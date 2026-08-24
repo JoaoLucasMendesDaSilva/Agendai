@@ -105,7 +105,6 @@
 
 /* Login editorial: formulário direto + contexto do produto */
 .auth-page-login {
-  --auth-space-1: 4px;
   --auth-space-2: 8px;
   --auth-space-3: 12px;
   --auth-space-4: 16px;
