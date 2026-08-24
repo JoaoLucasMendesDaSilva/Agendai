@@ -70,6 +70,19 @@ describe('AgendamentoPublico', () => {
     });
   });
 
+  it('exibe o carregamento inicial como status acessivel', () => {
+    const carregamentoPendente = criarPromessaControlada();
+    publicoServiceMock.buscarNegocioPublico.mockImplementationOnce(
+      () => carregamentoPendente.promise,
+    );
+
+    render(<AgendamentoPublico slugOuId="studio-teste" />);
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Carregando página de agendamento',
+    );
+  });
+
   it('marca servico, profissional e horario selecionados', async () => {
     const user = userEvent.setup();
 
@@ -116,8 +129,85 @@ describe('AgendamentoPublico', () => {
     render(<AgendamentoPublico slugOuId="studio-teste" />);
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Confira o endereço recebido',
+      'Não foi possível abrir esta página',
     );
+  });
+
+  it('orienta quando o negocio nao possui servicos disponiveis', async () => {
+    publicoServiceMock.listarServicosPublicos.mockResolvedValueOnce({
+      servicos: [],
+    });
+
+    render(<AgendamentoPublico slugOuId="studio-teste" />);
+
+    expect(
+      await screen.findByText('Nenhum serviço disponível'),
+    ).toBeInTheDocument();
+  });
+
+  it('orienta quando nao ha profissionais disponiveis', async () => {
+    const user = userEvent.setup();
+    publicoServiceMock.listarProfissionaisPublicos.mockResolvedValueOnce({
+      profissionais: [],
+    });
+
+    render(<AgendamentoPublico slugOuId="studio-teste" />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /Corte rapido/i }),
+    );
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Nenhum profissional disponível',
+    );
+  });
+
+  it('orienta quando a data nao possui horarios disponiveis', async () => {
+    const user = userEvent.setup();
+    publicoServiceMock.listarHorariosDisponiveis.mockResolvedValueOnce({
+      horarios: [],
+    });
+
+    render(<AgendamentoPublico slugOuId="studio-teste" />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /Corte rapido/i }),
+    );
+    await user.click(await screen.findByRole('button', { name: /Maria/i }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Nenhum horário nesta data',
+    );
+  });
+
+  it('mantem o fluxo aberto quando o horario fica indisponivel', async () => {
+    const user = userEvent.setup();
+    publicoServiceMock.criarAgendamentoPublico.mockRejectedValueOnce(
+      new Error('Conflito: horário indisponível'),
+    );
+
+    render(<AgendamentoPublico slugOuId="studio-teste" />);
+
+    await user.click(
+      await screen.findByRole('button', { name: /Corte rapido/i }),
+    );
+    await user.click(await screen.findByRole('button', { name: /Maria/i }));
+    await user.click(await screen.findByRole('button', { name: '09:00' }));
+    await user.type(screen.getByRole('textbox', { name: /^Nome$/i }), 'Joao');
+    await user.type(
+      screen.getByRole('textbox', { name: /^Telefone$/i }),
+      '13999990000',
+    );
+    await user.click(
+      screen.getByRole('button', { name: /Confirmar agendamento/i }),
+    );
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Este horário ficou indisponível. Escolha outro horário.',
+    );
+    expect(
+      screen.getByRole('heading', { name: /Informe seus dados/i }),
+    ).toBeInTheDocument();
   });
 
   it('mantem a confirmacao quando a atualizacao auxiliar de horarios falha', async () => {

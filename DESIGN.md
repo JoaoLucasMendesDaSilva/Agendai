@@ -230,9 +230,12 @@ O Agendai usa elevacao profissional discreta. Nas telas autenticadas, bordas cla
 - **Motion:** transicoes de estado entre `150ms` e `220ms`; sem animar largura, altura, padding, margem ou grid do shell. Respeitar `prefers-reduced-motion`.
 
 ### Public Booking Flow
-- **Style:** card central de ate `920px`, header verde profundo, etapas numeradas e secoes progressivas.
-- **Selections:** cards de servico/profissional e botoes de horario usam borda verde + anel de foco quando selecionados.
-- **Empty States:** sempre devem explicar o que aconteceu e qual proxima tentativa faz sentido.
+- **Style:** superficie continua e clara, sem aparencia de dashboard. Identidade e informacoes do negocio abrem o fluxo; divisores organizam as etapas sem transformar cada bloco em um card.
+- **Progress:** no celular, mostrar etapa atual e barra de progresso fixa; a partir de tablet, exibir as cinco etapas em uma linha. Numeracao existe porque o agendamento e uma sequencia real.
+- **Selections:** servicos e profissionais usam listas agrupadas com divisores. Horarios usam botoes compactos e tocaveis. Selecao e foco recebem contraste verde visivel, sem sombra ou deslocamento decorativo.
+- **Summary:** no desktop, resumo discreto acompanha o fluxo. No celular, data, horario, servico e profissional aparecem junto ao botao de confirmacao para evitar repeticao de paineis.
+- **Confirmation:** sucesso ocupa o conteudo principal e destaca data e horario em uma faixa de compromisso verde profundo, seguida dos dados registrados e do link de gerenciamento quando disponivel.
+- **States:** loading usa skeleton contextual. Vazio, erro, indisponibilidade e sucesso usam portugues simples, informam o estado atual e oferecem a proxima acao quando aplicavel.
 
 ## 6. Do's and Don'ts
 

@@ -20,7 +20,6 @@ import {
 } from '../services/publicoService';
 import { resolverAssetUrl } from '../services/api';
 import {
-  ETAPA_DESCRICOES,
   ETAPAS,
   formatarCidade,
   formatarData,
@@ -40,6 +39,27 @@ const CLIENTE_INICIAL = {
   observacoes: '',
 };
 
+function PublicBookingShell({ children, statePage = false }) {
+  return (
+    <main className="page public-booking-page public-new-booking-page">
+      <section
+        className={`public-booking-card public-new-booking-card ${
+          statePage ? 'is-state-page' : ''
+        }`}
+      >
+        <div className="public-booking-topbar public-new-booking-topbar">
+          <BrandLogo />
+          <span>
+            <ShieldCheck aria-hidden="true" size={16} strokeWidth={2} />
+            Agendamento protegido
+          </span>
+        </div>
+        {children}
+      </section>
+    </main>
+  );
+}
+
 function AgendamentoPublico({ slugOuId }) {
   const [negocio, setNegocio] = useState(null);
   const [servicos, setServicos] = useState([]);
@@ -56,6 +76,7 @@ function AgendamentoPublico({ slugOuId }) {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
+  const confirmacaoRef = useRef(null);
   const ultimaConsultaHorariosId = useRef(0);
 
   const servicoSelecionado = useMemo(
@@ -188,6 +209,12 @@ function AgendamentoPublico({ slugOuId }) {
     };
   }, [data, profissionalId, servicoId, slugOuId]);
 
+  useEffect(() => {
+    if (resumoConfirmado) {
+      confirmacaoRef.current?.scrollIntoView?.({ block: 'start' });
+    }
+  }, [resumoConfirmado]);
+
   function atualizarCliente(campo, valor) {
     setCliente((atual) => ({
       ...atual,
@@ -205,6 +232,7 @@ function AgendamentoPublico({ slugOuId }) {
       ultimaConsultaHorariosId.current += 1;
       setHorarios([]);
     }
+    setErro('');
     limparConfirmacao();
     setServicoId(id);
     setHorarioSelecionado(null);
@@ -215,6 +243,7 @@ function AgendamentoPublico({ slugOuId }) {
       ultimaConsultaHorariosId.current += 1;
       setHorarios([]);
     }
+    setErro('');
     limparConfirmacao();
     setProfissionalId(id);
     setHorarioSelecionado(null);
@@ -225,6 +254,7 @@ function AgendamentoPublico({ slugOuId }) {
       ultimaConsultaHorariosId.current += 1;
       setHorarios([]);
     }
+    setErro('');
     limparConfirmacao();
     setData(valor);
     setHorarioSelecionado(null);
@@ -347,19 +377,28 @@ function AgendamentoPublico({ slugOuId }) {
 
   if (carregando) {
     return (
-      <main className="page public-booking-page">
-        <section className="public-booking-card" aria-live="polite">
-          <div className="public-booking-topbar">
-            <BrandLogo />
-            <span><ShieldCheck aria-hidden="true" size={15} /> Ambiente seguro</span>
+      <PublicBookingShell statePage>
+        <div
+          aria-busy="true"
+          aria-live="polite"
+          className="public-booking-loading"
+          role="status"
+        >
+          <span className="booking-loading-copy">Carregando página de agendamento</span>
+          <div className="booking-loading-identity" aria-hidden="true">
+            <span className="booking-skeleton booking-skeleton-avatar" />
+            <span>
+              <i className="booking-skeleton booking-skeleton-title" />
+              <i className="booking-skeleton booking-skeleton-text" />
+            </span>
           </div>
-          <div className="public-booking-header">
-            <p className="eyebrow">Agendamento online</p>
-            <h1>Carregando negócio</h1>
-            <p>Preparando os horários disponíveis.</p>
+          <div className="booking-loading-body" aria-hidden="true">
+            <i className="booking-skeleton booking-skeleton-line" />
+            <i className="booking-skeleton booking-skeleton-line is-short" />
+            <i className="booking-skeleton booking-skeleton-block" />
           </div>
-        </section>
-      </main>
+        </div>
+      </PublicBookingShell>
     );
   }
 
@@ -369,14 +408,12 @@ function AgendamentoPublico({ slugOuId }) {
       .includes('não encontrado');
 
     return (
-      <main className="page public-booking-page">
-        <section className="public-booking-card">
-          <div className="public-booking-topbar">
-            <BrandLogo />
-            <span><ShieldCheck aria-hidden="true" size={15} /> Ambiente seguro</span>
-          </div>
-          <div className="public-booking-header">
-            <p className="eyebrow">Agendamento online</p>
+      <PublicBookingShell statePage>
+        <div className="public-booking-state" role="alert">
+          <span className="public-booking-state-icon is-error" aria-hidden="true">
+            <CircleAlert size={28} strokeWidth={2} />
+          </span>
+          <div>
             <h1>
               {negocioNaoEncontrado
                 ? 'Negócio não encontrado'
@@ -384,42 +421,33 @@ function AgendamentoPublico({ slugOuId }) {
             </h1>
             <p>
               {negocioNaoEncontrado
-                ? 'Este link pode estar incorreto ou o negócio não está disponível.'
-                : 'Verifique sua conexão e tente novamente em alguns instantes.'}
+                ? 'Confira se o link recebido está completo ou peça um novo link ao negócio.'
+                : 'Verifique sua conexão e tente abrir a página novamente.'}
             </p>
           </div>
-          <div className="public-booking-content">
-            <div className="dashboard-empty" role="alert">
-              <span className="empty-icon" aria-hidden="true">
-                <CircleAlert size={24} strokeWidth={2} />
-              </span>
-              <div>
-                <strong>Confira o endereço recebido</strong>
-                <p>Se o problema continuar, solicite um novo link ao negócio.</p>
-                <a className="button button-secondary button-small" href="/">
-                  Voltar ao início
-                </a>
-              </div>
-            </div>
+          <div className="public-booking-state-actions">
+            {!negocioNaoEncontrado && (
+              <a className="button button-primary" href={window.location.href}>
+                Tentar novamente
+              </a>
+            )}
+            <a className="button button-secondary" href="/">
+              Ir para o Agendai
+            </a>
           </div>
-        </section>
-      </main>
+        </div>
+      </PublicBookingShell>
     );
   }
 
   return (
-    <main className="page public-booking-page">
-      <section className="public-booking-card">
-        <div className="public-booking-topbar">
-          <BrandLogo />
-          <span><ShieldCheck aria-hidden="true" size={15} /> Ambiente seguro</span>
-        </div>
+    <PublicBookingShell>
         {bannerUrl && (
-          <div className="public-business-banner">
+          <div className="public-business-banner public-new-business-banner">
             <img src={bannerUrl} alt={`Capa de ${negocio?.nome || 'negócio'}`} />
           </div>
         )}
-        <header className="public-booking-header">
+        <header className="public-booking-header public-new-booking-header">
           <div className="public-business-hero">
             <div className={`business-avatar ${logoUrl ? 'has-image' : ''}`}>
               {logoUrl ? (
@@ -431,7 +459,6 @@ function AgendamentoPublico({ slugOuId }) {
               )}
             </div>
             <div>
-              <p className="eyebrow">Agendamento online</p>
               <h1>{negocio?.nome}</h1>
               <p>
                 {negocio?.descricao ||
@@ -449,7 +476,7 @@ function AgendamentoPublico({ slugOuId }) {
             )}
           </div>
 
-          <div className="public-business-meta">
+          <div className="public-business-meta" aria-label="Informações do negócio">
             {localizacao && (
               <span>
                 <MapPin aria-hidden="true" size={16} strokeWidth={2} />
@@ -470,7 +497,7 @@ function AgendamentoPublico({ slugOuId }) {
             )}
           </div>
 
-          <div className="business-hours-note">
+          <div className="business-hours-note public-business-hours">
             <strong>Dias de funcionamento</strong>
             <span>
               {formatarDiasFuncionamento(negocio?.dias_funcionamento)}
@@ -478,73 +505,78 @@ function AgendamentoPublico({ slugOuId }) {
           </div>
         </header>
 
-        <div className="booking-steps" aria-label="Etapas do agendamento">
-          {ETAPAS.map((etapa, index) => {
-            const numero = index + 1;
-            const ativo = numero === etapaAtual;
-            const concluido = numero < etapaAtual;
+        <div className="public-booking-progress-wrap">
+          <div className="booking-current-step">
+            <span>Etapa {etapaAtual} de {ETAPAS.length}</span>
+            <strong>{ETAPAS[etapaAtual - 1]}</strong>
+          </div>
+          <ol className="booking-steps" aria-label="Etapas do agendamento">
+            {ETAPAS.map((etapa, index) => {
+              const numero = index + 1;
+              const ativo = numero === etapaAtual;
+              const concluido = numero < etapaAtual;
 
-            return (
-              <div
-                className={`booking-step ${ativo ? 'is-active' : ''} ${
-                  concluido ? 'is-complete' : ''
-                }`}
-                key={etapa}
-              >
-                <span>{numero}</span>
-                <strong>{etapa}</strong>
-              </div>
-            );
-          })}
-        </div>
-        <div
-          aria-label={`Progresso do agendamento: etapa ${etapaAtual} de ${ETAPAS.length}`}
-          aria-valuemax={ETAPAS.length}
-          aria-valuemin="1"
-          aria-valuenow={etapaAtual}
-          className="booking-progress"
-          role="progressbar"
-        >
-          <span style={{ '--booking-progress': progressoEtapa / 100 }} />
+              return (
+                <li
+                  aria-current={ativo ? 'step' : undefined}
+                  className={`booking-step ${ativo ? 'is-active' : ''} ${
+                    concluido ? 'is-complete' : ''
+                  }`}
+                  key={etapa}
+                >
+                  <span>{concluido ? <CheckCircle2 aria-hidden="true" size={15} /> : numero}</span>
+                  <strong>{etapa}</strong>
+                </li>
+              );
+            })}
+          </ol>
+          <div
+            aria-label={`Progresso do agendamento: etapa ${etapaAtual} de ${ETAPAS.length}`}
+            aria-valuemax={ETAPAS.length}
+            aria-valuemin="1"
+            aria-valuenow={etapaAtual}
+            className="booking-progress"
+            role="progressbar"
+          >
+            <span style={{ '--booking-progress': progressoEtapa / 100 }} />
+          </div>
         </div>
 
-        <div className="public-booking-content">
+        <div className="public-booking-content public-new-booking-content">
           {erro && <p className="message message-error" role="alert">{erro}</p>}
 
-          <section className="booking-intro-card">
-            <span className="empty-icon" aria-hidden="true">
-              <CheckCircle2 size={24} strokeWidth={2} />
-            </span>
-            <div>
-              <strong>
-                Escolha um serviço, profissional e horário para agendar seu
-                atendimento.
-              </strong>
-              <p>
-                Selecione as opções disponíveis, preencha seus dados e confirme
-                o horário.
-              </p>
-              <small>{ETAPA_DESCRICOES[etapaAtual]}</small>
-            </div>
-          </section>
-
-          <div className="booking-workspace">
-            <div className="booking-flow">
-          {resumoConfirmado && (
+          {resumoConfirmado ? (
             <section
-              className="booking-section confirmation-card"
+              className="booking-success"
               aria-labelledby="confirmacao-title"
+              ref={confirmacaoRef}
             >
-              <span className="confirmation-icon" aria-hidden="true">
-                <CheckCircle2 size={24} strokeWidth={2} />
+              <span className="public-booking-state-icon is-success" aria-hidden="true">
+                <CheckCircle2 size={30} strokeWidth={2} />
               </span>
-              <div>
-                <p className="step-label">Confirmação</p>
+              <div className="booking-success-heading">
                 <h2 id="confirmacao-title">Agendamento confirmado</h2>
-                {sucesso && <p className="panel-text" role="status">{sucesso}</p>}
+                {sucesso && <p role="status">{sucesso}</p>}
               </div>
-
-              <dl className="details-list booking-summary">
+              <div className="booking-appointment-strip">
+                <span>
+                  <small>Data</small>
+                  <strong>{formatarData(resumoConfirmado.data)}</strong>
+                </span>
+                <span>
+                  <small>Horário</small>
+                  <strong>{resumoConfirmado.horario}</strong>
+                </span>
+              </div>
+              <dl className="booking-success-details">
+                <div>
+                  <dt>Serviço</dt>
+                  <dd>{resumoConfirmado.servico}</dd>
+                </div>
+                <div>
+                  <dt>Profissional</dt>
+                  <dd>{resumoConfirmado.profissional}</dd>
+                </div>
                 <div>
                   <dt>Cliente</dt>
                   <dd>{resumoConfirmado.cliente_nome}</dd>
@@ -559,46 +591,36 @@ function AgendamentoPublico({ slugOuId }) {
                     <dd>{resumoConfirmado.cliente_email}</dd>
                   </div>
                 )}
-                <div>
-                  <dt>Serviço</dt>
-                  <dd>{resumoConfirmado.servico}</dd>
-                </div>
-                <div>
-                  <dt>Profissional</dt>
-                  <dd>{resumoConfirmado.profissional}</dd>
-                </div>
-                <div>
-                  <dt>Data e horário</dt>
-                  <dd>
-                    {formatarData(resumoConfirmado.data)} às{' '}
-                    {resumoConfirmado.horario}
-                  </dd>
-                </div>
               </dl>
-
+              <p className="booking-success-note">
+                Guarde os dados acima. Use o link abaixo para consultar, reagendar ou cancelar.
+              </p>
               {resumoConfirmado.linkGerenciamento && (
-                <a
-                  className="button button-primary button-small"
-                  href={resumoConfirmado.linkGerenciamento}
-                >
+                <a className="button button-primary" href={resumoConfirmado.linkGerenciamento}>
                   Gerenciar agendamento
                 </a>
               )}
             </section>
-          )}
-
+          ) : (
+          <div className="booking-workspace public-booking-workspace">
+            <div className="booking-flow">
           <section className="booking-section" aria-labelledby="servico-title">
-            <p className="step-label">Serviço</p>
-            <h2 id="servico-title">Escolha o serviço</h2>
+            <div className="booking-section-heading">
+              <span className="booking-section-number">1</span>
+              <div>
+                <h2 id="servico-title">Escolha o serviço</h2>
+                <p>Qual atendimento você deseja?</p>
+              </div>
+            </div>
 
             {servicos.length === 0 && (
-              <div className="dashboard-empty">
-                <span className="empty-icon" aria-hidden="true">
+              <div className="public-booking-empty" role="status">
+                <span className="public-booking-empty-icon" aria-hidden="true">
                   <Scissors size={24} strokeWidth={2} />
                 </span>
                 <div>
                   <strong>Nenhum serviço disponível</strong>
-                  <p>Este negócio ainda não possui serviços para agendamento.</p>
+                  <p>Este negócio não está recebendo agendamentos no momento.</p>
                 </div>
               </div>
             )}
@@ -615,12 +637,15 @@ function AgendamentoPublico({ slugOuId }) {
                   onClick={() => selecionarServico(String(servico.id))}
                   type="button"
                 >
-                  <strong>{servico.nome}</strong>
-                  <span>{servico.descricao || 'Serviço do estabelecimento'}</span>
-                  <div className="choice-meta">
-                    <span>{servico.duracao_minutos} min</span>
-                    <span>{formatarPreco(servico.preco)}</span>
-                  </div>
+                  <span className="booking-choice-copy">
+                    <strong>{servico.nome}</strong>
+                    <small>{servico.descricao || 'Serviço do estabelecimento'}</small>
+                    <span className="choice-meta">
+                      <span>{servico.duracao_minutos} min</span>
+                      <span>{formatarPreco(servico.preco)}</span>
+                    </span>
+                  </span>
+                  <CheckCircle2 className="booking-choice-check" aria-hidden="true" size={21} />
                 </button>
               ))}
             </div>
@@ -631,17 +656,22 @@ function AgendamentoPublico({ slugOuId }) {
               className="booking-section"
               aria-labelledby="profissional-title"
             >
-              <p className="step-label">Profissional</p>
-              <h2 id="profissional-title">Escolha o profissional</h2>
+              <div className="booking-section-heading">
+                <span className="booking-section-number">2</span>
+                <div>
+                  <h2 id="profissional-title">Escolha o profissional</h2>
+                  <p>Quem vai realizar o atendimento?</p>
+                </div>
+              </div>
 
               {profissionais.length === 0 && (
-                <div className="dashboard-empty">
-                  <span className="empty-icon" aria-hidden="true">
+                <div className="public-booking-empty" role="status">
+                  <span className="public-booking-empty-icon" aria-hidden="true">
                     <Users size={24} strokeWidth={2} />
                   </span>
                   <div>
                     <strong>Nenhum profissional disponível</strong>
-                    <p>Este negócio ainda não possui profissionais ativos.</p>
+                    <p>Não há profissional disponível para este agendamento.</p>
                   </div>
                 </div>
               )}
@@ -671,6 +701,7 @@ function AgendamentoPublico({ slugOuId }) {
                         <small>{profissional.especialidade}</small>
                       )}
                     </span>
+                    <CheckCircle2 className="booking-choice-check" aria-hidden="true" size={21} />
                   </button>
                 ))}
               </div>
@@ -679,10 +710,15 @@ function AgendamentoPublico({ slugOuId }) {
 
           {servicoId && profissionalId && (
             <section className="booking-section" aria-labelledby="data-title">
-              <p className="step-label">Data e hora</p>
-              <h2 id="data-title">Escolha a data</h2>
+              <div className="booking-section-heading">
+                <span className="booking-section-number">3</span>
+                <div>
+                  <h2 id="data-title">Escolha data e horário</h2>
+                  <p>Mostramos somente horários livres.</p>
+                </div>
+              </div>
 
-              <label>
+              <label className="booking-date-field">
                 Data do agendamento
                 <input
                   disabled={enviando}
@@ -693,62 +729,73 @@ function AgendamentoPublico({ slugOuId }) {
                   value={data}
                 />
               </label>
-            </section>
-          )}
+              {data && (
+                <div className="booking-time-group" aria-labelledby="horario-title">
+                  <h3 id="horario-title">Horários disponíveis</h3>
 
-          {servicoId && profissionalId && data && (
-            <section className="booking-section" aria-labelledby="horario-title">
-              <p className="step-label">Horários disponíveis</p>
-              <h2 id="horario-title">Escolha o horário</h2>
+                  {carregandoHorarios && (
+                    <div className="booking-time-loading" role="status">
+                      <span>Carregando horários...</span>
+                      <div aria-hidden="true">
+                        <i className="booking-skeleton" />
+                        <i className="booking-skeleton" />
+                        <i className="booking-skeleton" />
+                      </div>
+                    </div>
+                  )}
 
-              {carregandoHorarios && (
-                <p className="message message-info" role="status">Carregando horários...</p>
-              )}
+                  {!carregandoHorarios && !erro && horarios.length === 0 && (
+                    <div className="public-booking-empty is-compact" role="status">
+                      <span className="public-booking-empty-icon" aria-hidden="true">
+                        <CalendarX size={24} strokeWidth={2} />
+                      </span>
+                      <div>
+                        <strong>Nenhum horário nesta data</strong>
+                        <p>Escolha outro dia para consultar novos horários.</p>
+                      </div>
+                    </div>
+                  )}
 
-              {!carregandoHorarios && horarios.length === 0 && (
-                <div className="dashboard-empty">
-                  <span className="empty-icon" aria-hidden="true">
-                    <CalendarX size={24} strokeWidth={2} />
-                  </span>
-                  <div>
-                    <strong>Nenhum horário disponível</strong>
-                    <p>Escolha outra data para consultar novos horários.</p>
+                  <div className="time-grid">
+                    {horarios.map((horario) => (
+                      <button
+                        aria-pressed={
+                          horarioSelecionado?.data_hora_inicio ===
+                          horario.data_hora_inicio
+                        }
+                        className={`time-button ${
+                          horarioSelecionado?.data_hora_inicio ===
+                          horario.data_hora_inicio
+                            ? 'is-selected'
+                            : ''
+                        }`}
+                        disabled={enviando}
+                        key={horario.data_hora_inicio}
+                        onClick={() => {
+                          setErro('');
+                          limparConfirmacao();
+                          setHorarioSelecionado(horario);
+                        }}
+                        type="button"
+                      >
+                        {formatarHorario(horario.data_hora_inicio)}
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
-
-              <div className="time-grid">
-                {horarios.map((horario) => (
-                  <button
-                    aria-pressed={
-                      horarioSelecionado?.data_hora_inicio ===
-                      horario.data_hora_inicio
-                    }
-                    className={`time-button ${
-                      horarioSelecionado?.data_hora_inicio ===
-                      horario.data_hora_inicio
-                        ? 'is-selected'
-                        : ''
-                    }`}
-                    disabled={enviando}
-                    key={horario.data_hora_inicio}
-                    onClick={() => {
-                      limparConfirmacao();
-                      setHorarioSelecionado(horario);
-                    }}
-                    type="button"
-                  >
-                    {formatarHorario(horario.data_hora_inicio)}
-                  </button>
-                ))}
-              </div>
             </section>
           )}
 
           {horarioSelecionado && (
             <section className="booking-section" aria-labelledby="cliente-title">
-              <p className="step-label">Dados</p>
-              <h2 id="cliente-title">Informe seus dados</h2>
+              <div className="booking-section-heading">
+                <span className="booking-section-number">4</span>
+                <div>
+                  <h2 id="cliente-title">Informe seus dados</h2>
+                  <p>Usaremos estes dados para identificar seu agendamento.</p>
+                </div>
+              </div>
 
               <form className="form" onSubmit={confirmarAgendamento}>
                 <div className="form-grid">
@@ -782,8 +829,10 @@ function AgendamentoPublico({ slugOuId }) {
                   </label>
                 </div>
 
-                <label>
-                  E-mail opcional
+                  <label>
+                    <span className="booking-field-label">
+                      E-mail <span className="booking-optional">(opcional)</span>
+                    </span>
                   <input
                     autoComplete="email"
                     disabled={enviando}
@@ -797,7 +846,9 @@ function AgendamentoPublico({ slugOuId }) {
                 </label>
 
                 <label>
-                  Observações opcionais
+                  <span className="booking-field-label">
+                    Observações <span className="booking-optional">(opcional)</span>
+                  </span>
                   <textarea
                     disabled={enviando}
                     onChange={(event) =>
@@ -809,28 +860,15 @@ function AgendamentoPublico({ slugOuId }) {
                 </label>
 
                 <div className="booking-review-card">
-                  <p className="step-label">Confirmação</p>
-                  <h3>Resumo do agendamento</h3>
-                  <dl className="details-list booking-summary">
-                    <div>
-                      <dt>Serviço</dt>
-                      <dd>{servicoSelecionado?.nome}</dd>
-                    </div>
-                    <div>
-                      <dt>Profissional</dt>
-                      <dd>{profissionalSelecionado?.nome}</dd>
-                    </div>
-                    <div>
-                      <dt>Data e horário</dt>
-                      <dd>
-                        {formatarData(data)} às{' '}
-                        {formatarHorario(horarioSelecionado.data_hora_inicio)}
-                      </dd>
-                    </div>
-                  </dl>
+                  <span>
+                    <small>Seu horário</small>
+                    <strong>{formatarData(data)} às {formatarHorario(horarioSelecionado.data_hora_inicio)}</strong>
+                  </span>
+                  <span>{servicoSelecionado?.nome} com {profissionalSelecionado?.nome}</span>
                 </div>
 
                 <button
+                  aria-busy={enviando}
                   className="button button-primary"
                   disabled={enviando}
                   type="submit"
@@ -842,9 +880,8 @@ function AgendamentoPublico({ slugOuId }) {
           )}
             </div>
 
-            <aside className="booking-selection-summary" aria-label="Resumo do agendamento">
-              <p className="step-label">Resumo</p>
-              <h2>Sua escolha</h2>
+            <aside className="booking-selection-summary" aria-label="Resumo das suas escolhas">
+              <h2>Seu agendamento</h2>
               <dl className="details-list booking-summary">
                 <div>
                   <dt>Serviço</dt>
@@ -868,13 +905,13 @@ function AgendamentoPublico({ slugOuId }) {
                 </div>
               </dl>
               <p className="booking-summary-note">
-                Os horários aparecem conforme a agenda livre do profissional.
+                Se mudar uma escolha, os horários disponíveis serão atualizados.
               </p>
             </aside>
           </div>
+          )}
         </div>
-      </section>
-    </main>
+    </PublicBookingShell>
   );
 }
 
