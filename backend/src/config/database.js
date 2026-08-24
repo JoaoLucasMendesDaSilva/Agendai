@@ -2,12 +2,18 @@ const { Pool } = require('pg');
 const dotenv = require('dotenv');
 const path = require('path');
 
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
-
 const POSTGRES_PROTOCOLS = new Set(['postgres:', 'postgresql:']);
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
 const SSL_MODES = new Set(['disable', 'verify-full']);
 let pool;
+let environmentLoaded = false;
+
+function loadDatabaseEnvironment() {
+  if (!environmentLoaded) {
+    dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+    environmentLoaded = true;
+  }
+}
 
 function criarErroConfiguracao(mensagem) {
   const error = new Error(mensagem);
@@ -128,6 +134,7 @@ function buildDatabaseConfig(environment = process.env) {
 
 function getDatabasePool() {
   if (!pool) {
+    loadDatabaseEnvironment();
     pool = new Pool(buildDatabaseConfig(process.env));
   }
   return pool;
@@ -141,5 +148,6 @@ async function testDatabaseConnection() {
 module.exports = {
   buildDatabaseConfig,
   getDatabasePool,
+  loadDatabaseEnvironment,
   testDatabaseConnection,
 };
