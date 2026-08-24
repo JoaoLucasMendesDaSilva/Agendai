@@ -45,6 +45,10 @@
   margin-inline: auto;
 }
 
+.landing-page :where(#recursos, #como-funciona, #faq) {
+  scroll-margin-top: 96px;
+}
+
 .landing-page .button-primary {
   color: var(--landing-primary-text);
   background: var(--landing-primary-bg);
@@ -1312,12 +1316,12 @@
   }
 
   .landing-page .landing-hero {
-    padding-top: 56px;
+    padding-top: 48px;
   }
 
   .landing-page .landing-hero h1 {
-    max-width: 13ch;
-    font-size: clamp(2.55rem, 12vw, 3.6rem);
+    max-width: 14ch;
+    font-size: clamp(2.5rem, 10.5vw, 2.875rem);
   }
 
   .landing-page .landing-hero-actions .button {
@@ -1333,31 +1337,42 @@
   }
 
   .landing-page .landing-new-booking {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 13px;
   }
 
   .landing-page .landing-new-booking > span {
-    grid-column: 2;
+    grid-column: auto;
+    justify-self: end;
   }
 
   .landing-page .landing-routine-check ol {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
   }
 
   .landing-page .landing-routine-beam {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
   }
 
-  .landing-page .landing-core-item {
-    grid-template-columns: 1fr;
+  .landing-page .landing-section {
+    padding: 58px 0;
   }
 
-  .landing-page .landing-core-item > small {
-    grid-column: 1;
+  .landing-page .landing-audience-section {
+    padding-block: 58px;
   }
 
   .landing-page .landing-final-cta .button-primary {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-page .landing-nav .brand-name {
+    display: none;
   }
 }
 
@@ -1374,15 +1389,6 @@
 }
 
 @media (max-width: 390px) {
-  .landing-page .landing-nav .brand-name {
-    display: none;
-  }
-
-  .landing-page .landing-nav .brand-mark {
-    width: 34px;
-    height: 34px;
-  }
-
   .landing-page .landing-routine-list > div {
     grid-template-columns: 54px minmax(0, 1fr);
   }
