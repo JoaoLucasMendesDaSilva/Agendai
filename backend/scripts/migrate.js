@@ -9,6 +9,24 @@ const HELP_TEXT = [
   'O comando nunca executa automaticamente no start da aplicação.',
 ].join('\n');
 
+const SAFE_MIGRATION_ERROR_CODES = new Set([
+  'MIGRATION_BASELINE_INVALID',
+  'MIGRATION_BASELINE_REQUIRED',
+  'MIGRATION_CLIENT_INVALID',
+  'MIGRATION_CLIENT_RELEASE_FAILED',
+  'MIGRATION_COMMIT_UNKNOWN',
+  'MIGRATION_CONNECTION_FAILED',
+  'MIGRATION_DATABASE_CONFIRMATION_REQUIRED',
+  'MIGRATION_DATABASE_MISMATCH',
+  'MIGRATION_EXECUTION_FAILED',
+  'MIGRATION_FINAL_STATE_INVALID',
+  'MIGRATION_HISTORY_DRIFT',
+  'MIGRATION_HISTORY_ROWS_INVALID',
+  'MIGRATION_OPTIONS_INVALID',
+  'MIGRATION_POSTGRES_VERSION_UNSUPPORTED',
+  'MIGRATION_ROLLBACK_UNKNOWN',
+]);
+
 function cliError(message) {
   const error = new Error(message);
   error.name = 'MigrationCliError';
@@ -172,12 +190,12 @@ async function main({
       ),
     });
   } catch (error) {
-    const message =
-      error?.code === 'MIGRATION_COMMIT_UNKNOWN' ||
-      error?.code === 'MIGRATION_ROLLBACK_UNKNOWN' ||
-      error?.code === 'MIGRATION_CLIENT_RELEASE_FAILED'
-        ? error.message
-        : 'A execução de migrations falhou com segurança.';
+    const isSafeMigrationError =
+      typeof error?.code === 'string' &&
+      SAFE_MIGRATION_ERROR_CODES.has(error.code);
+    const message = isSafeMigrationError
+      ? `${error.code}: ${error.message}`
+      : 'A execução de migrations falhou com segurança.';
     await writeOutput(stderr, `Erro: ${message}\n`).catch(() => {});
     return 1;
   }

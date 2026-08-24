@@ -138,15 +138,19 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   const statusCode = err.status || 500;
 
+  const errorLog = {
+    codigo: err.code,
+    status: statusCode,
+    metodo: req.method,
+    rota: req.originalUrl,
+    mensagem: err.message,
+  };
+
+  if (statusCode >= 500 || process.env.NODE_ENV !== 'production') {
+    console.error(errorLog);
+  }
+
   if (process.env.NODE_ENV !== 'production') {
-    console.error({
-      codigo: err.code,
-      status: statusCode,
-      metodo: req.method,
-      rota: req.originalUrl,
-      mensagem: err.message
-    });
-    
     console.error(err);
   }
 

@@ -655,6 +655,63 @@ test('EPIPE assíncrono após commit também preserva outcome confirmado', async
   assert.match(stderrText, /migrations foram confirmadas/i);
 });
 
+test('CLI imprime código seguro de erro conhecido do runner', async () => {
+  let stderrText = '';
+  const exitCode = await main({
+    argv: ['--confirm-database=agendai_test'],
+    loadDependencies: async () => ({
+      buildDatabaseConfig: () => ({ database: 'agendai_test' }),
+      Client: class FakeClient {},
+      loadDatabaseEnvironment: () => {},
+      runMigrations: async () => {
+        throw new MigrationRunnerError(
+          'MIGRATION_BASELINE_REQUIRED',
+          'O banco existente exige baseline estrutural explícito.'
+        );
+      },
+    }),
+    stderr: {
+      write(message) {
+        stderrText += message;
+      },
+    },
+    stdout: {
+      write() {},
+    },
+  });
+
+  assert.equal(exitCode, 1);
+  assert.match(stderrText, /MIGRATION_BASELINE_REQUIRED/);
+  assert.match(stderrText, /baseline estrutural explícito/);
+});
+
+test('CLI mantém erro bruto inesperado sanitizado', async () => {
+  let stderrText = '';
+  const exitCode = await main({
+    argv: ['--confirm-database=agendai_test'],
+    loadDependencies: async () => ({
+      buildDatabaseConfig: () => ({ database: 'agendai_test' }),
+      Client: class FakeClient {},
+      loadDatabaseEnvironment: () => {},
+      runMigrations: async () => {
+        throw new Error('senha sensível no erro bruto');
+      },
+    }),
+    stderr: {
+      write(message) {
+        stderrText += message;
+      },
+    },
+    stdout: {
+      write() {},
+    },
+  });
+
+  assert.equal(exitCode, 1);
+  assert.match(stderrText, /A execução de migrations falhou com segurança/);
+  assert.doesNotMatch(stderrText, /senha sensível/);
+});
+
 function createFakeClient({
   database = 'agendai_test',
   failEnd = false,
