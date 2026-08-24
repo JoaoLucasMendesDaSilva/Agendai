@@ -6,6 +6,8 @@
   "main": "src/server.js",
   "scripts": {
     "db:migrate": "node scripts/migrate.js",
+    "privacy:anonymize": "node scripts/privacy-anonymize.js",
+    "privacy:retention": "node scripts/privacy-retention.js",
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "test": "node --test test/*.test.js",

@@ -18,6 +18,8 @@ const Negocio = lazy(() => import('./pages/Negocio'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Profissionais = lazy(() => import('./pages/Profissionais'));
 const Servicos = lazy(() => import('./pages/Servicos'));
+const Privacidade = lazy(() => import('./pages/Privacidade'));
+const Termos = lazy(() => import('./pages/Termos'));
 
 function RouteLoading() {
   return (
@@ -81,6 +83,14 @@ function AppRoutes() {
 
   if (path === '/cadastro') {
     return <Cadastro navigate={navigate} />;
+  }
+
+  if (path === '/privacidade') {
+    return <Privacidade />;
+  }
+
+  if (path === '/termos') {
+    return <Termos />;
   }
 
   if (path === '/dashboard') {

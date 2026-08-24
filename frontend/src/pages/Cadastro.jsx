@@ -11,6 +11,7 @@ function Cadastro({ navigate }) {
     email: '',
     telefone: '',
     senha: '',
+    documentos_aceitos: false,
   });
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
@@ -35,9 +36,10 @@ function Cadastro({ navigate }) {
         email: form.email,
         telefone: form.telefone || undefined,
         senha: form.senha,
+        documentos_aceitos: form.documentos_aceitos,
       });
       setSucesso('Cadastro realizado com sucesso. Agora faça login.');
-      setForm({ nome: '', email: '', telefone: '', senha: '' });
+      setForm({ nome: '', email: '', telefone: '', senha: '', documentos_aceitos: false });
     } catch (err) {
       setErro(err.message);
     } finally {
@@ -76,6 +78,17 @@ function Cadastro({ navigate }) {
               />
             </span>
           </label>
+
+          <div className="legal-checkbox">
+            <input
+              aria-label="Aceitar Termos de Uso e Politica de Privacidade"
+              checked={form.documentos_aceitos}
+              onChange={(event) => atualizarCampo('documentos_aceitos', event.target.checked)}
+              required
+              type="checkbox"
+            />
+            <span>Li e aceito os <a href="/termos">Termos de Uso</a> e a <a href="/privacidade">Politica de Privacidade</a>.</span>
+          </div>
 
           <label>
             E-mail

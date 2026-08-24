@@ -38,6 +38,7 @@ const FORM_INICIAL = {
   telefone: '',
   endereco: '',
   cidade: 'Cubatão',
+  contato_privacidade: '',
   horario_abertura: '08:00',
   horario_fechamento: '18:00',
   dias_funcionamento: [1, 2, 3, 4, 5],
@@ -58,6 +59,7 @@ function montarForm(negocio) {
     telefone: negocio.telefone || '',
     endereco: negocio.endereco || '',
     cidade: negocio.cidade || '',
+    contato_privacidade: negocio.contato_privacidade || '',
     horario_abertura: normalizarHorario(negocio.horario_abertura),
     horario_fechamento: normalizarHorario(negocio.horario_fechamento),
     dias_funcionamento: Array.isArray(negocio.dias_funcionamento)
@@ -73,6 +75,7 @@ function montarPayload(form) {
     telefone: form.telefone,
     endereco: form.endereco,
     cidade: form.cidade,
+    contato_privacidade: form.contato_privacidade,
     horario_abertura: form.horario_abertura,
     horario_fechamento: form.horario_fechamento,
     dias_funcionamento: form.dias_funcionamento,
@@ -496,6 +499,19 @@ function Negocio({ navigate }) {
                     />
                   </label>
                 </div>
+
+                <label>
+                  E-mail para privacidade
+                  <input
+                    autoComplete="email"
+                    inputMode="email"
+                    onChange={(event) => atualizarCampo('contato_privacidade', event.target.value)}
+                    required
+                    type="email"
+                    value={form.contato_privacidade}
+                  />
+                  <small>Clientes podem usar este contato para tratar solicitações sobre dados pessoais.</small>
+                </label>
 
                 <label>
                   Endereço

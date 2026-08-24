@@ -18,8 +18,10 @@ const CAMPOS_AGENDAMENTO_PERMITIDOS = [
   'cliente_email',
   'data_hora_inicio',
   'observacoes',
+  'aviso_privacidade_aceito',
 ];
 const INTERVALO_PADRAO_MINUTOS = 30;
+const VERSAO_AVISO_PRIVACIDADE = '2026-08-24';
 
 function criarErro(status, mensagem, code) {
   const error = new Error(mensagem);
@@ -293,6 +295,7 @@ function montarDadosAgendamento(dados) {
   const clienteTelefone = normalizarTexto(dados.cliente_telefone);
   const clienteEmail = normalizarEmail(dados.cliente_email);
   const observacoes = normalizarTexto(dados.observacoes);
+  const avisoPrivacidadeAceito = dados.aviso_privacidade_aceito === true;
   const dataHoraInicio = validarDataHoraAgendamento(dados.data_hora_inicio);
 
   if (!clienteNome) {
@@ -305,6 +308,10 @@ function montarDadosAgendamento(dados) {
 
   if (!clienteTelefone) {
     throw criarErro(400, 'Telefone do cliente é obrigatório.');
+  }
+
+  if (!avisoPrivacidadeAceito) {
+    throw criarErro(400, 'Leia e aceite o Aviso de Privacidade para confirmar o agendamento.');
   }
 
   if (clienteTelefone.length > 30) {
@@ -325,6 +332,7 @@ function montarDadosAgendamento(dados) {
     clienteEmail,
     dataHoraInicio,
     observacoes,
+    avisoPrivacidadeAceito,
   };
 }
 
@@ -343,6 +351,7 @@ function formatarNegocioPublico(negocio) {
     dias_funcionamento: parseJsonArray(negocio.dias_funcionamento),
     logo_url: negocio.logo_url,
     banner_url: negocio.banner_url,
+    contato_privacidade: negocio.contato_privacidade,
   };
 }
 
@@ -608,7 +617,7 @@ async function buscarNegocioPublico(slugOuId) {
   const valor = String(slugOuId || '').trim();
   const sqlBase = `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade,
       horario_abertura, horario_fechamento, intervalo_agendamento_minutos,
-      dias_funcionamento, logo_url, banner_url
+      dias_funcionamento, logo_url, banner_url, contato_privacidade
     FROM negocios
     WHERE ativo = true AND `;
 
@@ -870,6 +879,14 @@ function validarDentroDoHorario(negocio, inicio, fim) {
 async function criarAgendamentoPublico(slugOuId, dados) {
   const dadosValidados = montarDadosAgendamento(dados);
   const negocio = await buscarNegocioPublico(slugOuId);
+
+  if (!negocio.contato_privacidade) {
+    throw criarErro(
+      503,
+      'Este negocio ainda nao configurou o contato de privacidade para receber agendamentos online.'
+    );
+  }
+
   const tokenPublico = gerarTokenPublico();
   const tokenPublicoHash = obterHashTokenPublico(tokenPublico);
   const pool = getDatabasePool();
@@ -926,8 +943,8 @@ async function criarAgendamentoPublico(slugOuId, dados) {
       `INSERT INTO agendamentos (
         negocio_id, servico_id, profissional_id, cliente_nome, cliente_telefone,
         cliente_email, data_hora_inicio, data_hora_fim, status, observacoes,
-        token_publico_hash
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'confirmado', $9, $10)
+        token_publico_hash, aviso_privacidade_versao
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'confirmado', $9, $10, $11)
        RETURNING id`,
       [
         negocio.id,
@@ -940,6 +957,7 @@ async function criarAgendamentoPublico(slugOuId, dados) {
         formatarDataHora(dataHoraFim).replace('T', ' '),
         dadosValidados.observacoes,
         tokenPublicoHash,
+        VERSAO_AVISO_PRIVACIDADE,
       ]
     );
 
@@ -976,5 +994,6 @@ module.exports = {
   listarProfissionaisPublicos,
   listarServicosPublicos,
   obterNegocio,
+  VERSAO_AVISO_PRIVACIDADE,
   reagendarAgendamentoPublicoPorToken,
 };
