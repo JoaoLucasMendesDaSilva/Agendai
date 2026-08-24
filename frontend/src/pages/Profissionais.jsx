@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Mail, Pencil, Phone, Plus, Power, Users } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
+import EmptyState from '../components/ui/EmptyState';
 import PageHeader from '../components/ui/PageHeader';
+import PanelSkeleton from '../components/ui/PanelSkeleton';
 import { useAuth } from '../contexts/AuthContext';
 import {
   atualizarProfissional,
@@ -224,9 +226,7 @@ function Profissionais({ navigate }) {
           </div>
 
           {carregando && (
-            <p className="message message-info" role="status">
-              Carregando profissionais...
-            </p>
+            <PanelSkeleton label="Carregando formulário de profissionais..." lines={3} />
           )}
 
           {!carregando && erro && <p className="message message-error" role="alert">{erro}</p>}
@@ -235,13 +235,10 @@ function Profissionais({ navigate }) {
           )}
 
           {!carregando && precisaCadastrarNegocio && (
-            <div className="dashboard-empty">
-              <span className="empty-icon" aria-hidden="true">
-                <Users size={24} strokeWidth={2} />
-              </span>
-              <div>
-                <strong>Cadastre o negócio primeiro</strong>
-                <p>Depois disso, você poderá adicionar profissionais.</p>
+            <EmptyState
+              Icone={Users}
+              title="Cadastre o negócio primeiro"
+              action={
                 <button
                   className="button button-primary button-small"
                   onClick={() => navigate('/negocio')}
@@ -249,8 +246,10 @@ function Profissionais({ navigate }) {
                 >
                   Cadastrar negócio
                 </button>
-              </div>
-            </div>
+              }
+            >
+              Depois disso, você poderá adicionar profissionais.
+            </EmptyState>
           )}
 
           {!carregando && !precisaCadastrarNegocio && (
@@ -340,21 +339,16 @@ function Profissionais({ navigate }) {
             </div>
           </div>
 
+          {carregando && (
+            <PanelSkeleton label="Carregando profissionais cadastrados..." lines={4} />
+          )}
+
           {!carregando &&
             !precisaCadastrarNegocio &&
             profissionais.length === 0 && (
-              <div className="dashboard-empty">
-                <span className="empty-icon" aria-hidden="true">
-                  <Users size={24} strokeWidth={2} />
-                </span>
-                <div>
-                  <strong>Você ainda não cadastrou nenhum profissional</strong>
-                  <p>
-                    Cadastre o primeiro profissional para disponibilizar
-                    horários aos clientes.
-                  </p>
-                </div>
-              </div>
+              <EmptyState Icone={Users} title="Você ainda não cadastrou nenhum profissional">
+                Cadastre o primeiro profissional para disponibilizar horários aos clientes.
+              </EmptyState>
             )}
 
           <div className="entity-list catalog-list professional-catalog-list">

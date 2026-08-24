@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Clock3, Pencil, Plus, Power, Scissors } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
+import EmptyState from '../components/ui/EmptyState';
 import PageHeader from '../components/ui/PageHeader';
+import PanelSkeleton from '../components/ui/PanelSkeleton';
 import { useAuth } from '../contexts/AuthContext';
 import {
   atualizarServico,
@@ -230,9 +232,7 @@ function Servicos({ navigate }) {
           </div>
 
           {carregando && (
-            <p className="message message-info" role="status">
-              Carregando serviços...
-            </p>
+            <PanelSkeleton label="Carregando formulário de serviços..." lines={3} />
           )}
 
           {!carregando && erro && <p className="message message-error" role="alert">{erro}</p>}
@@ -241,13 +241,10 @@ function Servicos({ navigate }) {
           )}
 
           {!carregando && precisaCadastrarNegocio && (
-            <div className="dashboard-empty">
-              <span className="empty-icon" aria-hidden="true">
-                <Scissors size={24} strokeWidth={2} />
-              </span>
-              <div>
-                <strong>Cadastre o negócio primeiro</strong>
-                <p>Depois disso, você poderá adicionar serviços.</p>
+            <EmptyState
+              Icone={Scissors}
+              title="Cadastre o negócio primeiro"
+              action={
                 <button
                   className="button button-primary button-small"
                   onClick={() => navigate('/negocio')}
@@ -255,8 +252,10 @@ function Servicos({ navigate }) {
                 >
                   Cadastrar negócio
                 </button>
-              </div>
-            </div>
+              }
+            >
+              Depois disso, você poderá adicionar serviços.
+            </EmptyState>
           )}
 
           {!carregando && !precisaCadastrarNegocio && (
@@ -349,19 +348,14 @@ function Servicos({ navigate }) {
             </div>
           </div>
 
+          {carregando && (
+            <PanelSkeleton label="Carregando serviços cadastrados..." lines={4} />
+          )}
+
           {!carregando && !precisaCadastrarNegocio && servicos.length === 0 && (
-            <div className="dashboard-empty">
-              <span className="empty-icon" aria-hidden="true">
-                <Scissors size={24} strokeWidth={2} />
-              </span>
-              <div>
-                <strong>Você ainda não cadastrou nenhum serviço</strong>
-                <p>
-                  Cadastre seu primeiro serviço para começar a receber
-                  agendamentos.
-                </p>
-              </div>
-            </div>
+            <EmptyState Icone={Scissors} title="Você ainda não cadastrou nenhum serviço">
+              Cadastre seu primeiro serviço para começar a receber agendamentos.
+            </EmptyState>
           )}
 
           <div className="entity-list catalog-list">

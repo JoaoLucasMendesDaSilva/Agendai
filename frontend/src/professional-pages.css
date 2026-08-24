@@ -51,27 +51,42 @@
   grid-template-columns: 1fr;
 }
 
+.dashboard-metrics,
+.metrics-grid {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--gray-300);
+  border-radius: 14px;
+  background: var(--panel-bg);
+}
+
 .dashboard-metrics .metric-card,
 .metrics-grid .metric-card {
   min-height: 104px;
-  border: 1px solid var(--gray-300);
-  border-radius: 16px;
+  border: 0;
+  border-bottom: 1px solid var(--gray-300);
+  border-radius: 0;
   padding: 16px;
   background: var(--panel-bg);
   box-shadow: none;
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition: background 180ms ease;
 }
 
 .dashboard-metrics .metric-card:hover,
 .metrics-grid .metric-card:hover {
-  border-color: color-mix(in srgb, var(--green-700) 36%, var(--gray-300));
-  box-shadow: 0 14px 28px rgba(16, 24, 40, 0.1);
-  transform: translateY(-3px);
+  background: var(--panel-bg-soft);
+  box-shadow: none;
+  transform: none;
+}
+
+.dashboard-metrics .metric-card:last-child,
+.metrics-grid .metric-card:last-child {
+  border-bottom: 0;
 }
 
 .metric-card p {
   color: var(--gray-500);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 
@@ -84,14 +99,19 @@
   display: block;
   margin-top: 3px;
   color: var(--gray-500);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   line-height: 1.4;
 }
 
 .metric-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+}
+
+.metrics-grid .metric-icon {
+  color: var(--green-800);
+  background: var(--green-100);
 }
 
 .daily-dashboard-grid,
@@ -108,16 +128,16 @@
 .dashboard-secondary-grid .dashboard-panel,
 .report-panel,
 .clients-grid .dashboard-panel {
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition: border-color 180ms ease;
 }
 
 .daily-dashboard-grid .dashboard-panel:hover,
 .dashboard-secondary-grid .dashboard-panel:hover,
 .report-panel:hover,
 .clients-grid .dashboard-panel:hover {
-  border-color: color-mix(in srgb, var(--green-700) 32%, var(--gray-300));
-  box-shadow: 0 16px 32px rgba(16, 24, 40, 0.09);
-  transform: translateY(-2px);
+  border-color: var(--gray-300);
+  box-shadow: none;
+  transform: none;
 }
 
 .operational-panel-heading {
@@ -129,25 +149,25 @@
 
 .operational-panel-heading h2,
 .clients-toolbar h2 {
-  font-size: 0.94rem;
+  font-size: 1rem;
   line-height: 1.35;
 }
 
 .operational-panel-heading .panel-text {
   margin-top: 3px;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .panel-link-button {
   display: inline-flex;
-  min-height: 34px;
+  min-height: 44px;
   align-items: center;
   gap: 4px;
   border: 0;
   padding: 0;
   color: var(--green-800);
   background: transparent;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
@@ -166,18 +186,18 @@
   align-items: center;
   gap: 12px;
   margin-top: 20px;
-  border: 1px solid var(--gray-300);
-  border-radius: 14px;
-  padding: 16px;
-  background: var(--panel-bg);
+  border: 0;
+  border-top: 1px solid var(--gray-300);
+  border-radius: 0;
+  padding: 16px 0 0;
+  background: transparent;
   box-shadow: none;
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .next-appointment-card:hover {
-  border-color: color-mix(in srgb, var(--green-700) 44%, var(--gray-300));
-  box-shadow: 0 14px 28px rgba(16, 24, 40, 0.1);
-  transform: translateY(-3px);
+  border-color: var(--gray-300);
+  box-shadow: none;
+  transform: none;
 }
 
 .next-appointment-avatar,
@@ -194,11 +214,6 @@
 .next-appointment-avatar {
   width: 46px;
   height: 46px;
-  transition: transform 180ms ease;
-}
-
-.next-appointment-card:hover .next-appointment-avatar {
-  transform: scale(1.06);
 }
 
 .next-appointment-person {
@@ -215,7 +230,7 @@
 .next-appointment-time span {
   display: block;
   color: var(--gray-500);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   overflow-wrap: anywhere;
 }
 
@@ -239,7 +254,7 @@
 
 .weekly-chart-panel .chart-summary {
   color: var(--gray-500);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 
@@ -263,7 +278,7 @@
 
 .today-schedule-row time {
   color: var(--gray-900);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
 }
 
@@ -281,17 +296,17 @@
 
 .today-schedule-row strong {
   color: var(--gray-900);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .today-schedule-row small {
   margin-top: 2px;
   color: var(--gray-500);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .today-schedule-row .status-badge {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .service-ranking-list {
@@ -328,7 +343,7 @@
 
 .service-ranking-list strong,
 .service-ranking-list small {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .service-ranking-list strong {
@@ -357,19 +372,31 @@
 
 .shortcut-strip {
   grid-template-columns: 1fr;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--gray-300);
+  border-radius: 12px;
+  background: var(--panel-bg);
 }
 
 .quick-action {
   position: relative;
-  border-color: var(--gray-300);
-  border-radius: 12px;
+  border: 0;
+  border-bottom: 1px solid var(--gray-300);
+  border-radius: 0;
   background: var(--panel-bg);
   box-shadow: none;
 }
 
 .quick-action:hover {
-  border-color: color-mix(in srgb, var(--green-700) 32%, var(--gray-300));
+  border-color: var(--gray-300);
+  background: var(--panel-bg-soft);
   box-shadow: none;
+  transform: none;
+}
+
+.quick-action:last-child {
+  border-bottom: 0;
 }
 
 .quick-action-arrow {
@@ -448,7 +475,7 @@
 
 .agenda-overview-item small {
   color: var(--gray-500);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   line-height: 1.35;
 }
 
@@ -485,13 +512,13 @@
 }
 
 .agenda-filter-button {
-  min-height: 36px;
+  min-height: 44px;
   flex: 0 0 auto;
   border-color: transparent;
   border-radius: 10px;
   padding: 7px 11px;
   background: transparent;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   box-shadow: none;
 }
 
@@ -515,7 +542,7 @@
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 8px;
-  min-height: 42px;
+  min-height: 46px;
   border: 1px solid var(--gray-300);
   border-radius: 10px;
   padding: 0 12px;
@@ -532,13 +559,13 @@
 .agenda-search-field input,
 .search-field input {
   min-width: 0;
-  min-height: 40px;
+  min-height: 44px;
   border: 0;
   padding: 0;
   color: var(--gray-900);
   background: transparent;
   box-shadow: none;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .agenda-search-field input:focus,
@@ -554,6 +581,7 @@
 
 .agenda-panel .agenda-empty-state {
   margin: 18px;
+  background: transparent;
 }
 
 .agenda-date-groups {
@@ -574,11 +602,11 @@
 }
 
 .agenda-date-heading h3 {
-  font-size: 0.8rem;
+  font-size: 0.9375rem;
 }
 
 .agenda-date-heading p {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   text-transform: capitalize;
 }
 
@@ -589,7 +617,7 @@
   padding: 5px 9px;
   color: var(--gray-500);
   background: var(--gray-100);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -630,7 +658,7 @@
 }
 
 .agenda-card-time span {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .agenda-client-cell,
@@ -668,14 +696,14 @@
 .agenda-client-cell strong,
 .agenda-service-cell strong {
   color: var(--gray-900);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .agenda-client-cell span,
 .agenda-service-cell span {
   margin-top: 2px;
   color: var(--gray-500);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   overflow-wrap: anywhere;
 }
 
@@ -686,7 +714,7 @@
 .agenda-card-pro > .status-badge {
   grid-column: 2;
   width: fit-content;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .agenda-actions {
@@ -697,19 +725,19 @@
 }
 
 .agenda-actions select {
-  min-height: 38px;
+  min-height: 44px;
   border-radius: 10px;
   padding: 7px 28px 7px 9px;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .agenda-cancel-button {
-  min-height: 38px;
+  min-height: 44px;
   border: 0;
   padding: 0 8px;
   color: var(--red-600);
   background: transparent;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -721,7 +749,7 @@
   border-radius: 8px;
   padding: 9px 11px;
   background: var(--gray-100);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 /* Clientes */
@@ -768,19 +796,21 @@
   padding: 14px 16px;
   background: var(--panel-bg);
   box-shadow: none;
-  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition: background 180ms ease, outline-color 180ms ease;
 }
 
 .client-card:hover,
 .client-card.is-selected {
   border-color: var(--gray-300);
   background: var(--panel-bg-soft);
-  box-shadow: inset 3px 0 0 color-mix(in srgb, var(--green-700) 76%, transparent);
-  transform: translateX(3px);
+  box-shadow: none;
+  transform: none;
 }
 
 .client-card.is-selected {
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--green-700) 52%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--green-700) 58%, transparent);
+  outline-offset: -1px;
+  background: var(--green-50);
 }
 
 .client-card-header,
@@ -797,7 +827,7 @@
 
 .client-card-header strong,
 .client-history-header strong {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .client-recurrent-badge {
@@ -819,14 +849,14 @@
 .client-card-contact small {
   display: block;
   color: var(--gray-500);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   overflow-wrap: anywhere;
 }
 
 .client-card-total,
 .client-card-last {
   color: var(--gray-700);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .client-card-total::after {
@@ -843,17 +873,17 @@
   grid-column: 2;
   grid-row: 1;
   color: var(--gray-500);
-  transition: color 180ms ease, transform 180ms ease;
+  transition: color 180ms ease;
 }
 
 .client-card:hover .client-card-arrow,
 .client-card.is-selected .client-card-arrow {
   color: var(--green-700);
-  transform: translateX(3px);
+  transform: none;
 }
 
 .client-agenda-button:hover {
-  box-shadow: 0 12px 24px color-mix(in srgb, var(--green-800) 24%, transparent);
+  box-shadow: none;
 }
 
 .client-history-panel {
@@ -878,7 +908,7 @@
 .client-profile-contact dd {
   margin-top: 3px;
   color: var(--gray-700);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .client-agenda-button {
@@ -908,7 +938,7 @@
 
 .client-profile-metric span,
 .client-profile-metric small {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .client-profile-metric strong {
@@ -916,7 +946,7 @@
 }
 
 .client-top-services > div > span {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .history-item {
@@ -929,7 +959,7 @@
 
 .history-item strong,
 .history-item span {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 @media (min-width: 560px) {
@@ -938,8 +968,23 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .dashboard-metrics .metric-card:nth-child(odd),
+  .metrics-grid .metric-card:nth-child(odd) {
+    border-right: 1px solid var(--gray-300);
+  }
+
   .shortcut-strip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .quick-action,
+  .quick-action:last-child {
+    border-right: 1px solid var(--gray-300);
+    border-bottom: 0;
+  }
+
+  .quick-action:last-child {
+    border-right: 0;
   }
 
   .next-appointment-card {
@@ -995,6 +1040,23 @@
   }
 }
 
+@media (min-width: 380px) and (max-width: 559px) {
+  .dashboard-metrics,
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-metrics .metric-card:nth-child(odd),
+  .metrics-grid .metric-card:nth-child(odd) {
+    border-right: 1px solid var(--gray-300);
+  }
+
+  .metrics-grid:not(.dashboard-metrics) .metric-card:last-child {
+    grid-column: 1 / -1;
+    border-right: 0;
+  }
+}
+
 @media (min-width: 900px) {
   .daily-dashboard-grid {
     grid-template-columns: minmax(0, 0.94fr) minmax(0, 1.2fr);
@@ -1037,6 +1099,17 @@
   .dashboard-metrics,
   .metrics-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .dashboard-metrics .metric-card,
+  .metrics-grid .metric-card {
+    border-right: 1px solid var(--gray-300);
+    border-bottom: 0;
+  }
+
+  .dashboard-metrics .metric-card:last-child,
+  .metrics-grid .metric-card:last-child {
+    border-right: 0;
   }
 }
 

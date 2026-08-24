@@ -9,7 +9,10 @@ import {
   Users,
 } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
+import EmptyState from '../components/ui/EmptyState';
+import MetricCard from '../components/ui/MetricCard';
 import PageHeader from '../components/ui/PageHeader';
+import PanelSkeleton from '../components/ui/PanelSkeleton';
 import { useAuth } from '../contexts/AuthContext';
 import { listarAgendamentos } from '../services/agendamentosService';
 import { listarServicos } from '../services/servicosService';
@@ -245,42 +248,27 @@ function Clientes({ navigate }) {
       {erro && <p className="message message-error" role="alert">{erro}</p>}
 
       <section className="metrics-grid" aria-label="Resumo de clientes">
-        <article className="metric-card">
-          <span className="metric-icon" aria-hidden="true">
-            <Users size={22} strokeWidth={2} />
-          </span>
-          <div>
-            <p>Total de clientes</p>
-            <strong>{carregando ? '...' : clientes.length}</strong>
-            <small>Clientes únicos identificados</small>
-          </div>
-        </article>
-
-        <article className="metric-card">
-          <span className="metric-icon metric-blue" aria-hidden="true">
-            <UserCheck size={22} strokeWidth={2} />
-          </span>
-          <div>
-            <p>Clientes recorrentes</p>
-            <strong>
-              {carregando
-                ? '...'
-                : clientes.filter((cliente) => cliente.totalAgendamentos > 1).length}
-            </strong>
-            <small>Mais de 1 agendamento</small>
-          </div>
-        </article>
-
-        <article className="metric-card">
-          <span className="metric-icon metric-yellow" aria-hidden="true">
-            <CalendarDays size={22} strokeWidth={2} />
-          </span>
-          <div>
-            <p>Novos clientes</p>
-            <strong>{carregando ? '...' : calcularNovosClientes(clientes)}</strong>
-            <small>Primeiro agendamento em 30 dias</small>
-          </div>
-        </article>
+        <MetricCard
+          Icone={Users}
+          detalhe="Clientes únicos identificados"
+          loading={carregando}
+          titulo="Total de clientes"
+          valor={clientes.length}
+        />
+        <MetricCard
+          Icone={UserCheck}
+          detalhe="Mais de 1 agendamento"
+          loading={carregando}
+          titulo="Clientes recorrentes"
+          valor={clientes.filter((cliente) => cliente.totalAgendamentos > 1).length}
+        />
+        <MetricCard
+          Icone={CalendarDays}
+          detalhe="Primeiro agendamento em 30 dias"
+          loading={carregando}
+          titulo="Novos clientes"
+          valor={calcularNovosClientes(clientes)}
+        />
       </section>
 
       <section className="clients-grid">
@@ -303,28 +291,19 @@ function Clientes({ navigate }) {
           </div>
 
           {carregando && (
-            <p className="message message-info" role="status">
-              Carregando clientes...
-            </p>
+            <PanelSkeleton label="Carregando clientes..." lines={4} />
           )}
 
           {!carregando && clientesFiltrados.length === 0 && (
-            <div className="dashboard-empty">
-              <span className="empty-icon" aria-hidden="true">
-                <Users size={24} strokeWidth={2} />
-              </span>
-              <div>
-                <strong>
-                  {busca
-                    ? 'Nenhum cliente corresponde à busca'
-                    : 'Sua lista de clientes ainda está vazia'}
-                </strong>
-                <p>
-                  {busca
-                    ? 'Revise o nome, telefone ou e-mail informado.'
-                    : 'Os clientes aparecerão aqui após o primeiro agendamento.'}
-                </p>
-                {busca && (
+            <EmptyState
+              Icone={Users}
+              title={
+                busca
+                  ? 'Nenhum cliente corresponde à busca'
+                  : 'Sua lista de clientes ainda está vazia'
+              }
+              action={
+                busca ? (
                   <button
                     className="button button-secondary button-small"
                     onClick={() => setBusca('')}
@@ -332,16 +311,20 @@ function Clientes({ navigate }) {
                   >
                     Limpar busca
                   </button>
-                )}
-              </div>
-            </div>
+                ) : null
+              }
+            >
+              {busca
+                ? 'Revise o nome, telefone ou e-mail informado.'
+                : 'Os clientes aparecerão aqui após o primeiro agendamento.'}
+            </EmptyState>
           )}
 
           {clientesFiltrados.length > 0 && (
             <div className="client-table-head" aria-hidden="true">
               <span>Cliente</span>
               <span>Contato</span>
-              <span>Agendamentos</span>
+              <span>Total</span>
               <span>Último atendimento</span>
               <span />
             </div>
@@ -390,15 +373,9 @@ function Clientes({ navigate }) {
           </div>
 
           {!clienteAtivo && (
-            <div className="dashboard-empty">
-              <span className="empty-icon" aria-hidden="true">
-                <CalendarDays size={24} strokeWidth={2} />
-              </span>
-              <div>
-                <strong>Nenhum cliente selecionado</strong>
-                <p>Selecione um cliente na lista para consultar o histórico.</p>
-              </div>
-            </div>
+            <EmptyState Icone={CalendarDays} title="Nenhum cliente selecionado">
+              Selecione um cliente na lista para consultar o histórico.
+            </EmptyState>
           )}
 
           {clienteAtivo && (

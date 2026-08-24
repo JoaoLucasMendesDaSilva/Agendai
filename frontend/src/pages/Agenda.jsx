@@ -12,6 +12,7 @@ import {
   User,
 } from 'lucide-react';
 import DashboardShell from '../components/DashboardShell';
+import EmptyState from '../components/ui/EmptyState';
 import PageHeader from '../components/ui/PageHeader';
 import PanelSkeleton from '../components/ui/PanelSkeleton';
 import { useAuth } from '../contexts/AuthContext';
@@ -325,7 +326,11 @@ function Agenda({ navigate }) {
         }
       />
 
-      <section className="agenda-overview-grid" aria-label="Resumo da agenda">
+      <section
+        aria-busy={carregando || undefined}
+        className="agenda-overview-grid"
+        aria-label="Resumo da agenda"
+      >
         {[
           { label: 'Agendamentos hoje', valor: resumoAgenda.hoje, Icon: CalendarDays, tone: 'blue' },
           { label: 'Confirmados', valor: resumoAgenda.confirmados, Icon: CalendarCheck2, tone: 'green' },
@@ -377,7 +382,7 @@ function Agenda({ navigate }) {
         </div>
 
         {carregando && (
-          <div aria-live="polite"><PanelSkeleton lines={4} /></div>
+          <PanelSkeleton label="Carregando agenda..." lines={4} />
         )}
 
         {!carregando && erro && <p className="message message-error" role="alert">{erro}</p>}
@@ -386,13 +391,11 @@ function Agenda({ navigate }) {
         )}
 
         {!carregando && precisaCadastrarNegocio && (
-          <div className="dashboard-empty agenda-empty-state">
-            <span className="empty-icon" aria-hidden="true">
-              <CalendarDays size={24} strokeWidth={2} />
-            </span>
-            <div>
-              <strong>Cadastre o negócio primeiro</strong>
-              <p>Depois disso, você poderá consultar os agendamentos.</p>
+          <div className="agenda-empty-state">
+            <EmptyState
+              Icone={CalendarDays}
+              title="Cadastre o negócio primeiro"
+              action={
               <button
                 className="button button-primary button-small"
                 onClick={() => navigate('/negocio')}
@@ -400,33 +403,28 @@ function Agenda({ navigate }) {
               >
                 Cadastrar negócio
               </button>
-            </div>
+              }
+            >
+              Depois disso, você poderá consultar os agendamentos.
+            </EmptyState>
           </div>
         )}
 
         {!carregando &&
           !precisaCadastrarNegocio &&
           agendamentosFiltrados.length === 0 && (
-            <div className="dashboard-empty agenda-empty-state">
-              <span className="empty-icon" aria-hidden="true">
-                <CalendarX size={24} strokeWidth={2} />
-              </span>
-              <div>
-                <strong>
-                  {busca
+            <div className="agenda-empty-state">
+              <EmptyState
+                Icone={CalendarX}
+                title={
+                  busca
                     ? 'Nenhum agendamento corresponde à busca'
                     : filtro === 'todos'
-                    ? 'Sua agenda ainda está vazia'
-                    : 'Nenhum agendamento neste filtro'}
-                </strong>
-                <p>
-                  {busca
-                    ? 'Revise o nome, telefone, serviço ou profissional informado.'
-                    : filtro === 'todos'
-                    ? 'Quando um cliente usar seu link público, o atendimento aparecerá aqui.'
-                    : 'Tente outro filtro para consultar os demais atendimentos.'}
-                </p>
-                {(filtro !== 'todos' || busca) && (
+                      ? 'Sua agenda ainda está vazia'
+                      : 'Nenhum agendamento neste filtro'
+                }
+                action={
+                  filtro !== 'todos' || busca ? (
                   <button
                     className="button button-secondary button-small"
                     onClick={() => {
@@ -437,8 +435,15 @@ function Agenda({ navigate }) {
                   >
                     Limpar filtros
                   </button>
-                )}
-              </div>
+                  ) : null
+                }
+              >
+                {busca
+                  ? 'Revise o nome, telefone, serviço ou profissional informado.'
+                  : filtro === 'todos'
+                    ? 'Quando um cliente usar seu link público, o atendimento aparecerá aqui.'
+                    : 'Tente outro filtro para consultar os demais atendimentos.'}
+              </EmptyState>
             </div>
           )}
 

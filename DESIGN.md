@@ -5,6 +5,10 @@ colors:
   green-deep: "#093e2a"
   green-primary: "#0d6f3b"
   green-action: "#178a4b"
+  action-light-bg: "#0d6f3b"
+  action-light-text: "#ffffff"
+  action-dark-bg: "#39b96e"
+  action-dark-text: "#07130c"
   green-soft: "#e8f6ed"
   green-wash: "#f2fbf5"
   page-bg: "#f5f7f6"
@@ -70,8 +74,8 @@ spacing:
   section: "28px"
 components:
   button-primary:
-    backgroundColor: "{colors.green-action}"
-    textColor: "{colors.panel-bg}"
+    backgroundColor: "{colors.action-light-bg}"
+    textColor: "{colors.action-light-text}"
     rounded: "{rounded.sm}"
     padding: "13px 18px"
     height: "50px"
@@ -106,6 +110,10 @@ components:
 **Creative North Star: "Painel de Atendimento Claro"**
 
 O Agendai e uma ferramenta de trabalho para quem atende pessoas todos os dias. A interface deve parecer clara, organizada e pronta para uso imediato: mais proxima de um painel de atendimento confiavel do que de um software corporativo pesado.
+
+Nas telas autenticadas, essa ideia se materializa como um **Balcao de Atendimento Digital**: o empreendedor consulta e atualiza a operacao entre atendimentos, muitas vezes pelo celular. Metricas relacionadas formam faixas continuas, listas usam linhas e divisores, e cards ficam reservados para agrupamentos que realmente precisam de contencao.
+
+A assinatura operacional e a **linha do atendimento**: hora, marcador, cliente e servico aparecem em sequencia cronologica na agenda e nos resumos do dia. O recurso comunica ordem e proximidade do proximo compromisso; nao deve ser usado como decoracao fora desse contexto.
 
 O visual atual combina fundo claro, superficies brancas, verde profundo como acento principal e estados semanticos simples. A tela deve orientar o empreendedor com poucos elementos por vez, mantendo os fluxos de agenda, servicos, profissionais e clientes diretos o bastante para uso no celular.
 
@@ -168,12 +176,12 @@ A paleta e restrita e funcional: verde profundo para confianca e acao, neutros l
 
 ## 4. Elevation
 
-O Agendai usa elevacao profissional discreta: sombras suaves e bordas claras separam superficies sem transformar cada card em uma peca decorativa. A hierarquia vem primeiro de layout, espacamento, texto e estado; sombra e complemento, nao protagonista.
+O Agendai usa elevacao profissional discreta. Nas telas autenticadas, bordas claras, fundos tonais e divisores separam superficies; paineis e linhas nao flutuam no hover. Sombras ficam reservadas para elementos sobrepostos, autenticacao e superficies publicas quando a separacao por borda nao for suficiente.
 
 ### Shadow Vocabulary
-- **Card Discreto** (`0 4px 8px rgba(25, 57, 47, 0.05)`): padrao para cards, metricas, atalhos e superficies de formulario.
+- **Card Discreto** (`0 4px 8px rgba(25, 57, 47, 0.05)`): opcional em superficies publicas ou isoladas; nao usar em cada item do dashboard.
 - **Painel Suave** (`0 8px 22px rgba(25, 57, 47, 0.06)`): usado em containers maiores, auth cards e pagina publica.
-- **Hover Operacional** (`0 16px 34px rgba(16, 24, 40, 0.09)`): resposta para cards clicaveis e entidades.
+- **Hover Operacional:** mudanca de fundo ou borda, sem deslocamento e sem sombra ampla.
 - **Foco Verde** (`0 0 0 4px rgba(0, 127, 111, 0.12)`): usado em inputs, escolha selecionada e estado ativo.
 
 ### Named Rules
@@ -185,8 +193,8 @@ O Agendai usa elevacao profissional discreta: sombras suaves e bordas claras sep
 
 ### Buttons
 - **Shape:** retangulos levemente arredondados (`10px`), altura confortavel (`50px`) e peso `600`.
-- **Primary:** texto branco sobre verde de acao (`#178a4b`), usado para a acao principal da tela.
-- **Hover / Focus:** hover aprofunda o verde e pode elevar ate `translateY(-2px)`; foco deve manter anel verde legivel.
+- **Primary:** no tema claro, texto branco sobre verde profundo (`#0d6f3b`); no tema escuro, tinta escura (`#07130c`) sobre verde vivo (`#39b96e`). Ambos preservam contraste AA para texto normal.
+- **Hover / Focus:** hover muda o tom do verde sem deslocar o controle; foco mantem anel verde legivel.
 - **Secondary:** fundo verde muito claro (`#f2fbf5`), texto verde operacional e borda verde translucidada.
 - **Danger:** fundo vermelho suave e texto vermelho para cancelamento, erro e exclusao logica.
 
@@ -195,11 +203,12 @@ O Agendai usa elevacao profissional discreta: sombras suaves e bordas claras sep
 - **State:** confirmado usa verde suave, pendente usa amarelo suave, informacao usa azul suave, erro usa vermelho suave.
 
 ### Cards / Containers
-- **Corner Style:** cards operacionais usam `16px`; cards publicos grandes podem chegar a `20px`.
+- **Corner Style:** paineis operacionais usam `12px` a `14px`; cards publicos grandes podem chegar a `20px`.
 - **Background:** `panel-bg` para conteudo principal e `quiet-surface` para o app shell.
-- **Shadow Strategy:** usar `Card Discreto` por padrao; reservar `Painel Suave` para containers grandes.
+- **Shadow Strategy:** dashboard autenticado usa borda e fundo tonal, sem sombra por padrao. Reservar `Painel Suave` para auth, pagina publica e sobreposicoes.
 - **Border:** sempre discreta (`#dfe7e3` ou equivalente translucidado). Evitar bordas coloridas decorativas.
 - **Internal Padding:** `16px` para cards compactos, `22px` para paineis.
+- **Grouped Content:** metricas, atalhos e listas relacionadas compartilham uma unica borda externa e usam divisores internos. Evitar uma grade de cards iguais para dados do mesmo contexto.
 
 ### Inputs / Fields
 - **Style:** fundo branco, borda discreta, radius `10px`, altura minima `50px`.
@@ -208,8 +217,17 @@ O Agendai usa elevacao profissional discreta: sombras suaves e bordas claras sep
 
 ### Navigation
 - **Style:** sidebar com botoes de `44px` min-height, icones lucide, labels objetivos e estado ativo verde.
-- **Active State:** gradiente verde, texto branco e icone com fundo branco translucidado.
+- **Active State:** fundo verde suave, texto verde profundo e peso `600`; sem gradiente decorativo.
 - **Mobile Treatment:** sidebar vira menu lateral com overlay; topbar mantem acoes compactas e labels podem sumir abaixo de `560px`.
+- **Touch Targets:** todo botao, campo, seletor ou acao textual interativa deve ter pelo menos `44px` de altura em celular e desktop.
+
+### Authenticated Dashboard
+- **Metrics:** faixa continua com divisores; quatro colunas no desktop, duas no celular quando houver largura suficiente e uma abaixo de `380px`.
+- **Tables and Lists:** cabecalho no desktop, linhas tocaveis no celular e nenhuma rolagem horizontal obrigatoria em `320px` ou mais.
+- **Forms:** uma coluna no celular, campos relacionados em duas colunas somente quando houver espaco. Valores usam peso regular; labels usam `600`.
+- **Loading:** skeletons dentro do contexto carregado. Nao substituir todo o conteudo por spinner central.
+- **Empty / Error / Success:** mensagem em portugues simples, causa ou estado atual e proxima acao quando existir.
+- **Motion:** transicoes de estado entre `150ms` e `220ms`; sem animar largura, altura, padding, margem ou grid do shell. Respeitar `prefers-reduced-motion`.
 
 ### Public Booking Flow
 - **Style:** card central de ate `920px`, header verde profundo, etapas numeradas e secoes progressivas.

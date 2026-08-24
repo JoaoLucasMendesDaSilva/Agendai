@@ -14,6 +14,9 @@
   --green-900: #093e2a;
   --green-800: #0d6f3b;
   --green-700: #178a4b;
+  --action-bg: #0d6f3b;
+  --action-bg-hover: #093e2a;
+  --action-text: #ffffff;
   --green-100: #e8f6ed;
   --green-50: #f2fbf5;
   --yellow-100: #fff4cc;
@@ -45,6 +48,9 @@
   --green-900: #c7f7d8;
   --green-800: #75d99a;
   --green-700: #39b96e;
+  --action-bg: #39b96e;
+  --action-bg-hover: #75d99a;
+  --action-text: #07130c;
   --green-100: #173c26;
   --green-50: #142f20;
   --yellow-100: #3a2d0f;

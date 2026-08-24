@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   CalendarDays,
   ChevronDown,
@@ -37,6 +37,9 @@ function DashboardShell({
   usuario,
 }) {
   const { isDark, toggleTheme } = useTheme();
+  const menuButtonRef = useRef(null);
+  const perfilRef = useRef(null);
+  const sidebarRef = useRef(null);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [negocio, setNegocio] = useState(null);
   const [perfilAberto, setPerfilAberto] = useState(false);
@@ -83,6 +86,87 @@ function DashboardShell({
       window.removeEventListener('agendai:brand-updated', atualizarMarca);
     };
   }, []);
+
+  useEffect(() => {
+    if (!perfilAberto) return undefined;
+
+    function fecharPerfil(event) {
+      if (event.key === 'Escape') {
+        setPerfilAberto(false);
+        return;
+      }
+
+      if (event.type === 'pointerdown' && !perfilRef.current?.contains(event.target)) {
+        setPerfilAberto(false);
+      }
+    }
+
+    document.addEventListener('keydown', fecharPerfil);
+    document.addEventListener('pointerdown', fecharPerfil);
+
+    return () => {
+      document.removeEventListener('keydown', fecharPerfil);
+      document.removeEventListener('pointerdown', fecharPerfil);
+    };
+  }, [perfilAberto]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || window.innerWidth >= 1040) {
+      return undefined;
+    }
+
+    document.body.style.overflow = menuAberto ? 'hidden' : '';
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [menuAberto]);
+
+  useEffect(() => {
+    if (
+      !menuAberto ||
+      typeof window === 'undefined' ||
+      window.innerWidth >= 1040
+    ) {
+      return undefined;
+    }
+
+    const sidebar = sidebarRef.current;
+    const focusable = Array.from(
+      sidebar?.querySelectorAll(
+        'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ) || [],
+    );
+
+    focusable[0]?.focus();
+
+    function manterFocoNoMenu(event) {
+      if (event.key === 'Escape') {
+        setMenuAberto(false);
+        menuButtonRef.current?.focus();
+        return;
+      }
+
+      if (event.key !== 'Tab' || focusable.length === 0) return;
+
+      const primeiro = focusable[0];
+      const ultimo = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === primeiro) {
+        event.preventDefault();
+        ultimo.focus();
+      } else if (!event.shiftKey && document.activeElement === ultimo) {
+        event.preventDefault();
+        primeiro.focus();
+      }
+    }
+
+    document.addEventListener('keydown', manterFocoNoMenu);
+
+    return () => {
+      document.removeEventListener('keydown', manterFocoNoMenu);
+    };
+  }, [menuAberto]);
 
   useEffect(() => {
     function handleBeforeInstallPrompt(event) {
@@ -147,19 +231,27 @@ function DashboardShell({
       }`}
     >
       <button
-        aria-label="Fechar menu"
+        aria-label="Fechar menu lateral"
+        aria-hidden={!menuAberto}
         className="sidebar-overlay"
         onClick={() => setMenuAberto(false)}
+        tabIndex={menuAberto ? 0 : -1}
         type="button"
       />
 
-      <aside className="sidebar" id="dashboard-sidebar">
+      <aside className="sidebar" id="dashboard-sidebar" ref={sidebarRef}>
         <div className="sidebar-head">
           <BrandLogo onClick={() => navegarPara('/')} />
           <button
             aria-controls="dashboard-sidebar"
             aria-expanded={!sidebarRecolhida}
-            aria-label={sidebarRecolhida ? 'Expandir menu lateral' : 'Recolher menu lateral'}
+            aria-label={
+              typeof window !== 'undefined' && window.innerWidth < 1040
+                ? 'Fechar menu lateral'
+                : sidebarRecolhida
+                  ? 'Expandir menu lateral'
+                  : 'Recolher menu lateral'
+            }
             className="shell-icon-button sidebar-toggle-button"
             onClick={alternarSidebar}
             type="button"
@@ -176,6 +268,7 @@ function DashboardShell({
               className={`sidebar-link ${currentPath === path ? 'is-active' : ''}`}
               key={path}
               onClick={() => navegarPara(path)}
+              title={sidebarRecolhida ? label : undefined}
               type="button"
             >
               <Icon aria-hidden="true" size={19} strokeWidth={2} />
@@ -211,6 +304,7 @@ function DashboardShell({
             aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
             className="shell-icon-button menu-button"
             onClick={() => setMenuAberto((aberto) => !aberto)}
+            ref={menuButtonRef}
             type="button"
           >
             <Menu aria-hidden="true" size={21} />
@@ -239,9 +333,10 @@ function DashboardShell({
               {isDark ? <Sun aria-hidden="true" size={18} /> : <Moon aria-hidden="true" size={18} />}
             </button>
 
-            <div className="topbar-profile-wrap">
+            <div className="topbar-profile-wrap" ref={perfilRef}>
               <button
                 aria-expanded={perfilAberto}
+                aria-haspopup="true"
                 className="topbar-user"
                 onClick={() => setPerfilAberto((aberto) => !aberto)}
                 type="button"

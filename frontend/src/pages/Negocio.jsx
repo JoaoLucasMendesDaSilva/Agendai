@@ -12,6 +12,7 @@ import {
 import { QRCodeCanvas } from 'qrcode.react';
 import DashboardShell from '../components/DashboardShell';
 import PageHeader from '../components/ui/PageHeader';
+import PanelSkeleton from '../components/ui/PanelSkeleton';
 import { useAuth } from '../contexts/AuthContext';
 import {
   atualizarIdentidadeVisual,
@@ -434,9 +435,7 @@ function Negocio({ navigate }) {
           </div>
 
           {carregando && (
-            <p className="message message-info" role="status">
-              Carregando negócio...
-            </p>
+            <PanelSkeleton label="Carregando dados do negócio..." lines={5} />
           )}
 
           {!carregando && erro && <p className="message message-error" role="alert">{erro}</p>}
@@ -611,11 +610,15 @@ function Negocio({ navigate }) {
               {negocio && <span className="status-badge status-confirmado">Online</span>}
             </div>
           </div>
-          <p className="panel-text">
-            {negocio
-              ? 'Compartilhe o link ou QR Code para receber agendamentos.'
-              : 'Cadastre seu negócio para liberar serviços, profissionais e agenda.'}
-          </p>
+          {carregando ? (
+            <PanelSkeleton label="Carregando página pública..." lines={3} />
+          ) : (
+            <p className="panel-text">
+              {negocio
+                ? 'Compartilhe o link ou QR Code para receber agendamentos.'
+                : 'Cadastre seu negócio para liberar serviços, profissionais e agenda.'}
+            </p>
+          )}
 
           {negocio && (
             <dl className="details-list compact-details">

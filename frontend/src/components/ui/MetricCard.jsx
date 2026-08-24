@@ -1,6 +1,9 @@
 function MetricCard({ Icone, classeIcone = '', titulo, valor, detalhe, loading }) {
   return (
-    <article className={`metric-card ${loading ? 'is-loading' : ''}`}>
+    <article
+      aria-busy={loading || undefined}
+      className={`metric-card ${loading ? 'is-loading' : ''}`}
+    >
       <span className={`metric-icon ${classeIcone}`} aria-hidden="true">
         <Icone size={22} strokeWidth={2} />
       </span>
