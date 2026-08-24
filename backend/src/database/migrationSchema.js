@@ -125,6 +125,14 @@ const TRIGGER_SPECS = Object.freeze({
   trg_agendamentos_updated_at: 'agendamentos',
 });
 
+const CONSTRAINT_NO_INHERIT = Object.freeze({
+  c: false,
+  f: true,
+  p: true,
+  u: true,
+  x: true,
+});
+
 function sameArray(left, right) {
   return (
     Array.isArray(left) &&
@@ -140,6 +148,18 @@ function sameSet(left, right) {
     new Set(left).size === left.length &&
     new Set(right).size === right.length &&
     left.every((value) => right.includes(value))
+  );
+}
+
+function constraintInheritanceMatches(row, constraintType) {
+  // PostgreSQL makes index-backed and foreign-key constraints non-inheritable;
+  // ordinary CHECK constraints remain inheritable unless declared NO INHERIT.
+  return (
+    Object.hasOwn(CONSTRAINT_NO_INHERIT, constraintType) &&
+    row?.is_local === true &&
+    Number(row?.inheritance_count) === 0 &&
+    row?.has_no_parent === true &&
+    row?.no_inherit === CONSTRAINT_NO_INHERIT[constraintType]
   );
 }
 
@@ -290,10 +310,7 @@ function constraintMatches(row, spec, constraintName) {
     row?.validated !== true ||
     row?.deferrable !== false ||
     row?.deferred !== false ||
-    row?.is_local !== true ||
-    Number(row?.inheritance_count) !== 0 ||
-    row?.has_no_parent !== true ||
-    row?.no_inherit !== false ||
+    !constraintInheritanceMatches(row, constraintType) ||
     row?.functions_catalog_only !== true ||
     row?.operators_catalog_only !== true ||
     !(constraintType === 'c'
@@ -713,10 +730,7 @@ function validateHistorySnapshot(snapshot, currentUser) {
         row?.validated === true &&
         row?.deferrable === false &&
         row?.deferred === false &&
-        row?.is_local === true &&
-        Number(row?.inheritance_count) === 0 &&
-        row?.has_no_parent === true &&
-        row?.no_inherit === false &&
+        constraintInheritanceMatches(row, type) &&
         row?.functions_catalog_only === true &&
         row?.operators_catalog_only === true &&
         sameArray(row?.columns || [], columns) &&

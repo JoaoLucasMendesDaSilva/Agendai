@@ -284,7 +284,7 @@ test('EXCLUDE preserva case dos status e exige dependências de catálogo', () =
     has_no_parent: true,
     inheritance_count: 0,
     is_local: true,
-    no_inherit: false,
+    no_inherit: true,
     operators_catalog_only: true,
     table_name: 'agendamentos',
     validated: true,
@@ -296,6 +296,10 @@ test('EXCLUDE preserva case dos status e exige dependências de catálogo', () =
       'ex_agendamentos_profissional_periodo_ativo'
     ),
     true
+  );
+  assert.equal(
+    matchesDomainConstraint({ ...row, no_inherit: false }, 'ex_agendamentos_profissional_periodo_ativo'),
+    false
   );
   assert.equal(
     matchesDomainConstraint(
