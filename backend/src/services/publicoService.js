@@ -36,7 +36,10 @@ function criarErro(status, mensagem, code) {
 }
 
 function traduzirErroConflitoDeAgendamento(erro) {
-  if (erro.code === '23P01') {
+  if (
+    erro.code === '23P01' &&
+    erro.constraint === 'ex_agendamentos_profissional_periodo_ativo'
+  ) {
     return criarErro(409, 'Horário indisponível para este profissional.');
   }
 
