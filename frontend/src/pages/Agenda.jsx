@@ -24,6 +24,7 @@ import {
 import { STATUS_LABELS } from './agendamentoConstants';
 
 const STATUS = ['pendente', 'confirmado', 'cancelado', 'concluido'];
+const STATUS_SELECT = STATUS.filter((status) => status !== 'cancelado');
 
 const FILTROS = [
   { valor: 'todos', label: 'Todos' },
@@ -483,21 +484,21 @@ function Agenda({ navigate }) {
                       {STATUS_LABELS[agendamento.status] || agendamento.status}
                     </span>
 
-                    <div className="agenda-actions">
-                      <label>
-                        <span className="sr-only">Alterar status de {agendamento.cliente_nome}</span>
-                        <select
-                          disabled={salvandoId === agendamento.id}
-                          onChange={(event) => alterarStatus(agendamento, event.target.value)}
-                          value={agendamento.status}
-                        >
-                          {STATUS.map((status) => (
-                            <option key={status} value={status}>{STATUS_LABELS[status]}</option>
-                          ))}
-                        </select>
-                      </label>
+                    {agendamento.status !== 'cancelado' && (
+                      <div className="agenda-actions">
+                        <label>
+                          <select
+                            aria-label={`Alterar status de ${agendamento.cliente_nome}`}
+                            disabled={salvandoId === agendamento.id}
+                            onChange={(event) => alterarStatus(agendamento, event.target.value)}
+                            value={agendamento.status}
+                          >
+                            {STATUS_SELECT.map((status) => (
+                              <option key={status} value={status}>{STATUS_LABELS[status]}</option>
+                            ))}
+                          </select>
+                        </label>
 
-                      {agendamento.status !== 'cancelado' && (
                         <button
                           className="agenda-cancel-button"
                           disabled={salvandoId === agendamento.id}
@@ -506,8 +507,8 @@ function Agenda({ navigate }) {
                         >
                           {salvandoId === agendamento.id ? 'Salvando...' : 'Cancelar'}
                         </button>
-                      )}
-                    </div>
+                      </div>
+                    )}
 
                     {agendamento.observacoes && (
                       <p className="agenda-observations">

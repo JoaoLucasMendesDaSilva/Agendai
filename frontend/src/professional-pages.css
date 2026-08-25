@@ -724,11 +724,34 @@
   gap: 8px;
 }
 
-.agenda-actions select {
+.agenda-date-group > .agenda-card-list > .agenda-card-pro > .agenda-actions > label {
+  width: min(100%, 127px);
+}
+
+.agenda-date-group > .agenda-card-list > .agenda-card-pro > .agenda-actions > label > select {
+  width: 100%;
   min-height: 44px;
+  border: 1px solid #dfe7e3;
   border-radius: 10px;
   padding: 7px 28px 7px 9px;
+  color: #14201e;
+  background: #ffffff;
+  background-color: #ffffff;
+  color-scheme: light;
   font-size: 0.8125rem;
+  cursor: pointer;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.agenda-date-group > .agenda-card-list > .agenda-card-pro > .agenda-actions > label > select:hover,
+.agenda-date-group > .agenda-card-list > .agenda-card-pro > .agenda-actions > label > select:focus {
+  border-color: #178a4b;
+  box-shadow: 0 0 0 3px rgba(23, 138, 75, 0.14);
+}
+
+.agenda-date-group > .agenda-card-list > .agenda-card-pro > .agenda-actions > label > select > option {
+  color: #14201e;
+  background: #ffffff;
 }
 
 .agenda-cancel-button {
