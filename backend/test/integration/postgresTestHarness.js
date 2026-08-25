@@ -321,6 +321,98 @@ async function verifyConnectedIdentity(client, guard) {
   });
 }
 
+function createRealQueryBarrier(pool, matches, participants = 2) {
+  let arrivals = 0;
+  let continuations = 0;
+  let releases = 0;
+  let release;
+  let readyResolve;
+  let readyReject;
+  const backendPids = new Set();
+  const gate = new Promise((resolve) => {
+    release = resolve;
+  });
+  const ready = new Promise((resolve, reject) => {
+    readyResolve = resolve;
+    readyReject = reject;
+  });
+
+  async function hold(client, result) {
+    const pidResult = await client.query(
+      'SELECT pg_backend_pid()::integer AS backend_pid'
+    );
+    const backendPid = pidResult.rows[0]?.backend_pid;
+
+    arrivals += 1;
+    backendPids.add(backendPid);
+
+    if (arrivals > participants) {
+      readyReject(new Error('Mais consultas atingiram a barreira que o esperado.'));
+    } else if (arrivals === participants) {
+      if (backendPids.size !== participants || backendPids.has(undefined)) {
+        readyReject(new Error('A barreira exige conexões PostgreSQL distintas.'));
+      } else {
+        readyResolve();
+      }
+    }
+
+    await gate;
+    continuations += 1;
+    return result;
+  }
+
+  async function queryClient(client, sql, params) {
+    const result = await client.query(sql, params);
+    return matches(sql, params) ? hold(client, result) : result;
+  }
+
+  return {
+    pool: {
+      connect: async () => {
+        const client = await pool.connect();
+        return {
+          query: (sql, params) => queryClient(client, sql, params),
+          release: (...args) => {
+            releases += 1;
+            return client.release(...args);
+          },
+        };
+      },
+      query: async (sql, params) => {
+        if (!matches(sql, params)) return pool.query(sql, params);
+
+        const client = await pool.connect();
+        try {
+          return await queryClient(client, sql, params);
+        } finally {
+          releases += 1;
+          client.release();
+        }
+      },
+    },
+    release,
+    snapshot: () => ({
+      arrivals,
+      backendPids: [...backendPids],
+      continuations,
+      releases,
+    }),
+    waitUntilReady: (timeoutMs = 5_000) => {
+      let timeout;
+      const timedReady = Promise.race([
+        ready,
+        new Promise((_, reject) => {
+          timeout = setTimeout(
+            () => reject(new Error('Tempo esgotado aguardando a barreira SQL.')),
+            timeoutMs
+          );
+        }),
+      ]);
+      return timedReady.finally(() => clearTimeout(timeout));
+    },
+  };
+}
+
 async function createPostgresTestHarness({
   environment = process.env,
   buildDatabaseConfig,
@@ -387,6 +479,7 @@ async function createPostgresTestHarness({
 module.exports = {
   PostgresTestGuardError,
   createPostgresTestHarness,
+  createRealQueryBarrier,
   hasStandaloneTestToken,
   isAllowedServerAddress,
   isLoopbackHostname,
