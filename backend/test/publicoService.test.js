@@ -275,7 +275,11 @@ function dadosAgendamento(status = 'concluido', sobrescritos = {}) {
   };
 }
 
-function criarPoolCriacaoPublica(negocio = negocioPublico(), erroInsercao) {
+function criarPoolCriacaoPublica(
+  negocio = negocioPublico(),
+  erroInsercao,
+  erroConflito
+) {
   const chamadas = [];
   const transacoes = { commit: 0, release: 0, rollback: 0 };
   const connection = {
@@ -303,6 +307,7 @@ function criarPoolCriacaoPublica(negocio = negocioPublico(), erroInsercao) {
       }
 
       if (ehConsultaConflitoCriacao(sql)) {
+        if (erroConflito) throw erroConflito;
         return [[]];
       }
 
@@ -541,6 +546,22 @@ test('confirmarPresencaPublicaPorToken mantem retorno idempotente para confirmad
   assert.equal(resultado.agendamento.status, 'confirmado');
 });
 
+test('confirmarPresencaPublicaPorToken preserva deadlock desconhecido', async () => {
+  const erroPostgres = Object.assign(new Error('deadlock interno'), {
+    code: '40P01',
+  });
+  const { confirmarPresencaPublicaPorToken } = carregarPublicoServiceComPool({
+    execute: async () => {
+      throw erroPostgres;
+    },
+  });
+
+  await assert.rejects(
+    () => confirmarPresencaPublicaPorToken(TOKEN_VALIDO),
+    (err) => err === erroPostgres
+  );
+});
+
 test('obterNegocio prioriza slug numerico antes de id', async () => {
   const { obterNegocio } = carregarPublicoServiceComPool({
     execute: async (sql, params) => {
@@ -706,6 +727,49 @@ test('criarAgendamentoPublico traduz somente a exclusion constraint conhecida', 
   assert.deepEqual(pool.transacoes, { commit: 0, release: 1, rollback: 1 });
 });
 
+test('criarAgendamentoPublico traduz deadlock da escrita concorrente', async () => {
+  const erroPostgres = Object.assign(new Error('deadlock interno'), {
+    code: '40P01',
+  });
+  const pool = criarPoolCriacaoPublica(negocioPublico(), erroPostgres);
+  const { criarAgendamentoPublico } = carregarPublicoServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      criarAgendamentoPublico(
+        'studio-teste',
+        payloadAgendamento('2099-07-01T08:30:00')
+      ),
+    (err) =>
+      err.status === 409 &&
+      err.publicMessage === 'Horário indisponível para este profissional.' &&
+      err.code === undefined
+  );
+  assert.deepEqual(pool.transacoes, { commit: 0, release: 1, rollback: 1 });
+});
+
+test('criarAgendamentoPublico preserva deadlock anterior a escrita', async () => {
+  const erroPostgres = Object.assign(new Error('deadlock interno'), {
+    code: '40P01',
+  });
+  const pool = criarPoolCriacaoPublica(
+    negocioPublico(),
+    undefined,
+    erroPostgres
+  );
+  const { criarAgendamentoPublico } = carregarPublicoServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      criarAgendamentoPublico(
+        'studio-teste',
+        payloadAgendamento('2099-07-01T08:30:00')
+      ),
+    (err) => err === erroPostgres
+  );
+  assert.deepEqual(pool.transacoes, { commit: 0, release: 1, rollback: 1 });
+});
+
 test('criarAgendamentoPublico preserva exclusion violation desconhecida', async () => {
   const erroPostgres = Object.assign(new Error('detalhe interno'), {
     code: '23P01',
@@ -789,6 +853,30 @@ test('reagendarAgendamentoPublicoPorToken traduz a constraint conhecida', async 
     (err) =>
       err.status === 409 &&
       err.publicMessage === 'Horário indisponível para este profissional.'
+  );
+  assert.deepEqual(pool.transacoes, { commit: 0, release: 1, rollback: 1 });
+});
+
+test('reagendarAgendamentoPublicoPorToken traduz deadlock da escrita concorrente', async () => {
+  const erroPostgres = Object.assign(new Error('deadlock interno'), {
+    code: '40P01',
+  });
+  const pool = criarPoolReagendamentoPublico(
+    dadosAgendamento('confirmado'),
+    erroPostgres
+  );
+  const { reagendarAgendamentoPublicoPorToken } =
+    carregarPublicoServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      reagendarAgendamentoPublicoPorToken(TOKEN_VALIDO, {
+        data_hora_inicio: '2099-07-01T08:30:00',
+      }),
+    (err) =>
+      err.status === 409 &&
+      err.publicMessage === 'Horário indisponível para este profissional.' &&
+      err.code === undefined
   );
   assert.deepEqual(pool.transacoes, { commit: 0, release: 1, rollback: 1 });
 });

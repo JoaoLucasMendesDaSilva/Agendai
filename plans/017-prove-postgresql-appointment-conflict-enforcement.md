@@ -212,6 +212,10 @@ If rollback/release failure masks the primary conflict, correct only that
 cleanup path and add a unit regression. Do not add a new lock, retry, or shared
 service abstraction.
 
+If PostgreSQL aborts a proven public appointment write with `40P01`, retain the
+database outcome and translate only the create `INSERT` or reschedule `UPDATE`
+to the same stable `409`; preserve other deadlocks and do not retry them.
+
 **Verify**: unit and integration suites pass. Production service diffs are
 empty unless a failing test required a narrow correction.
 
