@@ -8,6 +8,7 @@ const AGENDAMENTO_ID = 10;
 const NEGOCIO_ID = 20;
 const PROFISSIONAL_ID = 30;
 const USUARIO_ID = 40;
+const CONSTRAINT_AGENDAMENTO = 'ex_agendamentos_profissional_periodo_ativo';
 
 function adaptarPoolPostgres(pool) {
   if (!pool.query && pool.execute) {
@@ -108,7 +109,7 @@ function agendamentoDetalhado(status) {
   };
 }
 
-function criarPoolAtualizacaoStatus({ status, conflitos = [] }) {
+function criarPoolAtualizacaoStatus({ status, conflitos = [], updateError }) {
   const chamadas = [];
   const pool = {
     chamadas,
@@ -137,6 +138,7 @@ function criarPoolAtualizacaoStatus({ status, conflitos = [] }) {
       }
 
       if (ehAtualizacaoStatus(sql)) {
+        if (updateError) throw updateError;
         assert.deepEqual(params, [status, AGENDAMENTO_ID, NEGOCIO_ID]);
         return [{ affectedRows: 1 }];
       }
@@ -232,4 +234,46 @@ test('atualizarStatusAgendamento confirma quando nao existe outro ativo sobrepos
     agendamentoAlvo().data_hora_fim,
     agendamentoAlvo().data_hora_inicio,
   ]);
+});
+
+test('atualizarStatusAgendamento traduz a exclusion constraint conhecida', async () => {
+  const erroPostgres = Object.assign(new Error('detalhe interno'), {
+    code: '23P01',
+    constraint: CONSTRAINT_AGENDAMENTO,
+  });
+  const pool = criarPoolAtualizacaoStatus({
+    status: 'confirmado',
+    updateError: erroPostgres,
+  });
+  const { atualizarStatusAgendamento } = carregarAgendamentosServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      atualizarStatusAgendamento(USUARIO_ID, AGENDAMENTO_ID, {
+        status: 'confirmado',
+      }),
+    (err) =>
+      err.status === 409 &&
+      err.publicMessage === 'Horario indisponivel para este profissional.'
+  );
+});
+
+test('atualizarStatusAgendamento preserva exclusion violation desconhecida', async () => {
+  const erroPostgres = Object.assign(new Error('detalhe interno'), {
+    code: '23P01',
+    constraint: 'outra_exclusion_constraint',
+  });
+  const pool = criarPoolAtualizacaoStatus({
+    status: 'confirmado',
+    updateError: erroPostgres,
+  });
+  const { atualizarStatusAgendamento } = carregarAgendamentosServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      atualizarStatusAgendamento(USUARIO_ID, AGENDAMENTO_ID, {
+        status: 'confirmado',
+      }),
+    (err) => err === erroPostgres
+  );
 });

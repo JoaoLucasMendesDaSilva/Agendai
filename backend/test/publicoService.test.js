@@ -6,6 +6,7 @@ const publicoServicePath = require.resolve('../src/services/publicoService');
 
 const TOKEN_VALIDO = 'a'.repeat(64);
 const TOKEN_HASH_VALIDO = 'ffe054fe7ae0cb6dc65c3af9b61d5209f439851db43d0ba5997337df154668eb';
+const CONSTRAINT_AGENDAMENTO = 'ex_agendamentos_profissional_periodo_ativo';
 const NEGOCIO_ID = 20;
 const SERVICO_ID = 30;
 const PROFISSIONAL_ID = 40;
@@ -274,13 +275,24 @@ function dadosAgendamento(status = 'concluido', sobrescritos = {}) {
   };
 }
 
-function criarPoolCriacaoPublica(negocio = negocioPublico()) {
+function criarPoolCriacaoPublica(
+  negocio = negocioPublico(),
+  erroInsercao,
+  erroConflito
+) {
   const chamadas = [];
+  const transacoes = { commit: 0, release: 0, rollback: 0 };
   const connection = {
     beginTransaction: async () => {},
-    commit: async () => {},
-    rollback: async () => {},
-    release: () => {},
+    commit: async () => {
+      transacoes.commit += 1;
+    },
+    rollback: async () => {
+      transacoes.rollback += 1;
+    },
+    release: () => {
+      transacoes.release += 1;
+    },
     execute: async (sql, params) => {
       chamadas.push({ sql, params });
 
@@ -295,10 +307,12 @@ function criarPoolCriacaoPublica(negocio = negocioPublico()) {
       }
 
       if (ehConsultaConflitoCriacao(sql)) {
+        if (erroConflito) throw erroConflito;
         return [[]];
       }
 
       if (ehInsercaoAgendamento(sql)) {
+        if (erroInsercao) throw erroInsercao;
         return [{ insertId: 99 }];
       }
 
@@ -312,6 +326,7 @@ function criarPoolCriacaoPublica(negocio = negocioPublico()) {
   };
   const pool = {
     chamadas,
+    transacoes,
     getConnection: async () => connection,
     execute: async (sql, params) => {
       chamadas.push({ sql, params });
@@ -329,14 +344,22 @@ function criarPoolCriacaoPublica(negocio = negocioPublico()) {
 }
 
 function criarPoolReagendamentoPublico(
-  agendamento = dadosAgendamento('confirmado')
+  agendamento = dadosAgendamento('confirmado'),
+  erroAtualizacao
 ) {
   const chamadas = [];
+  const transacoes = { commit: 0, release: 0, rollback: 0 };
   const connection = {
     beginTransaction: async () => {},
-    commit: async () => {},
-    rollback: async () => {},
-    release: () => {},
+    commit: async () => {
+      transacoes.commit += 1;
+    },
+    rollback: async () => {
+      transacoes.rollback += 1;
+    },
+    release: () => {
+      transacoes.release += 1;
+    },
     execute: async (sql, params) => {
       chamadas.push({ sql, params });
 
@@ -360,6 +383,7 @@ function criarPoolReagendamentoPublico(
       }
 
       if (ehAtualizacaoReagendamento(sql)) {
+        if (erroAtualizacao) throw erroAtualizacao;
         return [{ affectedRows: 1 }];
       }
 
@@ -368,6 +392,7 @@ function criarPoolReagendamentoPublico(
   };
   const pool = {
     chamadas,
+    transacoes,
     getConnection: async () => connection,
     execute: async (sql, params) => {
       chamadas.push({ sql, params });
@@ -521,6 +546,22 @@ test('confirmarPresencaPublicaPorToken mantem retorno idempotente para confirmad
   assert.equal(resultado.agendamento.status, 'confirmado');
 });
 
+test('confirmarPresencaPublicaPorToken preserva deadlock desconhecido', async () => {
+  const erroPostgres = Object.assign(new Error('deadlock interno'), {
+    code: '40P01',
+  });
+  const { confirmarPresencaPublicaPorToken } = carregarPublicoServiceComPool({
+    execute: async () => {
+      throw erroPostgres;
+    },
+  });
+
+  await assert.rejects(
+    () => confirmarPresencaPublicaPorToken(TOKEN_VALIDO),
+    (err) => err === erroPostgres
+  );
+});
+
 test('obterNegocio prioriza slug numerico antes de id', async () => {
   const { obterNegocio } = carregarPublicoServiceComPool({
     execute: async (sql, params) => {
@@ -664,6 +705,90 @@ test('criarAgendamentoPublico aceita horario alinhado a grade do negocio', async
   );
 });
 
+test('criarAgendamentoPublico traduz somente a exclusion constraint conhecida', async () => {
+  const erroPostgres = Object.assign(new Error('detalhe interno'), {
+    code: '23P01',
+    constraint: CONSTRAINT_AGENDAMENTO,
+  });
+  const pool = criarPoolCriacaoPublica(negocioPublico(), erroPostgres);
+  const { criarAgendamentoPublico } = carregarPublicoServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      criarAgendamentoPublico(
+        'studio-teste',
+        payloadAgendamento('2099-07-01T08:30:00')
+      ),
+    (err) =>
+      err.status === 409 &&
+      err.publicMessage === 'Horário indisponível para este profissional.' &&
+      !Object.hasOwn(err, 'constraint')
+  );
+  assert.deepEqual(pool.transacoes, { commit: 0, release: 1, rollback: 1 });
+});
+
+test('criarAgendamentoPublico traduz deadlock da escrita concorrente', async () => {
+  const erroPostgres = Object.assign(new Error('deadlock interno'), {
+    code: '40P01',
+  });
+  const pool = criarPoolCriacaoPublica(negocioPublico(), erroPostgres);
+  const { criarAgendamentoPublico } = carregarPublicoServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      criarAgendamentoPublico(
+        'studio-teste',
+        payloadAgendamento('2099-07-01T08:30:00')
+      ),
+    (err) =>
+      err.status === 409 &&
+      err.publicMessage === 'Horário indisponível para este profissional.' &&
+      err.code === undefined
+  );
+  assert.deepEqual(pool.transacoes, { commit: 0, release: 1, rollback: 1 });
+});
+
+test('criarAgendamentoPublico preserva deadlock anterior a escrita', async () => {
+  const erroPostgres = Object.assign(new Error('deadlock interno'), {
+    code: '40P01',
+  });
+  const pool = criarPoolCriacaoPublica(
+    negocioPublico(),
+    undefined,
+    erroPostgres
+  );
+  const { criarAgendamentoPublico } = carregarPublicoServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      criarAgendamentoPublico(
+        'studio-teste',
+        payloadAgendamento('2099-07-01T08:30:00')
+      ),
+    (err) => err === erroPostgres
+  );
+  assert.deepEqual(pool.transacoes, { commit: 0, release: 1, rollback: 1 });
+});
+
+test('criarAgendamentoPublico preserva exclusion violation desconhecida', async () => {
+  const erroPostgres = Object.assign(new Error('detalhe interno'), {
+    code: '23P01',
+    constraint: 'outra_exclusion_constraint',
+  });
+  const pool = criarPoolCriacaoPublica(negocioPublico(), erroPostgres);
+  const { criarAgendamentoPublico } = carregarPublicoServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      criarAgendamentoPublico(
+        'studio-teste',
+        payloadAgendamento('2099-07-01T08:30:00')
+      ),
+    (err) => err === erroPostgres
+  );
+  assert.deepEqual(pool.transacoes, { commit: 0, release: 1, rollback: 1 });
+});
+
 test('criarAgendamentoPublico rejeita negocio sem dias de funcionamento', async () => {
   const pool = criarPoolCriacaoPublica(
     negocioPublico({ dias_funcionamento: '[]' })
@@ -706,6 +831,54 @@ test('reagendarAgendamentoPublicoPorToken rejeita horario fora da grade do negoc
     pool.chamadas.some(({ sql }) => ehConsultaConflitoReagendamento(sql)),
     false
   );
+});
+
+test('reagendarAgendamentoPublicoPorToken traduz a constraint conhecida', async () => {
+  const erroPostgres = Object.assign(new Error('detalhe interno'), {
+    code: '23P01',
+    constraint: CONSTRAINT_AGENDAMENTO,
+  });
+  const pool = criarPoolReagendamentoPublico(
+    dadosAgendamento('confirmado'),
+    erroPostgres
+  );
+  const { reagendarAgendamentoPublicoPorToken } =
+    carregarPublicoServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      reagendarAgendamentoPublicoPorToken(TOKEN_VALIDO, {
+        data_hora_inicio: '2099-07-01T08:30:00',
+      }),
+    (err) =>
+      err.status === 409 &&
+      err.publicMessage === 'Horário indisponível para este profissional.'
+  );
+  assert.deepEqual(pool.transacoes, { commit: 0, release: 1, rollback: 1 });
+});
+
+test('reagendarAgendamentoPublicoPorToken traduz deadlock da escrita concorrente', async () => {
+  const erroPostgres = Object.assign(new Error('deadlock interno'), {
+    code: '40P01',
+  });
+  const pool = criarPoolReagendamentoPublico(
+    dadosAgendamento('confirmado'),
+    erroPostgres
+  );
+  const { reagendarAgendamentoPublicoPorToken } =
+    carregarPublicoServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      reagendarAgendamentoPublicoPorToken(TOKEN_VALIDO, {
+        data_hora_inicio: '2099-07-01T08:30:00',
+      }),
+    (err) =>
+      err.status === 409 &&
+      err.publicMessage === 'Horário indisponível para este profissional.' &&
+      err.code === undefined
+  );
+  assert.deepEqual(pool.transacoes, { commit: 0, release: 1, rollback: 1 });
 });
 
 test('reagendarAgendamentoPublicoPorToken rejeita negocio sem dias de funcionamento', async () => {

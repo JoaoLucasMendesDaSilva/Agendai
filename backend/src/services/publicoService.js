@@ -35,8 +35,12 @@ function criarErro(status, mensagem, code) {
   return error;
 }
 
-function traduzirErroConflitoDeAgendamento(erro) {
-  if (erro.code === '23P01') {
+function traduzirErroConflitoDeAgendamento(erro, permitirDeadlock = false) {
+  if (
+    (permitirDeadlock && erro.code === '40P01') ||
+    (erro.code === '23P01' &&
+      erro.constraint === 'ex_agendamentos_profissional_periodo_ativo')
+  ) {
     return criarErro(409, 'Horário indisponível para este profissional.');
   }
 
@@ -599,7 +603,9 @@ async function reagendarAgendamentoPublicoPorToken(token, dados) {
         agendamento.id,
         tokenHash,
       ]
-    );
+    ).catch((erro) => {
+      throw traduzirErroConflitoDeAgendamento(erro, true);
+    });
 
     await connection.query('COMMIT');
 
@@ -958,7 +964,9 @@ async function criarAgendamentoPublico(slugOuId, dados) {
         tokenPublicoHash,
         VERSAO_AVISO_PRIVACIDADE,
       ]
-    );
+    ).catch((erro) => {
+      throw traduzirErroConflitoDeAgendamento(erro, true);
+    });
 
     const { rows: agendamentos } = await connection.query(
       `SELECT id, servico_id, profissional_id, cliente_nome, cliente_telefone,
