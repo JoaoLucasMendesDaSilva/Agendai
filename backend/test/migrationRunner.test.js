@@ -79,20 +79,36 @@ test('histórico aceita somente o prefixo exato de nome e checksum', async () =>
 });
 
 test('baseline aceita apenas prefixos estruturais completos e contíguos', () => {
-  for (let prefix = 0; prefix <= 5; prefix += 1) {
+  for (let prefix = 0; prefix <= 6; prefix += 1) {
     const signatures = Array.from(
-      { length: 5 },
+      { length: 6 },
       (_, index) => (index < prefix ? 'complete' : 'absent')
     );
     assert.equal(classifyBaselineSignatures(signatures).prefix, prefix);
   }
 
   assert.throws(
-    () => classifyBaselineSignatures(['complete', 'partial', 'absent', 'absent']),
+    () =>
+      classifyBaselineSignatures([
+        'complete',
+        'partial',
+        'absent',
+        'absent',
+        'absent',
+        'absent',
+      ]),
     (error) => error.code === 'MIGRATION_BASELINE_INVALID'
   );
   assert.throws(
-    () => classifyBaselineSignatures(['absent', 'complete', 'absent', 'absent']),
+    () =>
+      classifyBaselineSignatures([
+        'absent',
+        'complete',
+        'absent',
+        'absent',
+        'absent',
+        'absent',
+      ]),
     (error) => error.code === 'MIGRATION_BASELINE_INVALID'
   );
 });
@@ -316,6 +332,44 @@ test('EXCLUDE preserva case dos status e exige dependências de catálogo', () =
     matchesDomainConstraint(
       { ...row, operators_catalog_only: false },
       'ex_agendamentos_profissional_periodo_ativo'
+    ),
+    false
+  );
+});
+
+test('identidade do negócio exige unique constraint exata e imediata', () => {
+  const row = {
+    columns: ['usuario_id'],
+    constraint_name: 'uk_negocios_usuario_id',
+    constraint_type: 'u',
+    deferrable: false,
+    deferred: false,
+    definition: 'UNIQUE (usuario_id)',
+    functions_catalog_only: true,
+    has_no_parent: true,
+    inheritance_count: 0,
+    is_local: true,
+    no_inherit: true,
+    operators_catalog_only: true,
+    table_name: 'negocios',
+    validated: true,
+  };
+
+  assert.equal(
+    matchesDomainConstraint(row, 'uk_negocios_usuario_id'),
+    true
+  );
+  assert.equal(
+    matchesDomainConstraint(
+      { ...row, columns: ['usuario_id', 'ativo'], definition: 'UNIQUE (usuario_id, ativo)' },
+      'uk_negocios_usuario_id'
+    ),
+    false
+  );
+  assert.equal(
+    matchesDomainConstraint(
+      { ...row, deferrable: true },
+      'uk_negocios_usuario_id'
     ),
     false
   );
@@ -556,11 +610,12 @@ test('conjunto oficial futuro exige atualização explícita do inspetor', () =>
     '003_add_public_appointment_token.sql',
     '004_harden_supabase_data_boundary.sql',
     '005_add_privacy_governance.sql',
+    '006_enforce_business_identity.sql',
   ].map((name) => ({ name }));
 
   assert.equal(migrationSetKind(active), 'active');
   assert.equal(
-    migrationSetKind([...active, { name: '005_future.sql' }]),
+    migrationSetKind([...active, { name: '007_future.sql' }]),
     'unsupported-active-prefix'
   );
   assert.equal(

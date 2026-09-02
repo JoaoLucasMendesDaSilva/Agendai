@@ -41,7 +41,7 @@ não são declarados como concluídos aqui.
 
 ## Banco e ordem operacional
 
-As migrations PostgreSQL ativas são 001 a 005 em
+As migrations PostgreSQL ativas são 001 a 006 em
 `backend/database/postgres-migrations/`. As migrations MySQL no diretório
 `backend/database/migrations/` são históricas e não devem ser executadas no
 Supabase.
@@ -51,7 +51,16 @@ existente, a aplicação continua deliberada: faça backup, confirme o estado do
 schema, execute `npm run db:migrate -- --confirm-database=<nome-exato-do-banco>`
 e valide o resultado antes de liberar a aplicação. A migration 004 fecha
 privilégios da Data API e a 005 adiciona os controles de privacidade; ambas não
-substituem JWT e isolamento por negócio no Express.
+substituem JWT e isolamento por negócio no Express. A 006 garante no máximo um
+negócio por empreendedor autenticado; renomear o negócio preserva o
+`slug_publico`.
+
+Antes da 006, faça backup restaurável e execute a consulta agregada somente
+leitura de [`MIGRACAO.md`](../MIGRACAO.md). O resultado precisa indicar zero
+grupos duplicados sem expor IDs ou linhas de proprietários. Se houver
+duplicidade, interrompa o release e resolva cada caso com decisão humana; nunca
+selecione, exclua ou mescle automaticamente um negócio vencedor. Repositório e
+CI verdes não comprovam que a 006 esteja aplicada no Supabase ou em produção.
 
 ## Deploy e smoke test
 
@@ -61,7 +70,8 @@ Depois de confirmar banco e variáveis:
 2. confirme nos logs o runtime Node 24, instalação e inicialização;
 3. verifique `GET /api/health` como liveness HTTP;
 4. valide conexão ao banco por cadastro/login e um fluxo autenticado;
-5. valide negócio, serviço, profissional, agendamento público e gerenciamento;
+5. confirme a migration 006 no histórico e valide negócio único, renomeação com
+   URL pública preservada, serviço, profissional, agendamento e gerenciamento;
 6. confirme CORS entre o frontend Vercel e o backend Render;
 7. teste a estratégia de persistência de uploads após restart ou redeploy.
 
