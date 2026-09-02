@@ -44,7 +44,8 @@ The evidence and prioritization for this wave are recorded in
 4. Execute 017 and 018 after 016. They may be developed independently, but
    each must pass the same real-database gate.
 5. Execute 019 after 018 so PostgreSQL migrations remain contiguous: plan 015
-   owns migration 004, plan 018 owns 005, and plan 019 owns 006.
+   owns migration 004, privacy governance owns migration 005, plan 018 owns
+   migration 006, and plan 019 owns migration 007.
 
 ## Dependency notes
 

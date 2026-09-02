@@ -15,10 +15,15 @@ projeto e não devem ser aplicados ao PostgreSQL. As migrations ativas ficam em
 - O driver ativo é `pg` e as queries usam parâmetros posicionais PostgreSQL.
 - `DATABASE_URL`, `DATABASE_SSL_MODE` e `DATABASE_SSL_CA` formam o contrato de
   conexão; hosts remotos usam TLS com validação de certificado e hostname.
-- As migrations PostgreSQL 001 a 004 estão ordenadas e devem permanecer
+- As migrations PostgreSQL 001 a 006 estão ordenadas e devem permanecer
   imutáveis depois de aplicadas.
 - A migration 004 habilita RLS e remove privilégios da Data API para as tabelas
   da aplicação, sem criar políticas permissivas para acesso pelo navegador.
+- A migration 005 adiciona os controles de governança e retenção de dados.
+- A migration 006 adiciona `UNIQUE (usuario_id)` em `negocios`: cada
+  empreendedor autenticado pode possuir no máximo um negócio. A aplicação
+  resolve colisões de `slug_publico` durante a criação e preserva o slug quando
+  o negócio é renomeado.
 - A CLI `npm run db:migrate` descobre somente nomes
   `NNN_nome_em_minusculas.sql`, exige sequência contínua desde 001 e calcula
   SHA-256 sobre os bytes exatos. Regras de `.gitattributes` mantêm migrations e
@@ -34,14 +39,40 @@ projeto e não devem ser aplicados ao PostgreSQL. As migrations ativas ficam em
   a `.nvmrc` da raiz define a versão principal Node 24 para desenvolvimento e CI.
 - O workflow de qualidade executa unitários e integração serializada em
   PostgreSQL 17 descartável. Ele cobre banco vazio, repetição, drift, rollback,
-  concorrência, baseline e as garantias de RLS/revogação do plano 015, além dos
-  audits full-tree do plano 020.
+  concorrência, baseline, garantias de RLS/revogação e a identidade única de
+  negócio, além dos audits full-tree do plano 020.
 
 ## Estado externo não verificado
 
-Este documento não comprova que migrations, RLS, revogações, deploy ou rotação
-de credenciais já tenham sido executados no Supabase ou no Render. Nenhum
-segredo ou dashboard de produção foi consultado para atualizar este registro.
+Este documento, o repositório e um CI verde não comprovam que migrations —
+inclusive a 006 —, RLS, revogações, deploy ou rotação de credenciais já tenham
+sido executados no Supabase, no Render ou em produção. Nenhum segredo ou
+dashboard de produção foi consultado para atualizar este registro.
+
+## Pré-requisito da migration 006
+
+A migration `006_enforce_business_identity.sql` só pode ser aplicada quando não
+existir proprietário associado a mais de um negócio. Depois de confirmar o
+banco correto, execute esta consulta agregada somente leitura:
+
+```sql
+SELECT COUNT(*) AS grupos_de_proprietarios_duplicados
+FROM (
+  SELECT usuario_id
+  FROM public.negocios
+  GROUP BY usuario_id
+  HAVING COUNT(*) > 1
+) AS grupos_duplicados;
+```
+
+O resultado expõe apenas a quantidade de grupos duplicados, sem listar
+`usuario_id`, negócios ou dados pessoais. O valor precisa ser `0`. Antes da
+migration, é obrigatório ter backup restaurável e procedimento de recuperação
+confirmado. Se o resultado for maior que zero, não execute a 006: preserve os
+dados e resolva cada caso manualmente com a pessoa responsável pelo negócio.
+Nunca selecione, exclua ou mescle automaticamente um registro vencedor. A
+migration também faz essa verificação e recusa o apply em caso de duplicidade;
+ela não corrige dados.
 
 ## Aplicação e baseline
 

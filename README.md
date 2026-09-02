@@ -152,7 +152,9 @@ Agendai/
 │   │   │   ├── 001_create_schema.sql
 │   │   │   ├── 002_add_business_branding.sql
 │   │   │   ├── 003_add_public_appointment_token.sql
-│   │   │   └── 004_harden_supabase_data_boundary.sql
+│   │   │   ├── 004_harden_supabase_data_boundary.sql
+│   │   │   ├── 005_add_privacy_governance.sql
+│   │   │   └── 006_enforce_business_identity.sql
 │   │   └── migrations/           # histórico MySQL
 │   └── package.json
 │
@@ -352,7 +354,8 @@ calculado sobre os bytes exatos e gravado com versão, nome e data em
 2. `backend/database/postgres-migrations/002_add_business_branding.sql`;
 3. `backend/database/postgres-migrations/003_add_public_appointment_token.sql`;
 4. `backend/database/postgres-migrations/004_harden_supabase_data_boundary.sql`;
-5. `backend/database/postgres-migrations/005_add_privacy_governance.sql`.
+5. `backend/database/postgres-migrations/005_add_privacy_governance.sql`;
+6. `backend/database/postgres-migrations/006_enforce_business_identity.sql`.
 
 O executor exige PostgreSQL 15 ou superior; o gate remoto usa PostgreSQL 17.
 
@@ -391,6 +394,14 @@ A migration 004 habilita RLS e revoga privilégios da Data API sem criar
 políticas permissivas. Essa barreira não substitui JWT, autorização de recurso
 ou filtros de isolamento por negócio no Express. Consulte
 [`docs/POSTGRES-SUPABASE.md`](docs/POSTGRES-SUPABASE.md) antes da operação.
+
+A migration 006 garante no PostgreSQL que cada empreendedor autenticado possua
+no máximo um negócio. Ela exige zero proprietários duplicados: faça backup
+restaurável e execute a consulta agregada somente leitura documentada em
+[`MIGRACAO.md`](MIGRACAO.md) antes do apply. Se houver duplicidade, interrompa
+a operação e resolva cada caso com decisão humana; nunca selecione, exclua ou
+mescle automaticamente um negócio vencedor. Renomear o negócio preserva o
+`slug_publico`, mantendo estável o link público já compartilhado.
 
 ### Privacidade e LGPD
 
@@ -499,8 +510,10 @@ gates em pull requests e pushes para `main`, incluindo auditoria full-tree no
 nível `low` para os três lockfiles. O job `postgres-integration` usa PostgreSQL
 17 descartável e executa migrations, repetição idempotente, drift de checksum,
 rollback, concorrência, baseline e os limites de RLS, privilégios, triggers e
-constraints do plano 015. A execução remota é a validação autoritativa da
-sintaxe e dos jobs do GitHub Actions; não comprova o estado do Supabase.
+constraints, inclusive a identidade única de negócio. A execução remota é a
+validação autoritativa da sintaxe e dos jobs do GitHub Actions; repositório e CI
+verdes não comprovam que a migration 006 esteja aplicada no Supabase ou em
+produção.
 
 ---
 
@@ -570,7 +583,7 @@ ou redeploy. Este repositório não comprova que esse volume já existe.
 
 Antes de considerar o deploy pronto, confirme nos dashboards o Node 24, os
 nomes das variáveis, os logs de build/start, o schema PostgreSQL, o histórico
-registrado pelo runner, a aplicação da migration 005 e a persistência de
+registrado pelo runner, a aplicação das migrations 005 e 006 e a persistência de
 uploads. `/api/health` comprova apenas que o processo HTTP responde; não
 consulta o banco. Valide acesso ao banco por um fluxo autenticado e faça smoke
 test de login, agendamento público, link de gerenciamento e upload. Para

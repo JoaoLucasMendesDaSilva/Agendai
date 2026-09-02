@@ -188,33 +188,9 @@ function criarSlugBase(nome) {
   return slug || 'negocio';
 }
 
-async function gerarSlugPublico(nome, idIgnorado = null) {
-  const pool = getDatabasePool();
+function gerarCandidatoSlug(nome, tentativa) {
   const base = criarSlugBase(nome);
-  let sufixo = 1;
-
-  while (sufixo <= 100) {
-    const candidato = sufixo === 1 ? base : `${base}-${sufixo}`;
-    const params = [candidato];
-    let sql = 'SELECT id FROM negocios WHERE slug_publico = $1';
-
-    if (idIgnorado) {
-      sql += ' AND id <> $2';
-      params.push(idIgnorado);
-    }
-
-    sql += ' LIMIT 1';
-
-    const { rows: linhas } = await pool.query(sql, params);
-
-    if (linhas.length === 0) {
-      return candidato;
-    }
-
-    sufixo += 1;
-  }
-
-  throw criarErro(409, 'Nao foi possivel gerar um link publico unico.');
+  return tentativa === 1 ? base : `${base}-${tentativa}`;
 }
 
 function montarDadosCriacao(dados) {
@@ -367,30 +343,55 @@ async function criarNegocio(usuarioId, dados) {
   }
 
   const dadosValidados = montarDadosCriacao(dados);
-  const slugPublico = await gerarSlugPublico(dadosValidados.nome);
+  let resultado;
 
-  const resultado = await pool.query(
-    `INSERT INTO negocios (
-      usuario_id, nome, slug_publico, descricao, telefone, endereco, cidade,
-      contato_privacidade, horario_abertura, horario_fechamento, dias_funcionamento
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-     RETURNING id`,
-    [
-      usuarioId,
-      dadosValidados.nome,
-      slugPublico,
-      dadosValidados.descricao,
-      dadosValidados.telefone,
-      dadosValidados.endereco,
-      dadosValidados.cidade,
-      dadosValidados.contatoPrivacidade,
-      dadosValidados.horarioAbertura,
-      dadosValidados.horarioFechamento,
-      dadosValidados.diasFuncionamento === null
-        ? null
-        : JSON.stringify(dadosValidados.diasFuncionamento),
-    ]
-  );
+  for (let tentativa = 1; tentativa <= 100; tentativa += 1) {
+    const slugPublico = gerarCandidatoSlug(dadosValidados.nome, tentativa);
+
+    try {
+      resultado = await pool.query(
+        `INSERT INTO negocios (
+          usuario_id, nome, slug_publico, descricao, telefone, endereco, cidade,
+          contato_privacidade, horario_abertura, horario_fechamento, dias_funcionamento
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+         RETURNING id`,
+        [
+          usuarioId,
+          dadosValidados.nome,
+          slugPublico,
+          dadosValidados.descricao,
+          dadosValidados.telefone,
+          dadosValidados.endereco,
+          dadosValidados.cidade,
+          dadosValidados.contatoPrivacidade,
+          dadosValidados.horarioAbertura,
+          dadosValidados.horarioFechamento,
+          dadosValidados.diasFuncionamento === null
+            ? null
+            : JSON.stringify(dadosValidados.diasFuncionamento),
+        ]
+      );
+      break;
+    } catch (erro) {
+      if (
+        erro?.code === '23505' &&
+        erro?.constraint === 'uk_negocios_usuario_id'
+      ) {
+        throw criarErro(409, 'Usuario ja possui negocio cadastrado.');
+      }
+
+      if (
+        erro?.code !== '23505' ||
+        erro?.constraint !== 'uk_negocios_slug_publico'
+      ) {
+        throw erro;
+      }
+    }
+  }
+
+  if (!resultado) {
+    throw criarErro(409, 'Nao foi possivel gerar um link publico unico.');
+  }
 
   const { rows: linhas } = await pool.query(
     `SELECT id, nome, slug_publico, descricao, telefone, endereco, cidade, contato_privacidade,
@@ -436,8 +437,6 @@ async function atualizarNegocio(usuarioId, negocioId, dados) {
   if (atualizacao.nome !== undefined) {
     campos.push(`nome = $${valores.length + 1}`);
     valores.push(atualizacao.nome);
-    campos.push(`slug_publico = $${valores.length + 1}`);
-    valores.push(await gerarSlugPublico(atualizacao.nome, id));
   }
 
   for (const campo of ['descricao', 'telefone', 'endereco', 'cidade', 'contato_privacidade']) {
