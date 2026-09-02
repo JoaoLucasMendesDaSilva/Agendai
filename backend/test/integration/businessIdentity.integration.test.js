@@ -120,25 +120,23 @@ describe(
     }
 
     async function identityState() {
-      const [businesses, constraints, indexes] = await Promise.all([
-        harness.client.query(`
-          SELECT id, usuario_id, nome, slug_publico
-          FROM public.negocios
-          ORDER BY id
-        `),
-        harness.client.query(`
-          SELECT conname, pg_get_constraintdef(oid, true) AS definition
-          FROM pg_constraint
-          WHERE conrelid = 'public.negocios'::regclass
-          ORDER BY conname
-        `),
-        harness.client.query(`
-          SELECT indexname, indexdef
-          FROM pg_indexes
-          WHERE schemaname = 'public' AND tablename = 'negocios'
-          ORDER BY indexname
-        `),
-      ]);
+      const businesses = await harness.client.query(`
+        SELECT id, usuario_id, nome, slug_publico
+        FROM public.negocios
+        ORDER BY id
+      `);
+      const constraints = await harness.client.query(`
+        SELECT conname, pg_get_constraintdef(oid, true) AS definition
+        FROM pg_constraint
+        WHERE conrelid = 'public.negocios'::regclass
+        ORDER BY conname
+      `);
+      const indexes = await harness.client.query(`
+        SELECT indexname, indexdef
+        FROM pg_indexes
+        WHERE schemaname = 'public' AND tablename = 'negocios'
+        ORDER BY indexname
+      `);
 
       return {
         businesses: businesses.rows,
@@ -185,7 +183,7 @@ describe(
             index_relation.relname AS index_name,
             pg_get_constraintdef(constraint_row.oid, true) AS definition,
             ARRAY(
-              SELECT attribute.attname
+              SELECT attribute.attname::text
               FROM unnest(index_row.indkey) WITH ORDINALITY AS key(attnum, position)
               JOIN pg_attribute AS attribute
                 ON attribute.attrelid = index_row.indrelid
