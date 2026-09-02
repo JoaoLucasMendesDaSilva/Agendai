@@ -6,9 +6,11 @@
 > only this plan's row `DONE` after all local and remote evidence is green.
 >
 > **Drift check (run first)**:
-> `git diff --stat f7e455b..HEAD -- backend/database/postgres-migrations backend/src/database/migrationRunner.js backend/src/services/negocioService.js backend/test/negocioService.test.js backend/test/integration README.md MIGRACAO.md docs`
-> Confirm plans 015 and 016 are complete, migration 004 is the latest numbered
-> migration, and the live constraint/error names match this plan.
+> `git diff --stat f7e455b..HEAD -- backend/database/postgres-migrations backend/src/database/migrationContracts.js backend/src/database/migrationSchema.js backend/src/services/negocioService.js backend/test/negocioService.test.js backend/test/integration README.md MIGRACAO.md docs`
+> Confirm plans 015 and 016 are complete, migration 005 is the latest numbered
+> migration, migration 006 is absent, and the live constraint/error names match
+> this plan. Migration 005 is the existing privacy-governance migration and must
+> remain unchanged.
 
 ## Status
 
@@ -64,9 +66,10 @@ From root: `git diff --check`. GitHub's `backend-tests` and
 
 **In scope**:
 
-- `backend/database/postgres-migrations/005_enforce_business_identity.sql`
+- `backend/database/postgres-migrations/006_enforce_business_identity.sql`
   (create)
-- `backend/src/database/migrationRunner.js` (migration 005 baseline signature)
+- `backend/src/database/migrationContracts.js` (official migration set)
+- `backend/src/database/migrationSchema.js` (migration 006 baseline signature)
 - `backend/test/migrationRunner.test.js`
 - `backend/src/services/negocioService.js`
 - `backend/test/negocioService.test.js`
@@ -74,6 +77,7 @@ From root: `git diff --check`. GitHub's `backend-tests` and
 - `README.md`
 - `MIGRACAO.md`
 - `docs/POSTGRES-SUPABASE.md`
+- `docs/RENDER.md`
 - `plans/README.md` (status row only)
 
 **Out of scope**:
@@ -81,7 +85,7 @@ From root: `git diff --check`. GitHub's `backend-tests` and
 - Choosing, merging, deleting, or reassigning duplicate business rows.
 - Multiple businesses per user, business switching, roles, or permission
   redesign.
-- Editing migrations 001-004 or migration history/checksums.
+- Editing migrations 001-005 or migration history/checksums.
 - Changing public route paths, response shapes, or existing slugs.
 - User-editable slugs, redirects, or slug-history tables.
 - Frontend changes or deployment/provider mutations.
@@ -121,9 +125,9 @@ server text.
 **Verify**: new tests fail against the current implementation while unrelated
 unit tests still run.
 
-### Step 2: Add migration 005 with a transactional duplicate guard
+### Step 2: Add migration 006 with a transactional duplicate guard
 
-Create `005_enforce_business_identity.sql`. Inside one SQL file:
+Create `006_enforce_business_identity.sql`. Inside one SQL file:
 
 1. Run a `DO` block that tests for duplicate `usuario_id` groups with
    `GROUP BY usuario_id HAVING COUNT(*) > 1`.
@@ -140,7 +144,7 @@ Do not auto-delete or update a row. Do not use `IF NOT EXISTS` to mask an
 unknown same-named object. Plan 016's outer transaction must roll back the
 guard, DDL, and history row together.
 
-Extend the runner's baseline verifier so a manually applied migration 005 is
+Extend the runner's baseline verifier so a manually applied migration 006 is
 recognized only when the named unique constraint has the exact one-column
 definition and the redundant index is absent. Partial/incompatible state must
 still stop without history mutation.
@@ -196,15 +200,15 @@ same public identifier resolves after rename.
 
 Using plan 016's guarded harness, test:
 
-- clean migrations through 004 apply 005 successfully;
-- a fixture with two businesses for one owner makes migration 005 fail, leaves
-  both rows untouched, adds no 005 history row, and leaves no partial
+- clean migrations through 005 apply 006 successfully;
+- a fixture with two businesses for one owner makes migration 006 fail, leaves
+  both rows untouched, adds no 006 history row, and leaves no partial
   constraint/index change;
-- direct duplicate owner insertion after 005 fails with `23505` and constraint
+- direct duplicate owner insertion after 006 fails with `23505` and constraint
   `uk_negocios_usuario_id`;
 - unique owner queries use the remaining unique index;
 - a second migration run is a no-op;
-- exact 005 baseline succeeds, while partial/wrong signatures fail unchanged.
+- exact 006 baseline succeeds, while partial/wrong signatures fail unchanged.
 
 No test may print fixture data or use an existing environment.
 
@@ -235,19 +239,19 @@ are insufficient.
 
 Update scoped active PostgreSQL docs:
 
-- migration 005 and its zero-duplicate prerequisite;
+- migration 006 and its zero-duplicate prerequisite;
 - read-only diagnostic query for duplicate owner groups;
-- mandatory backup and human resolution before applying 005 when duplicates
+- mandatory backup and human resolution before applying 006 when duplicates
   exist;
 - no automated winner/deletion/merge;
 - one business per authenticated entrepreneur;
 - display-name changes do not change `slug_publico`;
-- repository/CI completion does not prove migration 005 is live in Supabase.
+- repository/CI completion does not prove migration 006 is live in Supabase.
 
 Never show real owner IDs or production rows in examples.
 
 **Verify**:
-`rg -n "005_enforce_business_identity|uk_negocios_usuario_id|slug_publico" README.md MIGRACAO.md docs backend/database/postgres-migrations`
+`rg -n "006_enforce_business_identity|uk_negocios_usuario_id|slug_publico" README.md MIGRACAO.md docs backend/database/postgres-migrations`
 and review every match.
 
 ### Step 8: Run the full gate and update the index
@@ -262,11 +266,11 @@ only after every criterion holds.
 
 ## Done criteria
 
-- [ ] Migration 005 refuses duplicate owners without data/history/schema
+- [ ] Migration 006 refuses duplicate owners without data/history/schema
       mutation and adds exact `uk_negocios_usuario_id` on clean data.
 - [ ] The redundant non-unique owner index is removed only after unique coverage
       exists.
-- [ ] Runner baseline verification recognizes exact migration 005 and rejects
+- [ ] Runner baseline verification recognizes exact migration 006 and rejects
       partial/incompatible state.
 - [ ] Same-owner create race produces one success, one stable `409`, one row.
 - [ ] Same-name/different-owner race produces two businesses with distinct
@@ -284,8 +288,8 @@ only after every criterion holds.
 
 Stop and report; do not improvise if:
 
-- Plans 015/016 are incomplete, migration 005 already exists, or migration
-  001-004/history checksums drifted.
+- Plans 015/016 are incomplete, migration 006 already exists, or migration
+  001-005/history checksums drifted.
 - Duplicate owners are found outside the confirmed disposable test database.
 - Product requirements now allow multiple businesses per user.
 - A same-named or functionally equivalent owner constraint/index already exists

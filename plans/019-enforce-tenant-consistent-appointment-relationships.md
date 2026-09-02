@@ -6,10 +6,10 @@
 > and guarded PostgreSQL harness. Update only this plan's index row when done.
 >
 > **Drift check (run first)**:
-> `git diff --stat f7e455b..HEAD -- backend/database/postgres-migrations backend/src/database/migrationRunner.js backend/src/services/publicoService.js backend/test backend/package.json README.md MIGRACAO.md docs`
-> Confirm plans 015, 016, and 018 are complete and migration 005 is the latest
-> migration. Reinspect every appointment insert/update path and live constraint
-> name before proceeding.
+> `git diff --stat f7e455b..HEAD -- backend/database/postgres-migrations backend/src/database/migrationContracts.js backend/src/database/migrationSchema.js backend/src/services/publicoService.js backend/test backend/package.json README.md MIGRACAO.md docs`
+> Confirm plans 015, 016, and 018 are complete, migration 006 is the latest
+> migration, and migration 007 is absent. Reinspect every appointment
+> insert/update path and live constraint name before proceeding.
 
 ## Status
 
@@ -62,9 +62,10 @@ must pass.
 
 **In scope**:
 
-- `backend/database/postgres-migrations/006_enforce_appointment_tenant_relationships.sql`
+- `backend/database/postgres-migrations/007_enforce_appointment_tenant_relationships.sql`
   (create)
-- `backend/src/database/migrationRunner.js` (migration 006 baseline signature)
+- `backend/src/database/migrationContracts.js` (official migration set)
+- `backend/src/database/migrationSchema.js` (migration 007 baseline signature)
 - `backend/test/migrationRunner.test.js`
 - `backend/test/publicoService.test.js` (tenant/error regressions only)
 - `backend/test/integration/appointmentTenantRelationships.integration.test.js`
@@ -78,7 +79,7 @@ must pass.
 
 **Out of scope**:
 
-- Editing migrations 001-005 or applied history.
+- Editing migrations 001-006 or applied history.
 - Moving, merging, deleting, or guessing ownership of inconsistent rows.
 - Cross-business service/professional sharing, multi-unit architecture, or
   permission redesign.
@@ -101,7 +102,8 @@ must pass.
 ### Step 1: Add failing real PostgreSQL characterization
 
 Create the integration file with plan 016's guarded harness and migrate through
-005. Seed two synthetic businesses, each with one service and professional.
+migration 006. Seed two synthetic businesses, each with one service and
+professional.
 
 Prove current PostgreSQL incorrectly accepts direct inserts where:
 
@@ -120,9 +122,9 @@ catalog evidence; do not add duplicate constraints.
 **Verify**: characterization fails the desired invariant only in the guarded
 disposable database.
 
-### Step 2: Add migration 006 with a read-only mismatch guard
+### Step 2: Add migration 007 with a read-only mismatch guard
 
-Create `006_enforce_appointment_tenant_relationships.sql`. Begin with one
+Create `007_enforce_appointment_tenant_relationships.sql`. Begin with one
 sanitized `DO` guard that counts, without returning row data:
 
 - appointments whose service is missing or has a different `negocio_id`;
@@ -136,12 +138,12 @@ customer fields, business names, or contact data.
 Plan 016's transaction must ensure the guard failure creates no migration
 history or schema mutation.
 
-**Verify**: integration fixture with bad rows fails migration 006 and retains
+**Verify**: integration fixture with bad rows fails migration 007 and retains
 the exact original rows/constraints/history state.
 
 ### Step 3: Add exact composite parent keys and foreign keys
 
-After the guard passes, migration 006 must:
+After the guard passes, migration 007 must:
 
 1. Add `uk_servicos_id_negocio_id` on `servicos(id, negocio_id)`.
 2. Add `uk_profissionais_id_negocio_id` on
@@ -168,12 +170,12 @@ is already a primary key. Do not add new appointment indexes: existing indexes
 starting with `servico_id`/`profissional_id` are sufficient for the FK lookup
 because those IDs are globally unique. Confirm with catalog and query plans.
 
-**Verify**: on clean real PostgreSQL, migration 006 applies once and its second
+**Verify**: on clean real PostgreSQL, migration 007 applies once and its second
 runner invocation is a no-op.
 
 ### Step 4: Extend structural baseline verification
 
-Update plan 016's baseline verifier and unit tests for migration 006. Exact
+Update plan 016's baseline verifier and unit tests for migration 007. Exact
 signature requires:
 
 - both named parent composite unique constraints with ordered columns;
@@ -193,7 +195,7 @@ reversed, unvalidated, and incompatible definitions.
 
 ### Step 5: Prove direct database enforcement and preserved behavior
 
-After migration 006, repeat Step 1. Assert cross-tenant inserts fail with
+After migration 007, repeat Step 1. Assert cross-tenant inserts fail with
 PostgreSQL `23503` and the exact corresponding composite constraint name.
 
 Also test:
@@ -232,7 +234,7 @@ constraint names are absent from public errors/log fixtures.
 
 Update active PostgreSQL docs with:
 
-- migration 006 and its two mismatch counts;
+- migration 007 and its two mismatch counts;
 - a read-only diagnostic query that returns counts before deployment;
 - zero mismatches as the apply prerequisite;
 - backup and human investigation when mismatches exist;
@@ -240,12 +242,12 @@ Update active PostgreSQL docs with:
 - durable invariant: appointment, service, professional, and business share one
   `negocio_id`;
 - continued requirement for Express authorization and tenant predicates;
-- no claim that migration 006 is live until directly verified.
+- no claim that migration 007 is live until directly verified.
 
 Keep examples synthetic and free of customer data.
 
 **Verify**:
-`rg -n "006_enforce_appointment_tenant_relationships|fk_agendamentos_servico_negocio|fk_agendamentos_profissional_negocio" README.md MIGRACAO.md docs backend/database/postgres-migrations`
+`rg -n "007_enforce_appointment_tenant_relationships|fk_agendamentos_servico_negocio|fk_agendamentos_profissional_negocio" README.md MIGRACAO.md docs backend/database/postgres-migrations`
 and review every match.
 
 ### Step 8: Run the complete gate and update the index
@@ -270,7 +272,7 @@ service behavior, and remote CI all satisfy the criteria.
       same-tenant writes succeed.
 - [ ] Scheduling exclusion, delete restrictions, and valid update behavior are
       preserved.
-- [ ] Runner baseline recognizes only the complete migration 006 signature.
+- [ ] Runner baseline recognizes only the complete migration 007 signature.
 - [ ] Service tenant predicates and non-enumerating public errors remain intact.
 - [ ] Unit and guarded PostgreSQL integration tests pass locally and in CI.
 - [ ] No real data, applied migration, frontend file, or provider state changed.
@@ -281,7 +283,7 @@ service behavior, and remote CI all satisfy the criteria.
 
 Stop and report; do not improvise if:
 
-- Plans 015, 016, or 018 are incomplete; migration 006 already exists; or an
+- Plans 015, 016, or 018 are incomplete; migration 007 already exists; or an
   applied migration/history checksum drifted.
 - Any cross-tenant/missing-parent row exists outside the confirmed disposable
   test database.

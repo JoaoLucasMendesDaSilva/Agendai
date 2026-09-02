@@ -104,6 +104,7 @@ const CONSTRAINT_SPECS = Object.freeze({
   uk_usuarios_email: ['usuarios', 'u', ['email'], null, null, 1, []],
   negocios_pkey: ['negocios', 'p', ['id'], null, null, 1, []],
   uk_negocios_slug_publico: ['negocios', 'u', ['slug_publico'], null, null, 1, []],
+  uk_negocios_usuario_id: ['negocios', 'u', ['usuario_id'], null, null, 6, []],
   fk_negocios_usuario: ['negocios', 'f', ['usuario_id'], 'usuarios', ['id'], 1, []],
   chk_negocios_intervalo_agendamento: ['negocios', 'c', ['intervalo_agendamento_minutos'], null, null, 1, ['intervalo_agendamento_minutos', '> 0']],
   chk_negocios_horario_funcionamento: ['negocios', 'c', ['horario_fechamento', 'horario_abertura'], null, null, 1, ['horario_fechamento', 'horario_abertura', '>']],
@@ -563,8 +564,11 @@ function migrationOneStatus(snapshot) {
     }) &&
     snapshot.constraints.every((row) => CONSTRAINT_SPECS[row.constraint_name]) &&
     new Set(constraintNames).size === constraintNames.length;
-  const baseIndexSpecs = Object.entries(INDEX_SPECS).filter(([name]) =>
-    BASE_APPLICATION_TABLES.includes(INDEX_SPECS[name][0])
+  const ownerIdentityComplete = migrationSixStatus(snapshot) === 'complete';
+  const baseIndexSpecs = Object.entries(INDEX_SPECS).filter(
+    ([name]) =>
+      BASE_APPLICATION_TABLES.includes(INDEX_SPECS[name][0]) &&
+      !(ownerIdentityComplete && name === 'idx_negocios_usuario_id')
   );
   const explicitIndexes = snapshot.indexes.filter(
     (row) => !row.constraint_name && BASE_APPLICATION_TABLES.includes(row.table_name)
@@ -787,6 +791,49 @@ function migrationFiveStatus(snapshot) {
   ) ? 'complete' : 'partial';
 }
 
+function migrationSixStatus(snapshot) {
+  const constraint = snapshot.constraints.find(
+    (row) => row.constraint_name === 'uk_negocios_usuario_id'
+  );
+  const constraintIndex = snapshot.indexes.find(
+    (row) => row.constraint_name === 'uk_negocios_usuario_id'
+  );
+  const legacyIndex = snapshot.indexes.find(
+    (row) => row.index_name === 'idx_negocios_usuario_id'
+  );
+  const hasNegocios = snapshot.relations.some(
+    (row) => row.table_name === 'negocios'
+  );
+
+  if (!constraint && !constraintIndex) {
+    if (!hasNegocios || legacyIndex) return 'absent';
+    return 'partial';
+  }
+
+  return (
+    !legacyIndex &&
+    constraintMatches(
+      constraint,
+      CONSTRAINT_SPECS.uk_negocios_usuario_id,
+      'uk_negocios_usuario_id'
+    ) &&
+    constraintIndex?.index_name === 'uk_negocios_usuario_id' &&
+    constraintIndex?.table_name === 'negocios' &&
+    constraintIndex?.access_method === 'btree' &&
+    constraintIndex?.is_unique === true &&
+    constraintIndex?.is_primary === false &&
+    constraintIndex?.is_exclusion === false &&
+    constraintIndex?.nulls_not_distinct === false &&
+    constraintIndex?.is_valid === true &&
+    constraintIndex?.predicate === null &&
+    sameArray(constraintIndex?.columns || [], ['usuario_id']) &&
+    canonicalSqlDefinition(constraintIndex?.definition) ===
+      canonicalSqlDefinition(
+        'CREATE UNIQUE INDEX uk_negocios_usuario_id ON negocios USING btree (usuario_id)'
+      )
+  ) ? 'complete' : 'partial';
+}
+
 function classifyBaselineSnapshot(snapshot) {
   if (!snapshot || !Array.isArray(snapshot.relations)) {
     throw migrationError(
@@ -801,6 +848,7 @@ function classifyBaselineSnapshot(snapshot) {
     migrationThreeStatus(snapshot),
     migrationFourStatus(snapshot),
     migrationFiveStatus(snapshot),
+    migrationSixStatus(snapshot),
   ];
   const classification = classifyBaselineSignatures(signatures);
 

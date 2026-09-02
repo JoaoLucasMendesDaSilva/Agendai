@@ -29,7 +29,7 @@ The evidence and prioritization for this wave are recorded in
 | 015 | Harden PostgreSQL Transport And Supabase Data Boundary | P1 | L | 012 | DONE |
 | 016 | Automate PostgreSQL Migrations And Integration Verification | P1 | L | 015 | DONE |
 | 017 | Prove PostgreSQL Appointment Conflict Enforcement | P1 | M | 016 | DONE |
-| 018 | Enforce Durable Business Identity On PostgreSQL | P1 | M | 016 | TODO |
+| 018 | Enforce Durable Business Identity On PostgreSQL | P1 | M | 016 | DONE |
 | 019 | Enforce Tenant-Consistent Appointment Relationships | P1 | M | 018 | TODO |
 | 020 | Remediate Known npm Security Advisories | P1 | S | 012 | DONE |
 
@@ -44,7 +44,8 @@ The evidence and prioritization for this wave are recorded in
 4. Execute 017 and 018 after 016. They may be developed independently, but
    each must pass the same real-database gate.
 5. Execute 019 after 018 so PostgreSQL migrations remain contiguous: plan 015
-   owns migration 004, plan 018 owns 005, and plan 019 owns 006.
+   owns migration 004, privacy governance owns migration 005, plan 018 owns
+   migration 006, and plan 019 owns migration 007.
 
 ## Dependency notes
 

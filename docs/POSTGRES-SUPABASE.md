@@ -14,7 +14,9 @@ TCC. Não as execute no PostgreSQL. As migrations ativas ficam em
 1. `001_create_schema.sql`;
 2. `002_add_business_branding.sql`;
 3. `003_add_public_appointment_token.sql`;
-4. `004_harden_supabase_data_boundary.sql`.
+4. `004_harden_supabase_data_boundary.sql`;
+5. `005_add_privacy_governance.sql`;
+6. `006_enforce_business_identity.sql`.
 
 Os arquivos são imutáveis depois de aplicados. O runner aceita somente nomes
 `NNN_nome_em_minusculas.sql`, exige sequência contínua desde 001 e rejeita
@@ -26,8 +28,8 @@ O histórico fica em `public.schema_migrations`, com versão, nome, checksum e
 data de aplicação. O runner valida sua estrutura e proteção antes de confiar
 nos registros. No estado final, a tabela mantém RLS, nenhuma política e nenhum
 privilégio para `PUBLIC` ou papéis disponíveis da Data API. Não presuma que o
-runner, a tabela de histórico ou a migration 004 já existam em qualquer projeto
-Supabase apenas porque estão implementados e testados no repositório.
+runner, a tabela de histórico ou qualquer migration, inclusive a 006, já exista
+em um projeto Supabase apenas porque está implementada e testada no repositório.
 
 ## Conexão e TLS
 
@@ -73,6 +75,33 @@ ser recomendado como credencial permanente da aplicação. Criar um login
 dedicado, conceder somente os privilégios necessários, validar o comportamento
 com RLS e rotacionar a credencial administrativa são atividades operacionais
 posteriores; este repositório não afirma que foram concluídas.
+
+## Identidade do negócio e migration 006
+
+A migration `006_enforce_business_identity.sql` cria a constraint
+`uk_negocios_usuario_id`, que garante no PostgreSQL no máximo um negócio por
+empreendedor autenticado. O serviço trata colisões de `slug_publico` durante a
+criação, e a renomeação altera o nome sem trocar esse slug, preservando links
+públicos já compartilhados.
+
+A 006 exige zero proprietários duplicados. Depois de confirmar o alvo, faça
+backup restaurável e execute a seguinte consulta agregada somente leitura:
+
+```sql
+SELECT COUNT(*) AS grupos_de_proprietarios_duplicados
+FROM (
+  SELECT usuario_id
+  FROM public.negocios
+  GROUP BY usuario_id
+  HAVING COUNT(*) > 1
+) AS grupos_duplicados;
+```
+
+A saída contém somente a quantidade de grupos, sem expor `usuario_id`, negócios
+ou linhas pessoais, e deve ser `0`. Se for maior, pare: a resolução exige
+análise humana e backup confirmado. Nunca selecione, exclua ou mescle
+automaticamente um negócio vencedor. A migration recusa duplicidades e não faz
+reparo de dados.
 
 ## Runner, aplicação e baseline
 
@@ -148,10 +177,11 @@ socket; se a execução foi solicitada e um guard falhar, a suíte falha fechado
 
 O job `postgres-integration` usa somente PostgreSQL 17 e credenciais
 descartáveis de CI. Ele verifica banco novo, repetição, checksums, rollback,
-lock concorrente, baseline e os catálogos do plano 015 com papéis Supabase
-ausentes e com privilégios deliberadamente semeados. Não execute essa suíte
-contra desenvolvimento compartilhado, staging, Supabase ou produção. CI verde
-comprova o comportamento no serviço descartável, não o estado de um provedor.
+lock concorrente, baseline, os catálogos de segurança e a identidade única de
+negócio. Não execute essa suíte contra desenvolvimento compartilhado, staging,
+Supabase ou produção. Repositório e CI verdes comprovam o comportamento no
+serviço descartável, não que a migration 006 esteja aplicada no Supabase ou em
+produção.
 
 Os campos de agendamento usam `TIMESTAMP` sem fuso para preservar o horário
 local do negócio. Campos de auditoria usam `TIMESTAMPTZ`, e uma constraint de
