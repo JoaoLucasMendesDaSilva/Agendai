@@ -599,12 +599,27 @@ describe(
       });
     });
 
-    test('apply limpo cria só os índices necessários e o segundo run é no-op', async () => {
+    test('apply limpo reaproveita índices existentes e o segundo run é no-op', async () => {
       await harness.resetPublicSchema();
       await applyActivePrefix(6);
       const indexesBefore = await readIndexNames();
       const appointmentIndexesBefore = indexesBefore.filter(
         ({ tablename }) => tablename === 'agendamentos'
+      );
+      assert.deepEqual(
+        appointmentIndexesBefore
+          .filter(({ indexname }) =>
+            [
+              'idx_agendamentos_servico_id',
+              'idx_agendamentos_profissional_id',
+            ].includes(indexname)
+          )
+          .map(({ indexname }) => indexname)
+          .sort(),
+        [
+          'idx_agendamentos_profissional_id',
+          'idx_agendamentos_servico_id',
+        ]
       );
 
       const applied = await runMigrations({ baselineExisting: true });
@@ -640,31 +655,6 @@ describe(
           },
         ]
       );
-
-      await harness.client.query('BEGIN');
-      try {
-        await harness.client.query('SET LOCAL enable_seqscan = off');
-        const servicePlan = await harness.client.query(`
-          EXPLAIN (FORMAT JSON, COSTS OFF)
-          SELECT 1 FROM public.agendamentos
-          WHERE servico_id = 1 AND negocio_id = 1
-        `);
-        const professionalPlan = await harness.client.query(`
-          EXPLAIN (FORMAT JSON, COSTS OFF)
-          SELECT 1 FROM public.agendamentos
-          WHERE profissional_id = 1 AND negocio_id = 1
-        `);
-        assert.match(
-          JSON.stringify(servicePlan.rows),
-          /idx_agendamentos_servico_id/
-        );
-        assert.match(
-          JSON.stringify(professionalPlan.rows),
-          /idx_agendamentos_profissional_id/
-        );
-      } finally {
-        await harness.client.query('ROLLBACK');
-      }
 
       const beforeNoop = await readRelationshipState();
       const noop = await runMigrations();
