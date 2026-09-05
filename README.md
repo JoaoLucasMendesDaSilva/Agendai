@@ -154,7 +154,8 @@ Agendai/
 │   │   │   ├── 003_add_public_appointment_token.sql
 │   │   │   ├── 004_harden_supabase_data_boundary.sql
 │   │   │   ├── 005_add_privacy_governance.sql
-│   │   │   └── 006_enforce_business_identity.sql
+│   │   │   ├── 006_enforce_business_identity.sql
+│   │   │   └── 007_enforce_appointment_tenant_relationships.sql
 │   │   └── migrations/           # histórico MySQL
 │   └── package.json
 │
@@ -355,7 +356,8 @@ calculado sobre os bytes exatos e gravado com versão, nome e data em
 3. `backend/database/postgres-migrations/003_add_public_appointment_token.sql`;
 4. `backend/database/postgres-migrations/004_harden_supabase_data_boundary.sql`;
 5. `backend/database/postgres-migrations/005_add_privacy_governance.sql`;
-6. `backend/database/postgres-migrations/006_enforce_business_identity.sql`.
+6. `backend/database/postgres-migrations/006_enforce_business_identity.sql`;
+7. `backend/database/postgres-migrations/007_enforce_appointment_tenant_relationships.sql`.
 
 O executor exige PostgreSQL 15 ou superior; o gate remoto usa PostgreSQL 17.
 
@@ -402,6 +404,14 @@ restaurável e execute a consulta agregada somente leitura documentada em
 a operação e resolva cada caso com decisão humana; nunca selecione, exclua ou
 mescle automaticamente um negócio vencedor. Renomear o negócio preserva o
 `slug_publico`, mantendo estável o link público já compartilhado.
+
+A migration 007 exige que `agendamentos.negocio_id` coincida com
+`servicos.negocio_id` e `profissionais.negocio_id` e continue referenciando
+`negocios.id`. Antes do apply, faça backup e execute a consulta agregada somente
+leitura de [`MIGRACAO.md`](MIGRACAO.md); as duas contagens precisam ser zero. Se
+houver inconsistência, interrompa a operação e investigue os vínculos com
+decisão humana, sem reatribuição ou exclusão automática. As constraints não
+substituem autorização nem filtros de tenant no Express.
 
 ### Privacidade e LGPD
 
@@ -510,10 +520,11 @@ gates em pull requests e pushes para `main`, incluindo auditoria full-tree no
 nível `low` para os três lockfiles. O job `postgres-integration` usa PostgreSQL
 17 descartável e executa migrations, repetição idempotente, drift de checksum,
 rollback, concorrência, baseline e os limites de RLS, privilégios, triggers e
-constraints, inclusive a identidade única de negócio. A execução remota é a
+constraints, inclusive a identidade única de negócio e os relacionamentos de
+tenant dos agendamentos. A execução remota é a
 validação autoritativa da sintaxe e dos jobs do GitHub Actions; repositório e CI
-verdes não comprovam que a migration 006 esteja aplicada no Supabase ou em
-produção.
+verdes não comprovam que a migration 006 ou a 007 esteja aplicada no Supabase
+ou em produção.
 
 ---
 
@@ -583,7 +594,7 @@ ou redeploy. Este repositório não comprova que esse volume já existe.
 
 Antes de considerar o deploy pronto, confirme nos dashboards o Node 24, os
 nomes das variáveis, os logs de build/start, o schema PostgreSQL, o histórico
-registrado pelo runner, a aplicação das migrations 005 e 006 e a persistência de
+registrado pelo runner, a aplicação das migrations 005, 006 e 007 e a persistência de
 uploads. `/api/health` comprova apenas que o processo HTTP responde; não
 consulta o banco. Valide acesso ao banco por um fluxo autenticado e faça smoke
 test de login, agendamento público, link de gerenciamento e upload. Para

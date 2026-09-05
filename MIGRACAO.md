@@ -15,7 +15,7 @@ projeto e não devem ser aplicados ao PostgreSQL. As migrations ativas ficam em
 - O driver ativo é `pg` e as queries usam parâmetros posicionais PostgreSQL.
 - `DATABASE_URL`, `DATABASE_SSL_MODE` e `DATABASE_SSL_CA` formam o contrato de
   conexão; hosts remotos usam TLS com validação de certificado e hostname.
-- As migrations PostgreSQL 001 a 006 estão ordenadas e devem permanecer
+- As migrations PostgreSQL 001 a 007 estão ordenadas e devem permanecer
   imutáveis depois de aplicadas.
 - A migration 004 habilita RLS e remove privilégios da Data API para as tabelas
   da aplicação, sem criar políticas permissivas para acesso pelo navegador.
@@ -24,6 +24,10 @@ projeto e não devem ser aplicados ao PostgreSQL. As migrations ativas ficam em
   empreendedor autenticado pode possuir no máximo um negócio. A aplicação
   resolve colisões de `slug_publico` durante a criação e preserva o slug quando
   o negócio é renomeado.
+- A migration 007 garante que `agendamentos.negocio_id` coincida com
+  `servicos.negocio_id` e `profissionais.negocio_id` e continue referenciando
+  `negocios.id`, sem substituir os predicados de tenant e a autorização do
+  backend Express.
 - A CLI `npm run db:migrate` descobre somente nomes
   `NNN_nome_em_minusculas.sql`, exige sequência contínua desde 001 e calcula
   SHA-256 sobre os bytes exatos. Regras de `.gitattributes` mantêm migrations e
@@ -39,14 +43,15 @@ projeto e não devem ser aplicados ao PostgreSQL. As migrations ativas ficam em
   a `.nvmrc` da raiz define a versão principal Node 24 para desenvolvimento e CI.
 - O workflow de qualidade executa unitários e integração serializada em
   PostgreSQL 17 descartável. Ele cobre banco vazio, repetição, drift, rollback,
-  concorrência, baseline, garantias de RLS/revogação e a identidade única de
-  negócio, além dos audits full-tree do plano 020.
+  concorrência, baseline, garantias de RLS/revogação, a identidade única de
+  negócio e os relacionamentos de tenant dos agendamentos, além dos audits
+  full-tree do plano 020.
 
 ## Estado externo não verificado
 
 Este documento, o repositório e um CI verde não comprovam que migrations —
-inclusive a 006 —, RLS, revogações, deploy ou rotação de credenciais já tenham
-sido executados no Supabase, no Render ou em produção. Nenhum segredo ou
+inclusive a 006 e a 007 —, RLS, revogações, deploy ou rotação de credenciais já
+tenham sido executados no Supabase, no Render ou em produção. Nenhum segredo ou
 dashboard de produção foi consultado para atualizar este registro.
 
 ## Pré-requisito da migration 006
@@ -73,6 +78,38 @@ dados e resolva cada caso manualmente com a pessoa responsável pelo negócio.
 Nunca selecione, exclua ou mescle automaticamente um registro vencedor. A
 migration também faz essa verificação e recusa o apply em caso de duplicidade;
 ela não corrige dados.
+
+## Pré-requisito da migration 007
+
+A migration `007_enforce_appointment_tenant_relationships.sql` exige que
+`agendamentos.negocio_id` coincida com o `negocio_id` de seu serviço e
+profissional e continue referenciando `negocios.id`. Depois de confirmar o
+banco correto, execute esta consulta agregada somente leitura:
+
+```sql
+SELECT
+  COUNT(*) FILTER (
+    WHERE servico.id IS NULL
+       OR servico.negocio_id IS DISTINCT FROM agendamento.negocio_id
+  ) AS relacionamentos_servico_inconsistentes,
+  COUNT(*) FILTER (
+    WHERE profissional.id IS NULL
+       OR profissional.negocio_id IS DISTINCT FROM agendamento.negocio_id
+  ) AS relacionamentos_profissional_inconsistentes
+FROM public.agendamentos AS agendamento
+LEFT JOIN public.servicos AS servico
+  ON servico.id = agendamento.servico_id
+LEFT JOIN public.profissionais AS profissional
+  ON profissional.id = agendamento.profissional_id;
+```
+
+Os dois resultados precisam ser `0`. A consulta e o guard da migration expõem
+somente contagens, nunca IDs, nomes ou dados de clientes. Se qualquer resultado
+for maior que zero, não execute a 007: confirme um backup restaurável, preserve
+as linhas e investigue cada vínculo com responsáveis autorizados. Não reatribua
+nem exclua dados automaticamente. A migration recusa inconsistências sem fazer
+reparo; depois dela, as constraints `fk_agendamentos_servico_negocio` e
+`fk_agendamentos_profissional_negocio` mantêm o invariante no PostgreSQL.
 
 ## Aplicação e baseline
 

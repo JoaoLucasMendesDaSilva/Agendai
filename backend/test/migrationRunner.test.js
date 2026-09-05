@@ -79,9 +79,9 @@ test('histórico aceita somente o prefixo exato de nome e checksum', async () =>
 });
 
 test('baseline aceita apenas prefixos estruturais completos e contíguos', () => {
-  for (let prefix = 0; prefix <= 6; prefix += 1) {
+  for (let prefix = 0; prefix <= 7; prefix += 1) {
     const signatures = Array.from(
-      { length: 6 },
+      { length: 7 },
       (_, index) => (index < prefix ? 'complete' : 'absent')
     );
     assert.equal(classifyBaselineSignatures(signatures).prefix, prefix);
@@ -96,6 +96,7 @@ test('baseline aceita apenas prefixos estruturais completos e contíguos', () =>
         'absent',
         'absent',
         'absent',
+        'absent',
       ]),
     (error) => error.code === 'MIGRATION_BASELINE_INVALID'
   );
@@ -104,6 +105,7 @@ test('baseline aceita apenas prefixos estruturais completos e contíguos', () =>
       classifyBaselineSignatures([
         'absent',
         'complete',
+        'absent',
         'absent',
         'absent',
         'absent',
@@ -375,6 +377,118 @@ test('identidade do negócio exige unique constraint exata e imediata', () => {
   );
 });
 
+test('relações do agendamento exigem tenant composto e ações exatas', () => {
+  const serviceUnique = {
+    columns: ['id', 'negocio_id'],
+    constraint_name: 'uk_servicos_id_negocio_id',
+    constraint_type: 'u',
+    deferrable: false,
+    deferred: false,
+    definition: 'UNIQUE (id, negocio_id)',
+    functions_catalog_only: true,
+    has_no_parent: true,
+    inheritance_count: 0,
+    is_local: true,
+    no_inherit: true,
+    operators_catalog_only: true,
+    table_name: 'servicos',
+    validated: true,
+  };
+  const serviceForeignKey = {
+    columns: ['servico_id', 'negocio_id'],
+    constraint_name: 'fk_agendamentos_servico_negocio',
+    constraint_type: 'f',
+    deferrable: false,
+    deferred: false,
+    definition:
+      'FOREIGN KEY (servico_id, negocio_id) REFERENCES servicos(id, negocio_id) ON UPDATE CASCADE ON DELETE RESTRICT',
+    delete_action: 'r',
+    foreign_columns: ['id', 'negocio_id'],
+    foreign_schema: 'public',
+    foreign_table: 'servicos',
+    functions_catalog_only: true,
+    has_no_parent: true,
+    inheritance_count: 0,
+    is_local: true,
+    match_type: 's',
+    no_inherit: true,
+    operators_catalog_only: true,
+    table_name: 'agendamentos',
+    update_action: 'c',
+    validated: true,
+  };
+  const professionalForeignKey = {
+    ...serviceForeignKey,
+    columns: ['profissional_id', 'negocio_id'],
+    constraint_name: 'fk_agendamentos_profissional_negocio',
+    definition:
+      'FOREIGN KEY (profissional_id, negocio_id) REFERENCES profissionais(id, negocio_id) ON UPDATE CASCADE ON DELETE RESTRICT',
+    foreign_table: 'profissionais',
+  };
+
+  assert.equal(
+    matchesDomainConstraint(serviceUnique, 'uk_servicos_id_negocio_id'),
+    true
+  );
+  assert.equal(
+    matchesDomainConstraint(
+      {
+        ...serviceUnique,
+        columns: ['negocio_id', 'id'],
+        definition: 'UNIQUE (negocio_id, id)',
+      },
+      'uk_servicos_id_negocio_id'
+    ),
+    false
+  );
+  assert.equal(
+    matchesDomainConstraint(
+      serviceForeignKey,
+      'fk_agendamentos_servico_negocio'
+    ),
+    true
+  );
+  assert.equal(
+    matchesDomainConstraint(
+      professionalForeignKey,
+      'fk_agendamentos_profissional_negocio'
+    ),
+    true
+  );
+  assert.equal(
+    matchesDomainConstraint(
+      {
+        ...serviceForeignKey,
+        columns: ['negocio_id', 'servico_id'],
+        definition:
+          'FOREIGN KEY (negocio_id, servico_id) REFERENCES servicos(negocio_id, id) ON UPDATE CASCADE ON DELETE RESTRICT',
+        foreign_columns: ['negocio_id', 'id'],
+      },
+      'fk_agendamentos_servico_negocio'
+    ),
+    false
+  );
+  assert.equal(
+    matchesDomainConstraint(
+      { ...serviceForeignKey, validated: false },
+      'fk_agendamentos_servico_negocio'
+    ),
+    false
+  );
+  assert.equal(
+    matchesDomainConstraint(
+      {
+        ...serviceForeignKey,
+        definition:
+          'FOREIGN KEY (servico_id, negocio_id) REFERENCES servicos(id, negocio_id) ON UPDATE NO ACTION ON DELETE RESTRICT',
+        update_action: 'a',
+      },
+      'fk_agendamentos_servico_negocio'
+    ),
+    false
+  );
+});
+
 test('defaults textuais preservam case e não aceitam coluna gerada equivalente', () => {
   assert.equal(
     defaultMatches("'confirmado'::character varying", 'confirmado'),
@@ -611,11 +725,12 @@ test('conjunto oficial futuro exige atualização explícita do inspetor', () =>
     '004_harden_supabase_data_boundary.sql',
     '005_add_privacy_governance.sql',
     '006_enforce_business_identity.sql',
+    '007_enforce_appointment_tenant_relationships.sql',
   ].map((name) => ({ name }));
 
   assert.equal(migrationSetKind(active), 'active');
   assert.equal(
-    migrationSetKind([...active, { name: '007_future.sql' }]),
+    migrationSetKind([...active, { name: '008_future.sql' }]),
     'unsupported-active-prefix'
   );
   assert.equal(

@@ -7,6 +7,7 @@ const ACTIVE_MIGRATION_NAMES = Object.freeze([
   '004_harden_supabase_data_boundary.sql',
   '005_add_privacy_governance.sql',
   '006_enforce_business_identity.sql',
+  '007_enforce_appointment_tenant_relationships.sql',
 ]);
 const HISTORY_TABLE = 'schema_migrations';
 const APPLICATION_TABLES = Object.freeze([
