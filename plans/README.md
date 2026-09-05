@@ -30,7 +30,7 @@ The evidence and prioritization for this wave are recorded in
 | 016 | Automate PostgreSQL Migrations And Integration Verification | P1 | L | 015 | DONE |
 | 017 | Prove PostgreSQL Appointment Conflict Enforcement | P1 | M | 016 | DONE |
 | 018 | Enforce Durable Business Identity On PostgreSQL | P1 | M | 016 | DONE |
-| 019 | Enforce Tenant-Consistent Appointment Relationships | P1 | M | 018 | TODO |
+| 019 | Enforce Tenant-Consistent Appointment Relationships | P1 | M | 018 | DONE |
 | 020 | Remediate Known npm Security Advisories | P1 | S | 012 | DONE |
 
 ## Recommended sequence
