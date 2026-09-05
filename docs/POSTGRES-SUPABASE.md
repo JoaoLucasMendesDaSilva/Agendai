@@ -16,7 +16,8 @@ TCC. Não as execute no PostgreSQL. As migrations ativas ficam em
 3. `003_add_public_appointment_token.sql`;
 4. `004_harden_supabase_data_boundary.sql`;
 5. `005_add_privacy_governance.sql`;
-6. `006_enforce_business_identity.sql`.
+6. `006_enforce_business_identity.sql`;
+7. `007_enforce_appointment_tenant_relationships.sql`.
 
 Os arquivos são imutáveis depois de aplicados. O runner aceita somente nomes
 `NNN_nome_em_minusculas.sql`, exige sequência contínua desde 001 e rejeita
@@ -28,8 +29,9 @@ O histórico fica em `public.schema_migrations`, com versão, nome, checksum e
 data de aplicação. O runner valida sua estrutura e proteção antes de confiar
 nos registros. No estado final, a tabela mantém RLS, nenhuma política e nenhum
 privilégio para `PUBLIC` ou papéis disponíveis da Data API. Não presuma que o
-runner, a tabela de histórico ou qualquer migration, inclusive a 006, já exista
-em um projeto Supabase apenas porque está implementada e testada no repositório.
+runner, a tabela de histórico ou qualquer migration, inclusive a 006 ou a 007,
+já exista em um projeto Supabase apenas porque está implementada e testada no
+repositório.
 
 ## Conexão e TLS
 
@@ -102,6 +104,41 @@ ou linhas pessoais, e deve ser `0`. Se for maior, pare: a resolução exige
 análise humana e backup confirmado. Nunca selecione, exclua ou mescle
 automaticamente um negócio vencedor. A migration recusa duplicidades e não faz
 reparo de dados.
+
+## Relacionamentos de tenant e migration 007
+
+A migration `007_enforce_appointment_tenant_relationships.sql` exige que
+`agendamentos.negocio_id` coincida com `servicos.negocio_id` e
+`profissionais.negocio_id` e continue referenciando `negocios.id`.
+As constraints `fk_agendamentos_servico_negocio` e
+`fk_agendamentos_profissional_negocio` tornam esse invariante durável no banco.
+Elas são defesa em profundidade: autorização e filtros de tenant continuam
+obrigatórios em todas as queries do Express.
+
+Antes do apply, confirme um backup restaurável e execute a consulta agregada
+somente leitura:
+
+```sql
+SELECT
+  COUNT(*) FILTER (
+    WHERE servico.id IS NULL
+       OR servico.negocio_id IS DISTINCT FROM agendamento.negocio_id
+  ) AS relacionamentos_servico_inconsistentes,
+  COUNT(*) FILTER (
+    WHERE profissional.id IS NULL
+       OR profissional.negocio_id IS DISTINCT FROM agendamento.negocio_id
+  ) AS relacionamentos_profissional_inconsistentes
+FROM public.agendamentos AS agendamento
+LEFT JOIN public.servicos AS servico
+  ON servico.id = agendamento.servico_id
+LEFT JOIN public.profissionais AS profissional
+  ON profissional.id = agendamento.profissional_id;
+```
+
+Ambos os resultados precisam ser `0`. A saída e o guard da migration contêm
+somente contagens. Se houver inconsistência, pare, preserve os dados e faça
+investigação humana autorizada com o backup confirmado; não reatribua nem
+exclua linhas automaticamente. A migration recusa o apply e não corrige dados.
 
 ## Runner, aplicação e baseline
 
@@ -177,12 +214,13 @@ socket; se a execução foi solicitada e um guard falhar, a suíte falha fechado
 
 O job `postgres-integration` usa somente PostgreSQL 17 e credenciais
 descartáveis de CI. Ele verifica banco novo, repetição, checksums, rollback,
-lock concorrente, baseline, os catálogos de segurança e a identidade única de
-negócio. Não execute essa suíte contra desenvolvimento compartilhado, staging,
-Supabase ou produção. Repositório e CI verdes comprovam o comportamento no
-serviço descartável, não que a migration 006 esteja aplicada no Supabase ou em
-produção.
+lock concorrente, baseline, os catálogos de segurança, a identidade única de
+negócio e os relacionamentos de tenant dos agendamentos. Não execute essa suíte
+contra desenvolvimento compartilhado, staging, Supabase ou produção.
+Repositório e CI verdes comprovam o comportamento no serviço descartável, não
+que a migration 006 ou a 007 esteja aplicada no Supabase ou em produção.
 
 Os campos de agendamento usam `TIMESTAMP` sem fuso para preservar o horário
-local do negócio. Campos de auditoria usam `TIMESTAMPTZ`, e uma constraint de
-exclusão impede sobreposição de reservas ativas do mesmo profissional.
+local do negócio. Campos de auditoria usam `TIMESTAMPTZ`, uma constraint de
+exclusão impede sobreposição de reservas ativas do mesmo profissional e as
+constraints compostas impedem vínculos de agendamento entre negócios.

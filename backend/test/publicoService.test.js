@@ -278,7 +278,8 @@ function dadosAgendamento(status = 'concluido', sobrescritos = {}) {
 function criarPoolCriacaoPublica(
   negocio = negocioPublico(),
   erroInsercao,
-  erroConflito
+  erroConflito,
+  { servicoEncontrado = true, profissionalEncontrado = true } = {}
 ) {
   const chamadas = [];
   const transacoes = { commit: 0, release: 0, rollback: 0 };
@@ -298,12 +299,12 @@ function criarPoolCriacaoPublica(
 
       if (ehConsultaServico(sql)) {
         assert.deepEqual(params, [SERVICO_ID, NEGOCIO_ID]);
-        return [[servicoPublico()]];
+        return [servicoEncontrado ? [servicoPublico()] : []];
       }
 
       if (ehConsultaProfissional(sql)) {
         assert.deepEqual(params, [PROFISSIONAL_ID, NEGOCIO_ID]);
-        return [[profissionalPublico()]];
+        return [profissionalEncontrado ? [profissionalPublico()] : []];
       }
 
       if (ehConsultaConflitoCriacao(sql)) {
@@ -682,6 +683,87 @@ test('criarAgendamentoPublico rejeita horario fora da grade do negocio', async (
 
   assert.equal(
     pool.chamadas.some(({ sql }) => ehConsultaConflitoCriacao(sql)),
+    false
+  );
+});
+
+test('criarAgendamentoPublico nao enumera servico de outro negocio', async () => {
+  const pool = criarPoolCriacaoPublica(
+    negocioPublico(),
+    undefined,
+    undefined,
+    { servicoEncontrado: false }
+  );
+  const { criarAgendamentoPublico } = carregarPublicoServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      criarAgendamentoPublico(
+        'studio-teste',
+        payloadAgendamento('2099-07-01T08:30:00')
+      ),
+    (err) =>
+      err.status === 404 &&
+      err.publicMessage === 'Serviço não encontrado.' &&
+      !Object.hasOwn(err, 'constraint')
+  );
+
+  assert.deepEqual(pool.transacoes, { commit: 0, release: 1, rollback: 1 });
+  assert.equal(
+    pool.chamadas.some(({ sql }) => ehConsultaProfissional(sql)),
+    false
+  );
+  assert.equal(
+    pool.chamadas.some(({ sql }) => ehConsultaConflitoCriacao(sql)),
+    false
+  );
+  assert.equal(
+    pool.chamadas.some(({ sql }) => ehInsercaoAgendamento(sql)),
+    false
+  );
+  assert.equal(
+    pool.chamadas.some(({ sql }) => ehConsultaAgendamentoCriado(sql)),
+    false
+  );
+});
+
+test('criarAgendamentoPublico nao enumera profissional de outro negocio', async () => {
+  const pool = criarPoolCriacaoPublica(
+    negocioPublico(),
+    undefined,
+    undefined,
+    { profissionalEncontrado: false }
+  );
+  const { criarAgendamentoPublico } = carregarPublicoServiceComPool(pool);
+
+  await assert.rejects(
+    () =>
+      criarAgendamentoPublico(
+        'studio-teste',
+        payloadAgendamento('2099-07-01T08:30:00')
+      ),
+    (err) =>
+      err.status === 404 &&
+      err.publicMessage === 'Profissional não encontrado.' &&
+      !Object.hasOwn(err, 'constraint')
+  );
+
+  assert.deepEqual(pool.transacoes, { commit: 0, release: 1, rollback: 1 });
+  assert.equal(pool.chamadas.some(({ sql }) => ehConsultaServico(sql)), true);
+  assert.equal(
+    pool.chamadas.some(({ sql }) => ehConsultaProfissional(sql)),
+    true
+  );
+  assert.equal(
+    pool.chamadas.some(({ sql }) => ehConsultaConflitoCriacao(sql)),
+    false
+  );
+  assert.equal(
+    pool.chamadas.some(({ sql }) => ehInsercaoAgendamento(sql)),
+    false
+  );
+  assert.equal(
+    pool.chamadas.some(({ sql }) => ehConsultaAgendamentoCriado(sql)),
     false
   );
 });

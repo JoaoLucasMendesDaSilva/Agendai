@@ -264,7 +264,10 @@ describe(
         const outcome = await runMigrations({ baselineExisting: true });
 
         assert.equal(outcome.baselined.length, 5);
-        assert.deepEqual(outcome.applied, ['006_enforce_business_identity.sql']);
+        assert.deepEqual(outcome.applied, [
+          '006_enforce_business_identity.sql',
+          '007_enforce_appointment_tenant_relationships.sql',
+        ]);
         await assertExactOwnerConstraint();
 
         await harness.client.query('BEGIN');
@@ -299,7 +302,7 @@ describe(
         );
         assert.deepEqual(
           history.rows.map(({ version }) => version),
-          [1, 2, 3, 4, 5, 6]
+          [1, 2, 3, 4, 5, 6, 7]
         );
       });
 
@@ -311,7 +314,9 @@ describe(
           const outcome = await runMigrations({ baselineExisting: true });
 
           assert.equal(outcome.baselined.length, 6);
-          assert.deepEqual(outcome.applied, []);
+          assert.deepEqual(outcome.applied, [
+            '007_enforce_appointment_tenant_relationships.sql',
+          ]);
           await assertExactOwnerConstraint();
         });
 

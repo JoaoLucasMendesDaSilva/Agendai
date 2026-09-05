@@ -110,15 +110,19 @@ const CONSTRAINT_SPECS = Object.freeze({
   chk_negocios_horario_funcionamento: ['negocios', 'c', ['horario_fechamento', 'horario_abertura'], null, null, 1, ['horario_fechamento', 'horario_abertura', '>']],
   chk_negocios_dias_funcionamento_array: ['negocios', 'c', ['dias_funcionamento'], null, null, 1, ['jsonb_typeof', 'dias_funcionamento', 'array']],
   servicos_pkey: ['servicos', 'p', ['id'], null, null, 1, []],
+  uk_servicos_id_negocio_id: ['servicos', 'u', ['id', 'negocio_id'], null, null, 7, []],
   fk_servicos_negocio: ['servicos', 'f', ['negocio_id'], 'negocios', ['id'], 1, []],
   chk_servicos_duracao: ['servicos', 'c', ['duracao_minutos'], null, null, 1, ['duracao_minutos', '> 0']],
   chk_servicos_preco: ['servicos', 'c', ['preco'], null, null, 1, ['preco', '>= 0']],
   profissionais_pkey: ['profissionais', 'p', ['id'], null, null, 1, []],
+  uk_profissionais_id_negocio_id: ['profissionais', 'u', ['id', 'negocio_id'], null, null, 7, []],
   fk_profissionais_negocio: ['profissionais', 'f', ['negocio_id'], 'negocios', ['id'], 1, []],
   agendamentos_pkey: ['agendamentos', 'p', ['id'], null, null, 1, []],
   fk_agendamentos_negocio: ['agendamentos', 'f', ['negocio_id'], 'negocios', ['id'], 1, []],
   fk_agendamentos_servico: ['agendamentos', 'f', ['servico_id'], 'servicos', ['id'], 1, []],
   fk_agendamentos_profissional: ['agendamentos', 'f', ['profissional_id'], 'profissionais', ['id'], 1, []],
+  fk_agendamentos_servico_negocio: ['agendamentos', 'f', ['servico_id', 'negocio_id'], 'servicos', ['id', 'negocio_id'], 7, []],
+  fk_agendamentos_profissional_negocio: ['agendamentos', 'f', ['profissional_id', 'negocio_id'], 'profissionais', ['id', 'negocio_id'], 7, []],
   chk_agendamentos_periodo: ['agendamentos', 'c', ['data_hora_fim', 'data_hora_inicio'], null, null, 1, ['data_hora_fim', 'data_hora_inicio', '>']],
   chk_agendamentos_status: ['agendamentos', 'c', ['status'], null, null, 1, ['status', 'pendente', 'confirmado', 'cancelado', 'concluido']],
   ex_agendamentos_profissional_periodo_ativo: ['agendamentos', 'x', ['profissional_id', null], null, null, 1, ['exclude using gist', 'profissional_id with =', 'tsrange', "'[)'", 'with &&', 'pendente', 'confirmado']],
@@ -383,6 +387,26 @@ function matchesDomainConstraint(row, constraintName) {
   return Boolean(spec && constraintMatches(row, spec, constraintName));
 }
 
+function uniqueConstraintIndexMatches(row, name, tableName, columns) {
+  return (
+    row?.index_name === name &&
+    row?.constraint_name === name &&
+    row?.table_name === tableName &&
+    row?.access_method === 'btree' &&
+    row?.is_unique === true &&
+    row?.is_primary === false &&
+    row?.is_exclusion === false &&
+    row?.nulls_not_distinct === false &&
+    row?.is_valid === true &&
+    row?.predicate === null &&
+    sameArray(row?.columns || [], columns) &&
+    canonicalSqlDefinition(row?.definition) ===
+      canonicalSqlDefinition(
+        `CREATE UNIQUE INDEX ${name} ON ${tableName} USING btree (${columns.join(', ')})`
+      )
+  );
+}
+
 function matchesUpdateFunction(row, currentUser) {
   const canonicalBody = canonicalSqlDefinition(row?.body);
   return (
@@ -551,8 +575,14 @@ function migrationOneStatus(snapshot) {
       );
     });
   const baseColumnsComplete = columnsStatus(snapshot, 1) === 'complete';
+  const tenantRelationshipsComplete = migrationSevenStatus(snapshot) === 'complete';
   const baseConstraintEntries = Object.entries(CONSTRAINT_SPECS).filter(
-    ([, spec]) => spec[5] === 1
+    ([name, spec]) =>
+      spec[5] === 1 &&
+      !(
+        tenantRelationshipsComplete &&
+        ['fk_agendamentos_servico', 'fk_agendamentos_profissional'].includes(name)
+      )
   );
   const constraintNames = snapshot.constraints.map((row) => row.constraint_name);
   const baseConstraintsComplete =
@@ -817,20 +847,76 @@ function migrationSixStatus(snapshot) {
       CONSTRAINT_SPECS.uk_negocios_usuario_id,
       'uk_negocios_usuario_id'
     ) &&
-    constraintIndex?.index_name === 'uk_negocios_usuario_id' &&
-    constraintIndex?.table_name === 'negocios' &&
-    constraintIndex?.access_method === 'btree' &&
-    constraintIndex?.is_unique === true &&
-    constraintIndex?.is_primary === false &&
-    constraintIndex?.is_exclusion === false &&
-    constraintIndex?.nulls_not_distinct === false &&
-    constraintIndex?.is_valid === true &&
-    constraintIndex?.predicate === null &&
-    sameArray(constraintIndex?.columns || [], ['usuario_id']) &&
-    canonicalSqlDefinition(constraintIndex?.definition) ===
-      canonicalSqlDefinition(
-        'CREATE UNIQUE INDEX uk_negocios_usuario_id ON negocios USING btree (usuario_id)'
+    uniqueConstraintIndexMatches(
+      constraintIndex,
+      'uk_negocios_usuario_id',
+      'negocios',
+      ['usuario_id']
+    )
+  ) ? 'complete' : 'partial';
+}
+
+function migrationSevenStatus(snapshot) {
+  const targetConstraintNames = [
+    'uk_servicos_id_negocio_id',
+    'uk_profissionais_id_negocio_id',
+    'fk_agendamentos_servico_negocio',
+    'fk_agendamentos_profissional_negocio',
+  ];
+  const hasTargetObject =
+    snapshot.constraints.some((row) =>
+      targetConstraintNames.includes(row.constraint_name)
+    ) ||
+    snapshot.indexes.some((row) =>
+      targetConstraintNames.includes(row.constraint_name) ||
+      targetConstraintNames.includes(row.index_name)
+    );
+
+  if (!hasTargetObject) return 'absent';
+
+  const exactConstraints = targetConstraintNames.every((name) =>
+    constraintMatches(
+      snapshot.constraints.find((row) => row.constraint_name === name),
+      CONSTRAINT_SPECS[name],
+      name
+    )
+  );
+  const parentIndexes = [
+    ['uk_servicos_id_negocio_id', 'servicos', ['id', 'negocio_id']],
+    ['uk_profissionais_id_negocio_id', 'profissionais', ['id', 'negocio_id']],
+  ];
+
+  return (
+    exactConstraints &&
+    parentIndexes.every(([name, tableName, columns]) =>
+      uniqueConstraintIndexMatches(
+        snapshot.indexes.find((row) => row.constraint_name === name),
+        name,
+        tableName,
+        columns
       )
+    ) &&
+    !snapshot.constraints.some((row) =>
+      ['fk_agendamentos_servico', 'fk_agendamentos_profissional'].includes(
+        row.constraint_name
+      )
+    ) &&
+    constraintMatches(
+      snapshot.constraints.find(
+        (row) => row.constraint_name === 'fk_agendamentos_negocio'
+      ),
+      CONSTRAINT_SPECS.fk_agendamentos_negocio,
+      'fk_agendamentos_negocio'
+    ) &&
+    constraintMatches(
+      snapshot.constraints.find(
+        (row) =>
+          row.constraint_name ===
+          'ex_agendamentos_profissional_periodo_ativo'
+      ),
+      CONSTRAINT_SPECS.ex_agendamentos_profissional_periodo_ativo,
+      'ex_agendamentos_profissional_periodo_ativo'
+    )
   ) ? 'complete' : 'partial';
 }
 
@@ -849,6 +935,7 @@ function classifyBaselineSnapshot(snapshot) {
     migrationFourStatus(snapshot),
     migrationFiveStatus(snapshot),
     migrationSixStatus(snapshot),
+    migrationSevenStatus(snapshot),
   ];
   const classification = classifyBaselineSignatures(signatures);
 

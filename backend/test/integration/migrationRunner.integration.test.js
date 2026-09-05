@@ -379,7 +379,7 @@ describe(
       ]);
     }
 
-    test('fresh aplica 001-006; noop preserva history, xmins e OIDs', async () => {
+    test('fresh aplica 001-007; noop preserva history, xmins e OIDs', async () => {
       await harness.resetPublicSchema();
 
       const roles = await harness.client.query(
@@ -406,7 +406,10 @@ describe(
           version,
         }))
       );
-      assert.equal(firstHistory.length, 6);
+      assert.equal(
+        firstHistory.length,
+        migrationRunner.ACTIVE_MIGRATION_NAMES.length
+      );
       await assertSecurityCatalog();
       await assertOwnerTriggerStillWorks();
 
@@ -551,7 +554,10 @@ describe(
 
       await runMigrations({ baselineExisting: true });
 
-      assert.equal((await readHistory()).length, 6);
+      assert.equal(
+        (await readHistory()).length,
+        migrationRunner.ACTIVE_MIGRATION_NAMES.length
+      );
       const branding = await harness.client.query(`
         SELECT column_name
         FROM information_schema.columns
@@ -662,7 +668,10 @@ describe(
 
         await runMigrations({ baselineExisting: true });
 
-        assert.equal((await readHistory()).length, 6);
+        assert.equal(
+          (await readHistory()).length,
+          migrationRunner.ACTIVE_MIGRATION_NAMES.length
+        );
         await assertSecurityCatalog();
         await assertOwnerTriggerStillWorks();
       }
