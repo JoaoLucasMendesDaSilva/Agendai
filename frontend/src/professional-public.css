@@ -1542,6 +1542,14 @@
   background: var(--panel-bg-soft);
 }
 
+[data-theme="dark"] .auth-page-login .auth-input-shell.is-invalid {
+  border-color: #ff8f8f;
+}
+
+[data-theme="dark"] .auth-page-login .auth-field-error {
+  color: #ffb0b0;
+}
+
 .public-new-booking-page .booking-review-card > span {
   display: grid;
   gap: 2px;
