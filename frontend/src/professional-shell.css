@@ -442,8 +442,8 @@ body {
 }
 
 .app-shell :where(button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--green-700) 34%, transparent);
-  outline-offset: 2px;
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
   box-shadow: none;
 }
 
