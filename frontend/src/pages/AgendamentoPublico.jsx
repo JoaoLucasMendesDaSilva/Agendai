@@ -40,6 +40,17 @@ const CLIENTE_INICIAL = {
   aviso_privacidade_aceito: false,
 };
 
+function normalizarErroPublico(err) {
+  if (err?.status !== 429) {
+    return err.message;
+  }
+
+  return {
+    mensagem: 'Muitas solicitações em pouco tempo.',
+    retryAfterSeconds: Math.max(1, Number(err.retryAfterSeconds) || 60),
+  };
+}
+
 function PublicBookingShell({ children, statePage = false }) {
   return (
     <main className="page public-booking-page public-new-booking-page">
@@ -77,6 +88,7 @@ function AgendamentoPublico({ slugOuId }) {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
+  const [tentativaCarga, setTentativaCarga] = useState(0);
   const confirmacaoRef = useRef(null);
   const ultimaConsultaHorariosId = useRef(0);
 
@@ -120,6 +132,31 @@ function AgendamentoPublico({ slugOuId }) {
           negocio.horario_fechamento,
         )}`
       : '';
+  const segundosEspera =
+    typeof erro === 'object' ? erro.retryAfterSeconds : null;
+  const erroMensagem =
+    typeof erro === 'object'
+      ? segundosEspera > 0
+        ? `${erro.mensagem} Aguarde ${segundosEspera} ${
+            segundosEspera === 1 ? 'segundo' : 'segundos'
+          } e tente novamente.`
+        : `${erro.mensagem} Você já pode tentar novamente.`
+      : erro;
+
+  useEffect(() => {
+    if (!(segundosEspera > 0)) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setErro((erroAtual) => ({
+        ...erroAtual,
+        retryAfterSeconds: Math.max(0, erroAtual.retryAfterSeconds - 1),
+      }));
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [segundosEspera]);
 
   useEffect(() => {
     let ativo = true;
@@ -143,7 +180,7 @@ function AgendamentoPublico({ slugOuId }) {
         }
       } catch (err) {
         if (ativo) {
-          setErro(err.message);
+          setErro(normalizarErroPublico(err));
         }
       } finally {
         if (ativo) {
@@ -157,7 +194,7 @@ function AgendamentoPublico({ slugOuId }) {
     return () => {
       ativo = false;
     };
-  }, [slugOuId]);
+  }, [slugOuId, tentativaCarga]);
 
   useEffect(() => {
     async function carregarHorarios() {
@@ -194,7 +231,7 @@ function AgendamentoPublico({ slugOuId }) {
         if (consultaId === ultimaConsultaHorariosId.current) {
           setHorarios([]);
           setHorarioSelecionado(null);
-          setErro(err.message);
+          setErro(normalizarErroPublico(err));
         }
       } finally {
         if (consultaId === ultimaConsultaHorariosId.current) {
@@ -299,7 +336,9 @@ function AgendamentoPublico({ slugOuId }) {
       });
     } catch (err) {
       setErro(
-        err.message.includes('indispon') || err.message.includes('conflito')
+        err?.status === 429
+          ? normalizarErroPublico(err)
+          : err.message.includes('indispon') || err.message.includes('conflito')
           ? 'Este horário ficou indisponível. Escolha outro horário.'
           : err.message
       );
@@ -404,8 +443,9 @@ function AgendamentoPublico({ slugOuId }) {
     );
   }
 
-  if (erro && !negocio) {
-    const negocioNaoEncontrado = erro
+  if (erroMensagem && !negocio) {
+    const limiteAtingido = segundosEspera !== null;
+    const negocioNaoEncontrado = erroMensagem
       .toLocaleLowerCase('pt-BR')
       .includes('não encontrado');
 
@@ -417,21 +457,36 @@ function AgendamentoPublico({ slugOuId }) {
           </span>
           <div>
             <h1>
-              {negocioNaoEncontrado
+              {limiteAtingido
+                ? 'Muitas solicitações'
+                : negocioNaoEncontrado
                 ? 'Negócio não encontrado'
                 : 'Não foi possível abrir esta página'}
             </h1>
             <p>
-              {negocioNaoEncontrado
+              {limiteAtingido
+                ? erroMensagem
+                : negocioNaoEncontrado
                 ? 'Confira se o link recebido está completo ou peça um novo link ao negócio.'
                 : 'Verifique sua conexão e tente abrir a página novamente.'}
             </p>
           </div>
           <div className="public-booking-state-actions">
             {!negocioNaoEncontrado && (
-              <a className="button button-primary" href={window.location.href}>
-                Tentar novamente
-              </a>
+              <button
+                className="button button-primary"
+                disabled={segundosEspera > 0}
+                onClick={() => {
+                  setErro('');
+                  setCarregando(true);
+                  setTentativaCarga((tentativaAtual) => tentativaAtual + 1);
+                }}
+                type="button"
+              >
+                {segundosEspera > 0
+                  ? `Tentar novamente em ${segundosEspera} s`
+                  : 'Tentar novamente'}
+              </button>
             )}
             <a className="button button-secondary" href="/">
               Ir para o Agendai
@@ -545,7 +600,7 @@ function AgendamentoPublico({ slugOuId }) {
         </div>
 
         <div className="public-booking-content public-new-booking-content">
-          {erro && <p className="message message-error" role="alert">{erro}</p>}
+          {erroMensagem && <p className="message message-error" role="alert">{erroMensagem}</p>}
 
           {resumoConfirmado ? (
             <section
@@ -634,7 +689,7 @@ function AgendamentoPublico({ slugOuId }) {
                   className={`choice-card booking-choice ${
                     String(servico.id) === String(servicoId) ? 'is-selected' : ''
                   }`}
-                  disabled={enviando}
+                        disabled={enviando || segundosEspera > 0}
                   key={servico.id}
                   onClick={() => selecionarServico(String(servico.id))}
                   type="button"
@@ -687,7 +742,7 @@ function AgendamentoPublico({ slugOuId }) {
                         ? 'is-selected'
                         : ''
                     }`}
-                    disabled={enviando}
+                    disabled={enviando || segundosEspera > 0}
                     key={profissional.id}
                     onClick={() =>
                       selecionarProfissional(String(profissional.id))
@@ -723,7 +778,7 @@ function AgendamentoPublico({ slugOuId }) {
               <label className="booking-date-field">
                 Data do agendamento
                 <input
-                  disabled={enviando}
+                  disabled={enviando || segundosEspera > 0}
                   min={hojeIso()}
                   onChange={(event) => selecionarData(event.target.value)}
                   required
@@ -771,7 +826,7 @@ function AgendamentoPublico({ slugOuId }) {
                             ? 'is-selected'
                             : ''
                         }`}
-                        disabled={enviando}
+                        disabled={enviando || segundosEspera > 0}
                         key={horario.data_hora_inicio}
                         onClick={() => {
                           setErro('');
@@ -805,7 +860,7 @@ function AgendamentoPublico({ slugOuId }) {
                     Nome
                     <input
                       autoComplete="name"
-                      disabled={enviando}
+                      disabled={enviando || segundosEspera > 0}
                       onChange={(event) =>
                         atualizarCliente('nome', event.target.value)
                       }
@@ -819,7 +874,7 @@ function AgendamentoPublico({ slugOuId }) {
                     Telefone
                     <input
                       autoComplete="tel"
-                      disabled={enviando}
+                      disabled={enviando || segundosEspera > 0}
                       inputMode="tel"
                       onChange={(event) =>
                         atualizarCliente('telefone', event.target.value)
@@ -837,7 +892,7 @@ function AgendamentoPublico({ slugOuId }) {
                     </span>
                   <input
                     autoComplete="email"
-                    disabled={enviando}
+                    disabled={enviando || segundosEspera > 0}
                     inputMode="email"
                     onChange={(event) =>
                       atualizarCliente('email', event.target.value)
@@ -852,7 +907,7 @@ function AgendamentoPublico({ slugOuId }) {
                     Observações <span className="booking-optional">(opcional)</span>
                   </span>
                   <textarea
-                    disabled={enviando}
+                    disabled={enviando || segundosEspera > 0}
                     onChange={(event) =>
                       atualizarCliente('observacoes', event.target.value)
                     }
@@ -866,7 +921,7 @@ function AgendamentoPublico({ slugOuId }) {
                   <input
                     aria-label="Ler Aviso de Privacidade"
                     checked={cliente.aviso_privacidade_aceito}
-                    disabled={enviando}
+                    disabled={enviando || segundosEspera > 0}
                     onChange={(event) => atualizarCliente('aviso_privacidade_aceito', event.target.checked)}
                     required
                     type="checkbox"
@@ -885,7 +940,7 @@ function AgendamentoPublico({ slugOuId }) {
                 <button
                   aria-busy={enviando}
                   className="button button-primary"
-                  disabled={enviando}
+                  disabled={enviando || segundosEspera > 0}
                   type="submit"
                 >
                   {enviando ? 'Confirmando...' : 'Confirmar agendamento'}

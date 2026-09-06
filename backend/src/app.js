@@ -30,6 +30,21 @@ const { UPLOAD_ROOT } = require('./utils/imageStorage');
 
 const app = express();
 
+const rateLimitOptions = {
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message(_req, res) {
+    return {
+      erro: 'Muitas requisicoes. Aguarde antes de tentar novamente.',
+      retry_after: Number(res.getHeader('Retry-After')),
+    };
+  },
+};
+
+const publicRateLimiter = rateLimit(rateLimitOptions);
+
 const trustProxyHops = Number(
   process.env.TRUST_PROXY_HOPS ||
     (process.env.NODE_ENV === 'production' ? 1 : 0)
@@ -69,13 +84,9 @@ app.use(
 
 app.use(
   rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: {
-      erro: 'Muitas requisicoes. Tente novamente em alguns minutos.',
-    },
+    ...rateLimitOptions,
+    skip: (req) =>
+      req.path === '/api/health' || /^\/api\/publico(?:\/|$)/.test(req.path),
   })
 );
 
@@ -98,7 +109,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/negocio', negocioRoutes);
 app.use('/api/servicos', servicosRoutes);
 app.use('/api/profissionais', profissionaisRoutes);
-app.use('/api/publico', publicoRoutes);
+app.use('/api/publico', publicRateLimiter, publicoRoutes);
 app.use('/api/agendamentos', agendamentosRoutes);
 app.use('/api/privacidade', privacidadeRoutes);
 

@@ -32,13 +32,17 @@ describe('erros da API', () => {
 
   it('preserva o status HTTP para a interface escolher uma mensagem segura', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      json: vi.fn().mockResolvedValue({ erro: 'Limite excedido.' }),
+      json: vi.fn().mockResolvedValue({
+        erro: 'Limite excedido.',
+        retry_after: 30,
+      }),
       ok: false,
       status: 429,
     }));
 
     await expect(request('/api/auth/login', { auth: false })).rejects.toMatchObject({
       message: 'Limite excedido.',
+      retryAfterSeconds: 30,
       status: 429,
     });
   });

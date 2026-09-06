@@ -133,6 +133,35 @@ describe('AgendamentoPublico', () => {
     );
   });
 
+  it('informa a espera do limite e libera nova tentativa no prazo', async () => {
+    const erro = Object.assign(new Error('Limite excedido.'), {
+      retryAfterSeconds: 1,
+      status: 429,
+    });
+    publicoServiceMock.buscarNegocioPublico.mockRejectedValueOnce(erro);
+
+    render(<AgendamentoPublico slugOuId="studio-teste" />);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Muitas solicitações em pouco tempo. Aguarde 1 segundo e tente novamente.',
+    );
+    expect(
+      screen.getByRole('button', { name: 'Tentar novamente em 1 s' }),
+    ).toBeDisabled();
+
+    const tentarNovamente = await screen.findByRole(
+      'button',
+      { name: 'Tentar novamente' },
+      { timeout: 1500 },
+    );
+    expect(tentarNovamente).toBeEnabled();
+    fireEvent.click(tentarNovamente);
+
+    await waitFor(() => {
+      expect(publicoServiceMock.buscarNegocioPublico).toHaveBeenCalledTimes(2);
+    });
+  });
+
   it('orienta quando o negocio nao possui servicos disponiveis', async () => {
     publicoServiceMock.listarServicosPublicos.mockResolvedValueOnce({
       servicos: [],
