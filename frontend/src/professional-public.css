@@ -576,6 +576,18 @@
   color: #a9bbb4;
 }
 
+[data-theme="dark"] .auth-page-login .auth-signup-link {
+  color: var(--green-800);
+}
+
+[data-theme="dark"] .auth-page-login .auth-signup-link:hover {
+  color: var(--green-900);
+}
+
+[data-theme="dark"] .auth-page-login .auth-signup-link:focus-visible {
+  outline-color: var(--focus-ring);
+}
+
 [data-theme="dark"] .auth-page-login .auth-field-group > label,
 [data-theme="dark"] .auth-page-login .auth-remember-choice {
   color: #d5e1dc;
@@ -815,7 +827,7 @@
 .booking-step.is-active span,
 .booking-step.is-complete span {
   border-color: var(--green-700);
-  color: #ffffff;
+  color: var(--action-text);
   background: var(--green-700);
 }
 
@@ -1917,7 +1929,7 @@
   .public-new-booking-page .booking-step.is-active span,
   .public-new-booking-page .booking-step.is-complete span {
     border-color: var(--green-700);
-    color: #ffffff;
+    color: var(--action-text);
     background: var(--green-700);
   }
 
