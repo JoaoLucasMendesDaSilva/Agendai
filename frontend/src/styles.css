@@ -303,9 +303,10 @@ textarea {
 }
 
 .brand-logo-button:focus-visible {
-  outline: none;
+  outline: 3px solid var(--green-800);
+  outline-offset: 2px;
   border-radius: 10px;
-  box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.16);
+  box-shadow: none;
 }
 
 .brand-mark {
@@ -429,6 +430,10 @@ textarea {
   color: var(--white);
 }
 
+.auth-page-cadastro .auth-visual-panel .brand-logo-button:focus-visible {
+  outline-color: var(--white);
+}
+
 .auth-visual-proof {
   display: flex;
   flex-wrap: wrap;
@@ -491,7 +496,7 @@ textarea {
 
 .auth-input-shell:focus-within {
   border-color: var(--green-700);
-  box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.12);
+  box-shadow: 0 0 0 4px var(--green-800);
 }
 
 .auth-input-shell svg {
@@ -602,7 +607,7 @@ input:not([type="checkbox"]):not([type="radio"]):focus,
 select:focus,
 textarea:focus {
   border-color: var(--green-700);
-  box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.12);
+  box-shadow: 0 0 0 4px var(--green-800);
 }
 
 .button:focus-visible,
@@ -1930,7 +1935,7 @@ textarea:focus {
 
 .search-field:focus-within {
   border-color: var(--green-700);
-  box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.12);
+  box-shadow: 0 0 0 4px var(--green-800);
 }
 
 .search-field input {
@@ -2268,7 +2273,7 @@ textarea:focus {
 }
 
 .day-pill input:focus-visible + span {
-  outline: 3px solid rgba(0, 127, 111, 0.18);
+  outline: 3px solid var(--green-800);
   outline-offset: 2px;
 }
 
@@ -2721,9 +2726,10 @@ textarea:focus {
 
 .choice-card:focus-visible,
 .time-button:focus-visible {
-  outline: none;
+  outline: 3px solid var(--green-800);
+  outline-offset: 2px;
   border-color: var(--green-700);
-  box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.16);
+  box-shadow: none;
 }
 
 .choice-card:active {
@@ -2909,7 +2915,7 @@ textarea:focus {
 
 .brand-upload-input:focus-visible + .brand-preview {
   border-color: var(--green-700);
-  box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.14);
+  box-shadow: none;
 }
 
 .public-business-banner {

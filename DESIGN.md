@@ -182,7 +182,7 @@ O Agendai usa elevacao profissional discreta. Nas telas autenticadas, bordas cla
 - **Card Discreto** (`0 4px 8px rgba(25, 57, 47, 0.05)`): opcional em superficies publicas ou isoladas; nao usar em cada item do dashboard.
 - **Painel Suave** (`0 8px 22px rgba(25, 57, 47, 0.06)`): usado em containers maiores, auth cards e pagina publica.
 - **Hover Operacional:** mudanca de fundo ou borda, sem deslocamento e sem sombra ampla.
-- **Foco Verde** (`0 0 0 4px rgba(0, 127, 111, 0.12)`): usado em inputs, escolha selecionada e estado ativo.
+- **Foco Verde**: anel opaco de 3px com afastamento de 2px, usando `green-primary` (`#0d6f3b`) no tema claro e `#75d99a` no escuro. Campos podem usar anel opaco de 4px. O indicador deve atingir pelo menos 3:1 contra a superficie adjacente; em superficies de marca escuras, usar branco.
 
 ### Named Rules
 **The Professional Discretion Rule.** Sombra deve separar, nao decorar. Se a sombra vira o primeiro elemento percebido, esta forte demais.
@@ -212,7 +212,7 @@ O Agendai usa elevacao profissional discreta. Nas telas autenticadas, bordas cla
 
 ### Inputs / Fields
 - **Style:** fundo branco, borda discreta, radius `10px`, altura minima `50px`.
-- **Focus:** borda verde de acao e anel `0 0 0 4px rgba(0, 127, 111, 0.12)`.
+- **Focus:** borda verde de acao e anel opaco conforme **Foco Verde**.
 - **Error / Disabled:** erros aparecem em mensagem vermelha suave; disabled reduz opacidade e remove transformacoes.
 
 ### Navigation

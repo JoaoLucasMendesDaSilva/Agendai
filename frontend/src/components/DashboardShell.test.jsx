@@ -77,7 +77,9 @@ describe('DashboardShell', () => {
     unmount();
   });
 
-  it('fecha o menu de perfil com Escape', async () => {
+  it('mantém nome acessível no perfil mobile e abre/fecha por teclado', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+    Object.defineProperty(window, 'innerHeight', { configurable: true, value: 844 });
     const user = userEvent.setup();
     const { container } = render(
       <DashboardShell
@@ -90,10 +92,19 @@ describe('DashboardShell', () => {
       </DashboardShell>,
     );
 
-    await user.click(container.querySelector('.topbar-user'));
+    container.querySelector('.topbar-user-copy').style.display = 'none';
+    const perfil = screen.getByRole('button', { name: 'Menu do perfil' });
+    expect(perfil).toHaveAttribute('aria-expanded', 'false');
+    perfil.focus();
+    await user.keyboard('{Enter}');
+    expect(perfil).toHaveAccessibleName('Menu do perfil');
+    expect(perfil).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('button', { name: 'Configurar negócio' })).toBeInTheDocument();
 
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('button', { name: 'Configurar negócio' })).not.toBeInTheDocument();
+    expect(perfil).toHaveAccessibleName('Menu do perfil');
+    expect(perfil).toHaveFocus();
+    expect(perfil).toHaveAttribute('aria-expanded', 'false');
   });
 });

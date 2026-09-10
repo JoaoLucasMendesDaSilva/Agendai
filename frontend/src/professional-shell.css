@@ -449,7 +449,7 @@ body {
 
 .app-shell :where(input, select, textarea):focus {
   border-color: var(--green-700);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-700) 14%, transparent);
+  box-shadow: 0 0 0 3px var(--green-800);
 }
 
 .app-shell :where(input, select, textarea) {

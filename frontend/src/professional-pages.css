@@ -553,7 +553,7 @@
 .agenda-search-field:focus-within,
 .search-field:focus-within {
   border-color: var(--green-700);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-700) 15%, transparent);
+  box-shadow: 0 0 0 3px var(--green-800);
 }
 
 .agenda-search-field input,

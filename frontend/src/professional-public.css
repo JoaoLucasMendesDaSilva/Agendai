@@ -289,7 +289,7 @@
 
 .auth-page-login .auth-input-shell:focus-within {
   border-color: #178a4b;
-  box-shadow: 0 0 0 4px rgba(23, 138, 75, 0.12);
+  box-shadow: 0 0 0 4px var(--green-800);
 }
 
 .auth-page-login .auth-input-shell.is-invalid {
@@ -297,7 +297,7 @@
 }
 
 .auth-page-login .auth-input-shell.is-invalid:focus-within {
-  box-shadow: 0 0 0 4px rgba(201, 59, 59, 0.12);
+  box-shadow: 0 0 0 4px var(--green-800);
 }
 
 .auth-page-login .auth-input-shell svg {
@@ -338,7 +338,7 @@
 }
 
 .auth-page-login .auth-password-toggle:focus-visible {
-  outline: 3px solid rgba(23, 138, 75, 0.2);
+  outline: 3px solid var(--green-800);
   outline-offset: 1px;
 }
 
@@ -389,7 +389,7 @@
 }
 
 .auth-page-login .auth-remember-choice input:focus-visible {
-  outline: 3px solid rgba(23, 138, 75, 0.2);
+  outline: 3px solid var(--green-800);
   outline-offset: 3px;
 }
 
@@ -431,7 +431,7 @@
 }
 
 .auth-page-login .auth-login-error:focus {
-  outline: 3px solid rgba(201, 59, 59, 0.16);
+  outline: 3px solid var(--green-800);
   outline-offset: 2px;
 }
 
@@ -483,7 +483,7 @@
 
 .auth-signup-link:focus-visible {
   border-radius: 4px;
-  outline: 3px solid rgba(23, 138, 75, 0.18);
+  outline: 3px solid var(--green-800);
   outline-offset: 3px;
 }
 
