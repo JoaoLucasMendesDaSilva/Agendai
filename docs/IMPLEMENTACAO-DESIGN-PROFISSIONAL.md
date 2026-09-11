@@ -109,3 +109,15 @@ O design está implementado e pronto para evolução funcional. Ajustes futuros 
 - Landing page verificada em 1280 × 720 e 360 × 800.
 - Login verificado em 360 × 800 após o carregamento assíncrono da rota.
 - Nenhuma rolagem horizontal ou mensagem de erro no console durante a inspeção visual.
+
+## Cadastro — revisão de 11/09/2026
+
+A página `/cadastro` mantém Agendai, Poppins, verde profundo, chip de proteção e a ilustração original. O formulário segue nome, e-mail, telefone opcional, senha, confirmação, aceite e criação da conta. O painel de benefícios aparece a partir de 960px; abaixo disso, o formulário ocupa a superfície principal. Poppins é servida localmente, com arquivos e licença reaproveitados do pacote já instalado no protótipo.
+
+Referências consultadas antes da implementação: [Calendly](https://calendly.com/signup/), [PostHog](https://app.posthog.com/signup), [Figma](https://help.figma.com/hc/en-us/articles/360039811114-Create-a-Figma-account), [Awwwards](https://www.awwwards.com/inspiration/sign-up-envato) e [Dribbble](https://dribbble.com/tags/website-signup). Princípios adotados: título e próxima ação claros, sequência contínua de campos, termos junto à ação final, benefícios separados do formulário e menor carga visual no celular. Pesquisas de Linear, Stripe, Behance e Mobbin tiveram acesso direto limitado por JavaScript/bloqueios; resultados visuais serviram apenas como apoio, sem afirmar auditoria completa desses fluxos. Nenhum asset externo dessas referências foi copiado.
+
+Validação ocorre ao sair do campo e, depois disso, durante a edição. Alterar a senha revalida a confirmação já preenchida. O medidor Fraca/Média/Forte é uma estimativa de comprimento e variedade; não garante resistência a ataques e não muda o mínimo de oito caracteres do servidor. A confirmação não vai para a API. Telefone é enviado sem máscara. Links legais abrem outra aba para preservar o preenchimento. Envio bloqueia repetição, desabilita controles e apresenta carregamento; sucesso substitui o formulário e oferece login. Erros conhecidos e falhas de conexão recebem mensagens locais, sem expor detalhes internos.
+
+Verificações locais: `cd frontend`, `npm test` (53 testes aprovados), `npm run lint` (zero erros; dois avisos preexistentes nos contextos) e `npm run build`. Navegador: 320, 390, 768 e 1440px sem rolagem horizontal; temas claro/escuro, foco no primeiro erro, sequência por teclado, carregamento e sucesso com API simulada. Revisão visual removeu bordas duplicadas, sombras internas e animações decorativas; manteve uma única superfície e ilustração da marca. Sem migration, mudança no contrato da API ou publicação. Cadastro real no banco e testes com usuários não foram executados.
+
+Contrastes calculados na revisão: texto secundário claro 5,23:1; erro claro 5,03:1; texto secundário escuro 6,92:1; botão claro 6,26:1 e escuro 7,53:1; bordas dos campos 3,52:1 e 3,78:1. São verificações dos pares usados, não certificação WCAG de toda a aplicação. Revisão realizada pelo agente principal, sem revisão independente.

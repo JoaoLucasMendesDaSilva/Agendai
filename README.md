@@ -679,3 +679,10 @@ Futuro Engenheiro de Dados / Engenheiro de IA
 [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github)](https://github.com/JoaoLucasMendesDaSilva)
 
 </div>
+
+## Documentação do produto e da interface
+
+- [Produto](PRODUCT.md) e [padrões visuais](DESIGN.md).
+- [Direção do redesign](docs/REDESIGN-PROFISSIONAL.md).
+- [Implementação e verificações das interfaces](docs/IMPLEMENTACAO-DESIGN-PROFISSIONAL.md), incluindo o cadastro.
+- [Operação PostgreSQL/Supabase](docs/POSTGRES-SUPABASE.md), [Render](docs/RENDER.md) e [operação LGPD](docs/OPERACAO-LGPD.md).
