@@ -337,6 +337,7 @@ function DashboardShell({
               <button
                 aria-expanded={perfilAberto}
                 aria-haspopup="true"
+                aria-label="Menu do perfil"
                 className="topbar-user"
                 onClick={() => setPerfilAberto((aberto) => !aberto)}
                 type="button"

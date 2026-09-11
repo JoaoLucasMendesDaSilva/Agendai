@@ -215,7 +215,7 @@
   .landing-mobile-menu button,
   .landing-more-features summary
 ):focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--green-700) 28%, transparent);
+  outline: 3px solid var(--green-800);
   outline-offset: 2px;
 }
 
@@ -915,7 +915,7 @@
 }
 
 .landing-page .landing-faq-item > button:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--green-700) 28%, transparent);
+  outline: 3px solid var(--green-800);
   outline-offset: -3px;
 }
 
@@ -976,6 +976,10 @@
   justify-self: start;
   color: var(--landing-green-deep);
   background: var(--white);
+}
+
+.landing-page .landing-final-cta .button-primary:focus-visible {
+  outline-color: var(--white);
 }
 
 .landing-page .landing-footer {
