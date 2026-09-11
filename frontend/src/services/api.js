@@ -44,6 +44,14 @@ async function request(path, options = {}) {
       data.erro || data.mensagem || 'Erro ao comunicar com o servidor.'
     );
     error.status = response.status;
+
+    const retryAfter = Number(
+      data.retry_after || response.headers?.get?.('Retry-After')
+    );
+    if (response.status === 429 && retryAfter > 0) {
+      error.retryAfterSeconds = Math.ceil(retryAfter);
+    }
+
     throw error;
   }
 
