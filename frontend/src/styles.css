@@ -30,6 +30,8 @@
   --gray-500: #5f706b;
   --gray-300: #dfe7e3;
   --gray-100: #f0f4f2;
+  --field-border: #dfe7e3;
+  --focus-ring: #0d6f3b;
   --white: #ffffff;
   --shadow-soft: 0 8px 22px rgba(25, 57, 47, 0.06);
   --shadow-card: 0 4px 8px rgba(25, 57, 47, 0.05);
@@ -64,6 +66,8 @@
   --gray-500: #93a8a0;
   --gray-300: #273934;
   --gray-100: #17221f;
+  --field-border: #5f706b;
+  --focus-ring: #75d99a;
   --shadow-soft: 0 8px 22px rgba(0, 0, 0, 0.2);
   --shadow-card: 0 4px 8px rgba(0, 0, 0, 0.16);
 }
@@ -572,7 +576,7 @@ input:not([type="checkbox"]):not([type="radio"]),
 select,
 textarea {
   width: 100%;
-  border: 1px solid var(--gray-300);
+  border: 1px solid var(--field-border);
   border-radius: 10px;
   padding: 13px 15px;
   color: var(--gray-900);
@@ -607,7 +611,8 @@ textarea:focus {
 .quick-action:focus-visible,
 .theme-toggle:focus-visible,
 .install-app-button:focus-visible {
-  outline: none;
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
   box-shadow: 0 0 0 4px rgba(0, 127, 111, 0.16);
 }
 
@@ -3050,7 +3055,7 @@ textarea:focus {
 [data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]),
 [data-theme="dark"] select,
 [data-theme="dark"] textarea {
-  border-color: var(--gray-300);
+  border-color: var(--field-border);
   color: var(--gray-900);
   background: var(--input-bg);
 }
