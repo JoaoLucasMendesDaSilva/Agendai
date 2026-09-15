@@ -1208,6 +1208,155 @@
 .landing-audience li:nth-child(even) { border-left: 1px solid var(--landing-line); }
 .landing-audience li svg { flex: 0 0 auto; color: var(--landing-green); }
 
+/* TCC subscription model — visual demonstration only */
+.landing-plans {
+  width: min(calc(100% - (var(--landing-gutter) * 2)), var(--landing-max));
+  margin: 0 auto;
+  padding-bottom: clamp(90px, 12vw, 168px);
+}
+
+.landing-plans .landing-section-intro {
+  max-width: 920px;
+}
+
+.landing-plan-comparison {
+  margin-top: clamp(44px, 7vw, 78px);
+  border-top: 1px solid var(--landing-line);
+}
+
+.landing-plan-head,
+.landing-plan-comparison article {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.75fr) minmax(142px, 0.65fr) minmax(142px, 0.65fr) minmax(280px, 1.6fr) auto;
+  gap: clamp(16px, 2.2vw, 34px);
+  align-items: center;
+}
+
+.landing-plan-head {
+  min-height: 54px;
+  padding-inline: 20px;
+  color: var(--landing-copy);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.landing-plan-comparison > ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.landing-plan-comparison > ol > li {
+  position: relative;
+  border-top: 1px solid var(--landing-line);
+}
+
+.landing-plan-comparison > ol > li:last-child {
+  border-bottom: 1px solid var(--landing-line);
+}
+
+.landing-plan-comparison article {
+  min-height: 142px;
+  padding: 24px 20px;
+}
+
+.landing-plan-comparison > ol > li.is-featured {
+  color: #ffffff;
+  background: var(--landing-green);
+}
+
+.landing-plan-comparison > ol > li.is-featured::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 5px;
+  background: var(--landing-live);
+  content: '';
+}
+
+.landing-plan-name {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.landing-plan-name > span {
+  color: var(--landing-green);
+  font-family: 'Manrope Landing', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.landing-plan-name h3 {
+  color: var(--landing-ink);
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  font-weight: 800;
+}
+
+.landing-plan-price {
+  color: var(--landing-ink);
+  font-family: 'Manrope Landing', sans-serif;
+  font-size: clamp(1rem, 1.4vw, 1.22rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.landing-plan-comparison article > ul {
+  display: grid;
+  gap: 7px;
+  padding: 0;
+  color: var(--landing-copy);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  list-style: none;
+}
+
+.landing-plan-comparison article > ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.landing-plan-comparison article > ul svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--landing-green);
+}
+
+.landing-plan-status {
+  border: 1px solid var(--landing-line);
+  border-radius: 999px;
+  padding: 7px 10px;
+  color: var(--landing-copy);
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.landing-plan-comparison > ol > li.is-featured :where(.landing-plan-name h3, .landing-plan-price),
+.landing-plan-comparison > ol > li.is-featured .landing-plan-name > span,
+.landing-plan-comparison > ol > li.is-featured article > ul,
+.landing-plan-comparison > ol > li.is-featured article > ul svg {
+  color: #ffffff;
+}
+
+.landing-plan-comparison > ol > li.is-featured .landing-plan-status {
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #ffffff;
+}
+
+.landing-plans-note {
+  max-width: 72ch;
+  margin-top: 18px;
+  color: var(--landing-copy);
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
 /* FAQ */
 .landing-faq {
   display: grid;
@@ -1526,6 +1675,11 @@
     margin: -92px 0 0 40px;
   }
   .landing-audience { grid-template-columns: 1fr; }
+  .landing-plan-head,
+  .landing-plan-comparison article {
+    grid-template-columns: minmax(140px, 0.8fr) minmax(126px, 0.65fr) minmax(126px, 0.65fr) minmax(240px, 1.4fr);
+  }
+  .landing-plan-status { grid-column: 4; justify-self: start; }
   .landing-faq { grid-template-columns: 1fr; }
   .landing-faq .landing-section-intro { max-width: 650px; }
 }
@@ -1689,6 +1843,27 @@
   .landing-step-icon { align-items: center; min-height: 46px; }
   .landing-steps p { margin-inline: 0; }
   .landing-process::before { background-size: 50% 100%, 100% 64px; }
+  .landing-plan-head { display: none; }
+  .landing-plan-comparison article {
+    min-height: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 16px;
+    padding: 28px 4px;
+  }
+  .landing-plan-comparison > ol > li.is-featured article { padding-inline: 20px; }
+  .landing-plan-name { grid-column: 1 / -1; }
+  .landing-plan-price::before {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--landing-copy);
+    content: attr(data-label);
+    font-family: 'Poppins Landing', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+  }
+  .landing-plan-comparison article > ul { grid-column: 1 / -1; }
+  .landing-plan-status { grid-column: 1 / -1; justify-self: start; }
+  .landing-plan-comparison > ol > li.is-featured .landing-plan-price::before { color: #d5f2df; }
   .landing-final-cta { grid-template-columns: 1fr; align-items: end; padding-top: 130px; }
   .landing-final-cta > button { justify-self: start; }
   .landing-final-orbit { top: 34px; right: 22px; left: 22px; width: auto; }
@@ -1769,6 +1944,8 @@
 [data-theme='dark'] .landing-page .brand-name,
 [data-theme='dark'] .landing-benefits strong,
 [data-theme='dark'] .landing-audience li,
+[data-theme='dark'] .landing-plan-name h3,
+[data-theme='dark'] .landing-plan-price,
 [data-theme='dark'] .landing-faq-list summary { color: var(--landing-ink); }
 [data-theme='dark'] .landing-page .brand-mark { color: #072a1c; background: var(--landing-live); }
 [data-theme='dark'] .landing-nav-links a:hover,
@@ -1800,6 +1977,9 @@
 [data-theme='dark'] .landing-message:nth-of-type(2) { background: #dff7e7; }
 [data-theme='dark'] .landing-audience li svg,
 [data-theme='dark'] .landing-faq-list summary svg { color: var(--landing-live); }
+[data-theme='dark'] .landing-plans .landing-section-intro > span,
+[data-theme='dark'] .landing-plan-name > span,
+[data-theme='dark'] .landing-plan-comparison article > ul svg { color: var(--landing-live); }
 [data-theme='dark'] .landing-final-cta { background: #0b5d33; }
 [data-theme='dark'] .landing-page .landing-footer .brand-name { color: #ffffff; }
 

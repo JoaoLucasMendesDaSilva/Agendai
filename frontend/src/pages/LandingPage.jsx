@@ -56,6 +56,34 @@ const publicos = [
   { nome: 'Profissionais autônomos', Icone: BriefcaseBusiness },
 ];
 
+const planosDemonstrativos = [
+  {
+    nome: 'Gratuito',
+    mensal: 'R$ 0,00/mês',
+    anual: 'R$ 0,00/ano',
+    beneficios: ['Até 50 agendamentos/mês', '1 profissional', 'Lembretes por e-mail'],
+  },
+  {
+    nome: 'Básico',
+    mensal: 'R$ 19,90/mês',
+    anual: 'R$ 179,00/ano',
+    beneficios: ['Até 200 agendamentos/mês', '1 profissional', 'Lembretes por e-mail'],
+  },
+  {
+    nome: 'Profissional',
+    mensal: 'R$ 39,90/mês',
+    anual: 'R$ 359,00/ano',
+    beneficios: ['Agendamentos ilimitados', 'Até 5 profissionais', 'Lembretes por WhatsApp e e-mail', 'Relatórios'],
+    destaque: true,
+  },
+  {
+    nome: 'Rede',
+    mensal: 'R$ 99,90/mês',
+    anual: 'R$ 899,00/ano',
+    beneficios: ['Tudo do Profissional', 'Múltiplas unidades', 'Painel centralizado', 'Suporte prioritário'],
+  },
+];
+
 const perguntas = [
   {
     pergunta: 'O cliente precisa criar uma conta para agendar?',
@@ -309,6 +337,50 @@ function LandingPage({ navigate }) {
           stagger: 0.07,
           y: mobile ? 6 : 9,
         });
+
+      gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        scrollTrigger: {
+          once: true,
+          start: 'top 78%',
+          trigger: '.landing-plans',
+        },
+      })
+        .from('.landing-plans .landing-section-intro > span', {
+          duration: 0.32,
+          opacity: 0.72,
+          y: mobile ? 5 : 7,
+        })
+        .from('.landing-plans .landing-section-intro h2', {
+          duration: 0.48,
+          opacity: 0.72,
+          y: mobile ? 8 : 11,
+        }, '-=0.12')
+        .from('.landing-plans .landing-section-intro p', {
+          duration: 0.36,
+          opacity: 0.78,
+          y: mobile ? 5 : 8,
+        }, '-=0.18')
+        .from('.landing-plan-head', {
+          duration: 0.28,
+          opacity: 0.72,
+          y: 5,
+        }, '-=0.12')
+        .from('.landing-plan-comparison > ol > li', {
+          duration: 0.38,
+          opacity: 0.72,
+          stagger: 0.07,
+          y: mobile ? 6 : 9,
+        }, '-=0.06')
+        .from('.landing-plan-comparison > ol > li.is-featured article', {
+          duration: 0.42,
+          scale: 0.985,
+        }, '-=0.34')
+        .from('.landing-plans-note', {
+          duration: 0.28,
+          opacity: 0.76,
+          y: 4,
+        }, '-=0.1');
 
       gsap.timeline({
         defaults: { ease: 'power3.out' },
@@ -759,6 +831,46 @@ function LandingPage({ navigate }) {
               <li key={nome}><Icone aria-hidden="true" size={27} /><span>{nome}</span></li>
             ))}
           </ul>
+        </section>
+
+        <section className="landing-plans" aria-labelledby="plans-title">
+          <div className="landing-section-intro">
+            <span>Modelo apresentado no TCC</span>
+            <h2 id="plans-title">Planos pensados para acompanhar cada fase do negócio.</h2>
+            <p>
+              Comparativo demonstrativo da proposta acadêmica. Não há contratação,
+              cobrança ou alteração de plano nesta página.
+            </p>
+          </div>
+
+          <div className="landing-plan-comparison">
+            <div className="landing-plan-head" aria-hidden="true">
+              <span>Plano</span><span>Mensal</span><span>Anual</span><span>O que inclui</span>
+            </div>
+            <ol>
+              {planosDemonstrativos.map(({ nome, mensal, anual, beneficios, destaque }, index) => (
+                <li className={destaque ? 'is-featured' : undefined} key={nome}>
+                  <article>
+                    <div className="landing-plan-name">
+                      <span>{String(index + 1).padStart(2, '0')}</span>
+                      <h3>{nome}</h3>
+                    </div>
+                    <p className="landing-plan-price" data-label="Mensal">{mensal}</p>
+                    <p className="landing-plan-price" data-label="Anual">{anual}</p>
+                    <ul aria-label={`Benefícios do plano ${nome}`}>
+                      {beneficios.map((beneficio) => (
+                        <li key={beneficio}><Check aria-hidden="true" size={16} />{beneficio}</li>
+                      ))}
+                    </ul>
+                    <span className="landing-plan-status">Demonstração</span>
+                  </article>
+                </li>
+              ))}
+            </ol>
+            <p className="landing-plans-note">
+              Valores e limites extraídos do TCC corrigido, páginas 9–10 e 18. Pagamentos e assinaturas não estão implementados.
+            </p>
+          </div>
         </section>
 
         <section className="landing-faq" id="faq" aria-labelledby="faq-title">

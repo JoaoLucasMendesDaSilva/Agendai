@@ -170,6 +170,19 @@ describe('LandingPage', () => {
     expect(screen.getAllByText('Exemplo de negócio configurado no Agendai')).toHaveLength(1);
   });
 
+  it('apresenta os planos do TCC apenas como demonstracao', () => {
+    render(<LandingPage navigate={vi.fn()} />);
+
+    expect(screen.getByRole('heading', { name: 'Gratuito' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Básico' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Profissional' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Rede' })).toBeInTheDocument();
+    expect(screen.getByText('R$ 19,90/mês')).toBeInTheDocument();
+    expect(screen.getByText('R$ 359,00/ano')).toBeInTheDocument();
+    expect(screen.getByText(/Pagamentos e assinaturas não estão implementados\./)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /assinar|comprar|contratar/i })).not.toBeInTheDocument();
+  });
+
   it('confirma explicitamente o horario ilustrativo e mostra o resumo', () => {
     vi.useFakeTimers();
     render(<LandingPage navigate={vi.fn()} />);
