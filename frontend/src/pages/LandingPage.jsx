@@ -1,11 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
+  ArrowDownRight,
   ArrowRight,
   BriefcaseBusiness,
   CalendarCheck2,
-  CheckCircle2,
+  Check,
   ChevronDown,
-  LayoutDashboard,
+  Clock3,
+  Link2,
   Menu,
   Moon,
   Scissors,
@@ -13,40 +17,36 @@ import {
   Stethoscope,
   Store,
   Sun,
+  UserRoundCheck,
   X,
 } from 'lucide-react';
 import BrandLogo from '../components/BrandLogo';
 import { useTheme } from '../contexts/ThemeContext';
+import dashboardJotaBarber from '../assets/product/dashboard-jota-barber.webp';
+import agendamentoPublicoJotaBarber from '../assets/product/agendamento-publico-jota-barber.webp';
 import '../landing-page.css';
 
-const pilares = [
-  {
-    titulo: 'Agendamento que começa pelo cliente',
-    texto: 'Seu cliente escolhe serviço, profissional, data e horário pelo link público, sem precisar criar uma conta.',
-    detalhe: 'Menos mensagens para organizar manualmente',
-    Icone: CalendarCheck2,
-  },
-  {
-    titulo: 'Horários protegidos contra conflito',
-    texto: 'A disponibilidade é validada antes da confirmação para impedir dois atendimentos no mesmo horário.',
-    detalhe: 'Mais confiança para divulgar sua agenda',
-    Icone: ShieldCheck,
-  },
-  {
-    titulo: 'Rotina centralizada em um painel',
-    texto: 'Agenda, clientes, serviços e profissionais ficam reunidos para você entender o dia sem procurar em várias conversas.',
-    detalhe: 'Mais clareza para quem atende e administra',
-    Icone: LayoutDashboard,
-  },
+gsap.registerPlugin(ScrollTrigger);
+
+const beneficios = [
+  ['Cliente agenda sem conta', 'Um link direto para escolher serviço, profissional, dia e horário.'],
+  ['Conflitos são bloqueados', 'A disponibilidade é conferida antes de cada confirmação.'],
+  ['Rotina em um só lugar', 'Agenda, clientes, serviços e profissionais no mesmo painel.'],
 ];
 
-const recursosComplementares = [
-  'Link e QR Code para divulgação',
-  'Compartilhamento pelo WhatsApp',
-  'Instalação como aplicativo',
-  'Relatórios em PDF',
-  'Exportação para Excel',
-  'Tema claro e escuro',
+const mensagensAntes = ['Tem um horário depois das 14h?', 'Quanto tempo leva?', 'Pode confirmar para mim?'];
+
+const agendaDepois = [
+  ['09:00', 'Atendimento confirmado', 'Confirmado'],
+  ['14:00', 'Novo pedido recebido', 'Solicitado'],
+  ['16:30', 'Horário disponível', 'Livre'],
+];
+
+const passos = [
+  { titulo: 'Configure', texto: 'Cadastre o negócio, os serviços, os profissionais e os horários.', Icone: Clock3 },
+  { titulo: 'Compartilhe', texto: 'Envie o link público ou divulgue o QR Code.', Icone: Link2 },
+  { titulo: 'Receba', texto: 'O cliente escolhe uma opção realmente disponível.', Icone: UserRoundCheck },
+  { titulo: 'Acompanhe', texto: 'Veja o dia e os próximos atendimentos no painel.', Icone: CalendarCheck2 },
 ];
 
 const publicos = [
@@ -56,23 +56,10 @@ const publicos = [
   { nome: 'Profissionais autônomos', Icone: BriefcaseBusiness },
 ];
 
-const passos = [
-  ['Configure', 'Cadastre negócio, serviços, profissionais e horários.'],
-  ['Compartilhe', 'Envie o link público ou divulgue o QR Code.'],
-  ['Receba', 'O cliente escolhe uma opção realmente disponível.'],
-  ['Acompanhe', 'Veja agenda, clientes e próximos atendimentos.'],
-];
-
-const conferenciaRotina = [
-  ['Horário livre', '12:00 disponível'],
-  ['Cliente escolhe', '14:00 solicitado'],
-  ['Sistema confirma', 'sem conflito'],
-];
-
 const perguntas = [
   {
     pergunta: 'O cliente precisa criar uma conta para agendar?',
-    resposta: 'Não. O cliente acessa o link público, escolhe serviço, profissional, data e horário sem criar cadastro.',
+    resposta: 'Não. O cliente acessa o link público e informa apenas os dados necessários para o atendimento.',
   },
   {
     pergunta: 'Como o Agendai evita dois agendamentos no mesmo horário?',
@@ -88,6 +75,12 @@ const perguntas = [
   },
 ];
 
+const secoesNavegacao = [
+  { id: 'recursos', rotulo: 'O que resolve' },
+  { id: 'como-funciona', rotulo: 'Como funciona' },
+  { id: 'faq', rotulo: 'Dúvidas', rotuloMobile: 'Dúvidas frequentes' },
+];
+
 function usuarioPrefereReducaoMovimento() {
   return (
     typeof window !== 'undefined'
@@ -99,14 +92,20 @@ function usuarioPrefereReducaoMovimento() {
 function LandingPage({ navigate }) {
   const { isDark, toggleTheme } = useTheme();
   const [menuAberto, setMenuAberto] = useState(false);
-  const [perguntasAbertas, setPerguntasAbertas] = useState([]);
+  const [secaoAtiva, setSecaoAtiva] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    const id = window.location.hash.slice(1);
+    return secoesNavegacao.some((secao) => secao.id === id) ? id : '';
+  });
+  const [horarioSelecionado, setHorarioSelecionado] = useState('');
+  const [statusHorario, setStatusHorario] = useState('Livre');
+  const landingRef = useRef(null);
   const navRef = useRef(null);
   const menuButtonRef = useRef(null);
+  const confirmacaoTimerRef = useRef(null);
 
   useEffect(() => {
-    if (!menuAberto) {
-      return undefined;
-    }
+    if (!menuAberto) return undefined;
 
     function fecharMenuComEscape(event) {
       if (event.key === 'Escape') {
@@ -116,11 +115,7 @@ function LandingPage({ navigate }) {
     }
 
     function fecharMenuAoClicarFora(event) {
-      if (navRef.current?.contains(event.target)) {
-        return;
-      }
-
-      setMenuAberto(false);
+      if (!navRef.current?.contains(event.target)) setMenuAberto(false);
     }
 
     function fecharMenuAoRedimensionar() {
@@ -138,13 +133,285 @@ function LandingPage({ navigate }) {
     };
   }, [menuAberto]);
 
+  useEffect(() => {
+    if (typeof window.IntersectionObserver !== 'function') return undefined;
+
+    const secoes = [
+      document.querySelector('.landing-hero'),
+      ...secoesNavegacao.map(({ id }) => document.getElementById(id)),
+    ].filter(Boolean);
+    const observer = new window.IntersectionObserver((entradas) => {
+      const entradaAtual = entradas.find((entrada) => entrada.isIntersecting);
+      if (entradaAtual) setSecaoAtiva(entradaAtual.target.id || '');
+    }, { rootMargin: '-38% 0px -61% 0px' });
+
+    secoes.forEach((secao) => observer.observe(secao));
+    return () => observer.disconnect();
+  }, []);
+
+  useLayoutEffect(() => {
+    const landing = landingRef.current;
+    if (!landing || usuarioPrefereReducaoMovimento()) return undefined;
+
+    const mobile = typeof window.matchMedia === 'function'
+      && window.matchMedia('(max-width: 760px)').matches;
+    const movimentoCurto = mobile ? 10 : 18;
+    const contexto = gsap.context(() => {
+      gsap.timeline({ defaults: { ease: 'power3.out' } })
+        .from('.landing-nav', {
+          duration: 0.38,
+          opacity: 0,
+          y: mobile ? -8 : -10,
+        })
+        .fromTo('.landing-nav',
+          { '--landing-nav-rule-progress': 0 },
+          { '--landing-nav-rule-progress': 1, duration: 0.34 },
+          '-=0.08');
+
+      gsap.timeline({ defaults: { ease: 'power3.out' } })
+        .from('.landing-hero-kicker', { duration: 0.42, opacity: 0, y: movimentoCurto })
+        .from('.landing-hero-title h1 > span', {
+          duration: 0.72,
+          opacity: 0,
+          stagger: 0.12,
+          yPercent: mobile ? 16 : 22,
+        }, '-=0.1')
+        .from('.landing-hero-copy > p', { duration: 0.5, opacity: 0, y: movimentoCurto }, '-=0.12')
+        .from('.landing-hero-actions > *', { duration: 0.36, opacity: 0, stagger: 0.08 }, '-=0.06')
+        .from('.landing-hero-note', { duration: 0.46, opacity: 0, y: movimentoCurto }, '-=0.22')
+        .from('.landing-hero-product', {
+          duration: 0.86,
+          opacity: 0.32,
+          x: mobile ? 16 : 34,
+          y: mobile ? 10 : 18,
+        }, '+=0.04')
+        .from('.landing-hero-product figcaption', { duration: 0.46, opacity: 0, x: mobile ? -8 : -16 }, '-=0.26');
+
+      if (!mobile) {
+        gsap.fromTo('.landing-hero-product-frame img',
+          { scale: 1.015, yPercent: 0 },
+          {
+            ease: 'none',
+            scale: 1.045,
+            scrollTrigger: {
+              end: 'bottom top',
+              scrub: 0.55,
+              start: 'top top',
+              trigger: '.landing-hero',
+            },
+            yPercent: -2,
+          });
+      }
+
+      const historia = gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        scrollTrigger: {
+          end: 'bottom 70%',
+          scrub: 0.4,
+          start: 'top 84%',
+          trigger: '.landing-story-motion',
+        },
+      });
+
+      historia
+        .from('.landing-message', { duration: 0.56, opacity: 0, stagger: 0.12, x: -movimentoCurto })
+        .to('.landing-message', { duration: 0.6, stagger: 0.08, x: mobile ? 6 : 16 }, '-=0.16');
+
+      historia.from(
+        mobile ? '.landing-story-transfer > span:first-child' : '.landing-story-transfer > span',
+        {
+          duration: 0.72,
+          opacity: 0.35,
+          scaleX: mobile ? 1 : 0,
+          scaleY: mobile ? 0 : 1,
+          stagger: mobile ? 0 : 0.12,
+          transformOrigin: mobile ? 'center top' : 'left center',
+        },
+        '-=0.08',
+      );
+
+      historia.from('.landing-after-row', {
+        duration: 0.58,
+        opacity: 0,
+        stagger: 0.16,
+        x: mobile ? 0 : 12,
+        y: mobile ? 10 : 0,
+      }, '-=0.08');
+
+      gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        scrollTrigger: {
+          once: true,
+          start: 'top 76%',
+          trigger: '.landing-preview',
+        },
+      })
+        .from('.landing-public-capture', { duration: 0.74, opacity: 0.45, y: mobile ? 14 : 22 })
+        .from('.landing-booking-context > span', {
+          duration: 0.42,
+          opacity: 0,
+          stagger: 0.1,
+          y: mobile ? 7 : 11,
+        }, '-=0.06')
+        .from('.landing-time-options button', { duration: 0.36, opacity: 0, stagger: 0.09 }, '-=0.08')
+        .from('.landing-demo-action', { duration: 0.38, opacity: 0, y: mobile ? 6 : 9 }, '-=0.06');
+
+      gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        scrollTrigger: {
+          once: true,
+          start: 'top 76%',
+          trigger: '.landing-process',
+        },
+      })
+        .from('.landing-process .landing-section-intro > span', {
+          duration: 0.38,
+          opacity: 0,
+          y: mobile ? 6 : 10,
+        })
+        .from('.landing-process .landing-section-intro h2', {
+          duration: 0.58,
+          opacity: 0,
+          y: mobile ? 9 : 14,
+        }, '-=0.12')
+        .fromTo('.landing-steps',
+          { '--landing-process-progress': 0 },
+          {
+            '--landing-process-progress': 1,
+            duration: mobile ? 0.82 : 0.92,
+            ease: 'power2.inOut',
+          })
+        .from('.landing-steps li', {
+          duration: 0.46,
+          opacity: 0,
+          scale: 0.96,
+          stagger: { amount: mobile ? 0.6 : 0.72 },
+          y: mobile ? 8 : 12,
+        });
+
+      gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        scrollTrigger: {
+          once: true,
+          start: 'top 78%',
+          trigger: '.landing-audience',
+        },
+      })
+        .from('.landing-audience > div > *', {
+          duration: 0.46,
+          opacity: 0,
+          stagger: 0.1,
+          y: mobile ? 8 : 12,
+        })
+        .from('.landing-audience li', {
+          duration: 0.36,
+          opacity: 0,
+          stagger: 0.07,
+          y: mobile ? 6 : 9,
+        });
+
+      gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        scrollTrigger: {
+          once: true,
+          start: 'top 80%',
+          trigger: '.landing-faq',
+        },
+      })
+        .from('.landing-faq .landing-section-intro > span', {
+          duration: 0.32,
+          opacity: 0,
+          y: mobile ? 6 : 9,
+        })
+        .from('.landing-faq .landing-section-intro h2', {
+          duration: 0.46,
+          opacity: 0,
+          y: mobile ? 8 : 12,
+        }, '-=0.1')
+        .from('.landing-faq-list summary', {
+          duration: 0.3,
+          opacity: 0,
+          stagger: 0.06,
+          y: mobile ? 4 : 7,
+        });
+
+      gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        scrollTrigger: {
+          once: true,
+          start: 'top 78%',
+          trigger: '.landing-final-cta',
+        },
+      })
+        .from('.landing-final-orbit-line', {
+          duration: 0.46,
+          ease: 'power2.inOut',
+          scaleX: 0,
+          transformOrigin: 'left center',
+        })
+        .from('.landing-final-orbit span', {
+          duration: 0.28,
+          opacity: 0,
+          stagger: 0.06,
+          y: mobile ? 4 : 6,
+        }, '-=0.18')
+        .from('.landing-final-orbit strong', {
+          duration: 0.3,
+          opacity: 0,
+          y: mobile ? 5 : 7,
+        }, '+=0.04')
+        .from('.landing-final-cta > div:not(.landing-final-orbit) > *', {
+          duration: 0.42,
+          opacity: 0,
+          stagger: 0.07,
+          y: mobile ? 8 : 12,
+        }, '-=0.08')
+        .from('.landing-final-cta > button', { duration: 0.26, opacity: 0.72 }, '-=0.12');
+
+      gsap.timeline({
+        defaults: { ease: 'power3.out' },
+        scrollTrigger: {
+          once: true,
+          start: 'top 86%',
+          trigger: '.landing-footer',
+        },
+      })
+        .from('.landing-footer-wordmark', {
+          duration: 0.52,
+          opacity: 0,
+          y: mobile ? 10 : 16,
+        })
+        .fromTo('.landing-footer-time-rule',
+          { '--landing-footer-rule-progress': 0 },
+          { '--landing-footer-rule-progress': 1, duration: 0.52 },
+          '-=0.12')
+        .from('.landing-footer-time-rule span', {
+          duration: 0.28,
+          opacity: 0,
+          stagger: 0.06,
+        }, '-=0.24')
+        .from('.landing-footer-brand, .landing-footer-links nav', {
+          duration: 0.36,
+          opacity: 0.78,
+          stagger: 0.07,
+          y: mobile ? 6 : 9,
+        }, '-=0.06')
+        .from('.landing-footer-origin', {
+          duration: 0.28,
+          opacity: 0,
+          y: 4,
+        }, '-=0.02');
+    }, landing);
+
+    return () => contexto.revert();
+  }, []);
+
+  useEffect(() => () => clearTimeout(confirmacaoTimerRef.current), []);
+
   function irParaLanding() {
     setMenuAberto(false);
     navigate('/');
-    window.scrollTo({
-      top: 0,
-      behavior: usuarioPrefereReducaoMovimento() ? 'auto' : 'smooth',
-    });
+    window.scrollTo({ top: 0, behavior: usuarioPrefereReducaoMovimento() ? 'auto' : 'smooth' });
   }
 
   function irParaCadastro() {
@@ -164,23 +431,45 @@ function LandingPage({ navigate }) {
     });
   }
 
-  function alternarPergunta(indice) {
-    setPerguntasAbertas((atuais) => (
-      atuais.includes(indice)
-        ? atuais.filter((item) => item !== indice)
-        : [...atuais, indice]
-    ));
+  function selecionarHorario(horario) {
+    clearTimeout(confirmacaoTimerRef.current);
+    setHorarioSelecionado(horario);
+    setStatusHorario('Solicitado');
+  }
+
+  function confirmarHorario() {
+    if (!horarioSelecionado || statusHorario === 'Confirmando') return;
+    setStatusHorario('Confirmando');
+    confirmacaoTimerRef.current = setTimeout(() => setStatusHorario('Confirmado'), 520);
+  }
+
+  function reiniciarDemonstracao() {
+    clearTimeout(confirmacaoTimerRef.current);
+    setHorarioSelecionado('');
+    setStatusHorario('Livre');
   }
 
   return (
-    <div className="landing-page">
+    <div className="landing-page" ref={landingRef}>
       <nav className="landing-nav" aria-label="Navegação principal" ref={navRef}>
         <BrandLogo onClick={irParaLanding} />
 
-        <div className="landing-nav-links" aria-label="Seções da página">
-          <button onClick={() => rolarPara('recursos')} type="button">O que resolve</button>
-          <button onClick={() => rolarPara('como-funciona')} type="button">Como funciona</button>
-          <button onClick={() => rolarPara('faq')} type="button">Dúvidas</button>
+        <div
+          className="landing-nav-links"
+          aria-label="Seções da página"
+          data-active-section={secaoAtiva || undefined}
+          role="group"
+        >
+          {secoesNavegacao.map(({ id, rotulo }) => (
+            <a
+              aria-current={secaoAtiva === id ? 'location' : undefined}
+              href={`#${id}`}
+              key={id}
+            >
+              {rotulo}
+            </a>
+          ))}
+          <span className="landing-nav-marker" aria-hidden="true" />
         </div>
 
         <div className="landing-nav-actions">
@@ -193,12 +482,20 @@ function LandingPage({ navigate }) {
           >
             {isDark ? <Sun aria-hidden="true" size={18} /> : <Moon aria-hidden="true" size={18} />}
           </button>
-          <button className="landing-nav-login" onClick={irParaLogin} type="button">
+          <a
+            className="landing-nav-login"
+            href="/login"
+            onClick={(event) => { event.preventDefault(); irParaLogin(); }}
+          >
             Entrar
-          </button>
-          <button className="button button-primary button-small" onClick={irParaCadastro} type="button">
+          </a>
+          <a
+            className="landing-button landing-button-light landing-nav-cta"
+            href="/cadastro"
+            onClick={(event) => { event.preventDefault(); irParaCadastro(); }}
+          >
             Criar agenda
-          </button>
+          </a>
           <button
             aria-controls="landing-mobile-menu"
             aria-expanded={menuAberto}
@@ -213,192 +510,329 @@ function LandingPage({ navigate }) {
         </div>
 
         <div className="landing-mobile-menu" hidden={!menuAberto} id="landing-mobile-menu">
-          <button onClick={() => rolarPara('recursos')} type="button">O que resolve</button>
-          <button onClick={() => rolarPara('como-funciona')} type="button">Como funciona</button>
-          <button onClick={() => rolarPara('faq')} type="button">Dúvidas frequentes</button>
-          <button onClick={irParaLogin} type="button">Entrar na minha conta</button>
+          {secoesNavegacao.map(({ id, rotulo, rotuloMobile }) => (
+            <a
+              aria-current={secaoAtiva === id ? 'location' : undefined}
+              href={`#${id}`}
+              key={id}
+              onClick={() => setMenuAberto(false)}
+            >
+              {rotuloMobile || rotulo}
+            </a>
+          ))}
+          <a
+            href="/login"
+            onClick={(event) => { event.preventDefault(); irParaLogin(); }}
+          >
+            Entrar na minha conta
+          </a>
         </div>
       </nav>
 
-      <main className="landing-content">
+      <main>
+        <section className="landing-hero" aria-labelledby="landing-title">
+          <div className="landing-hero-grid">
+            <p className="landing-hero-kicker">
+              <span aria-hidden="true" />
+              A agenda que devolve o controle do dia
+            </p>
 
-      <section className="landing-hero">
-        <div className="landing-hero-copy">
-          <p className="landing-kicker">Feito para quem atende todos os dias</p>
-          <h1>Menos conversa perdida. Mais horário confirmado.</h1>
-          <p className="landing-lead">
-            Receba agendamentos pelo seu próprio link, proteja a agenda contra
-            conflitos e acompanhe a rotina do negócio em um só lugar.
-          </p>
-          <div className="landing-hero-actions">
-            <button className="button button-primary" onClick={irParaCadastro} type="button">
-              Criar minha agenda
-              <ArrowRight aria-hidden="true" size={18} />
-            </button>
-            <button className="button button-secondary" onClick={() => rolarPara('como-funciona')} type="button">
-              Ver como funciona
-            </button>
-          </div>
-          <div className="landing-proof" aria-label="Diferenciais do Agendai">
-            <span><CheckCircle2 aria-hidden="true" size={17} /> Cliente agenda sem conta</span>
-            <span><CheckCircle2 aria-hidden="true" size={17} /> O sistema confere o horário</span>
-            <span><CheckCircle2 aria-hidden="true" size={17} /> Funciona no celular</span>
-          </div>
-        </div>
-
-        <div className="landing-routine-board" aria-label="Exemplo ilustrativo de uma agenda organizada">
-          <header>
-            <div>
-              <span>Exemplo de rotina</span>
-              <strong>Agenda de hoje</strong>
+            <div className="landing-hero-title">
+              <h1 aria-label="Seu dia inteiro em ordem, antes mesmo do primeiro atendimento." id="landing-title">
+                <span>Seu dia inteiro</span>
+                <span>em ordem, antes mesmo</span>
+                <span>do primeiro atendimento.</span>
+              </h1>
             </div>
-            <span className="landing-routine-status">3 horários confirmados</span>
-          </header>
-          <div className="landing-routine-list">
-            <div><time>09:00</time><span><strong>Corte masculino</strong><small>João · confirmado</small></span></div>
-            <div><time>10:30</time><span><strong>Barba</strong><small>Marcos · confirmado</small></span></div>
-            <div className="is-available"><time>12:00</time><span><strong>Horário disponível</strong><small>Pronto para receber agendamento</small></span></div>
-          </div>
-          <div className="landing-routine-check" aria-label="Ilustração da conferência automática de disponibilidade">
-            <div className="landing-routine-beam" aria-hidden="true">
-              <span />
-              <span />
-              <span />
+
+            <div className="landing-hero-copy">
+              <p>
+                Receba agendamentos pelo seu próprio link, proteja a agenda contra
+                conflitos e acompanhe a rotina do negócio em um só lugar.
+              </p>
+              <div className="landing-hero-actions">
+                <button className="landing-button landing-button-light" onClick={irParaCadastro} type="button">
+                  Criar minha agenda
+                  <ArrowRight aria-hidden="true" size={18} />
+                </button>
+                <button className="landing-button landing-button-ghost" onClick={() => rolarPara('como-funciona')} type="button">
+                  Ver como funciona
+                </button>
+              </div>
             </div>
-            <ol>
-              {conferenciaRotina.map(([titulo, texto]) => (
-                <li key={titulo}>
-                  <strong>{titulo}</strong>
-                  <span>{texto}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-          <div className="landing-new-booking">
-            <CalendarCheck2 aria-hidden="true" size={24} />
-            <div><small>Novo agendamento</small><strong>14:00 · Sobrancelha</strong></div>
-            <span>Sem conflito</span>
-          </div>
-        </div>
-      </section>
 
-      <section className="landing-assurance" aria-label="Informações importantes antes de começar">
-        <div><strong>Sem cartão no cadastro atual</strong><span>Você pode conhecer a configuração antes de qualquer pagamento.</span></div>
-        <div><strong>Sem conta para o cliente</strong><span>Quem agenda informa apenas os dados necessários ao atendimento.</span></div>
-        <div><strong>Painel protegido por login</strong><span>O acesso administrativo exige login e senha do empreendedor.</span></div>
-      </section>
+            <div className="landing-hero-note">
+              <ArrowDownRight aria-hidden="true" size={24} />
+              <span>Da primeira mensagem ao último atendimento, cada horário encontra seu lugar.</span>
+            </div>
 
-      <section className="landing-section landing-core-section" id="recursos">
-        <div className="landing-section-heading">
-          <p>O essencial vem primeiro</p>
-          <h2>Três partes da rotina que precisam funcionar juntas.</h2>
-        </div>
-        <div className="landing-core-grid">
-          {pilares.map(({ titulo, texto, detalhe, Icone }, index) => (
-            <article className={index === 0 ? 'landing-core-item is-primary' : 'landing-core-item'} key={titulo}>
-              <span className="landing-core-icon"><Icone aria-hidden="true" size={25} /></span>
-              <div><h3>{titulo}</h3><p>{texto}</p></div>
-              <small>{detalhe}</small>
-            </article>
+            <figure className="landing-hero-product">
+              <div className="landing-hero-product-frame">
+                <img
+                  alt="Dashboard administrativo da Jota Barber configurado no Agendai, com visão de agendamentos, clientes, serviços e agenda do dia."
+                  decoding="async"
+                  fetchPriority="high"
+                  height="757"
+                  src={dashboardJotaBarber}
+                  width="1600"
+                />
+              </div>
+              <figcaption>
+                <span><i aria-hidden="true" /> Painel real</span>
+                <strong>Jota Barber</strong>
+                <small>Exemplo de negócio configurado no Agendai</small>
+              </figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section className="landing-benefits" aria-label="Benefícios do Agendai">
+          {beneficios.map(([titulo, texto]) => (
+            <div key={titulo}>
+              <strong>{titulo}</strong>
+              <span>{texto}</span>
+            </div>
           ))}
-        </div>
+        </section>
 
-        <details className="landing-more-features">
-          <summary>Ver recursos complementares</summary>
-          <ul>
-            {recursosComplementares.map((recurso) => (
-              <li key={recurso}><CheckCircle2 aria-hidden="true" size={17} />{recurso}</li>
+        <section className="landing-story" id="recursos" aria-labelledby="story-title">
+          <div className="landing-section-intro">
+            <span className="landing-section-index">Antes → Depois</span>
+            <h2 id="story-title">Do “tem horário?” ao atendimento confirmado.</h2>
+            <p>O cliente escolhe pelo link e o Agendai coloca cada pedido na agenda, com horário e estado claros.</p>
+          </div>
+
+          <div className="landing-story-motion">
+            <div className="landing-story-before">
+              <strong>Antes</strong>
+              {mensagensAntes.map((mensagem, index) => (
+                <span className={`landing-message message-${index + 1}`} key={mensagem}>{mensagem}</span>
+              ))}
+            </div>
+
+            <div className="landing-story-transfer" aria-hidden="true">
+              <span /><span /><span />
+              <small>O Agendai organiza</small>
+            </div>
+
+            <div className="landing-story-after">
+              <strong>Depois</strong>
+              <div className="landing-after-list">
+                {agendaDepois.map(([horario, descricao, status], index) => (
+                  <div className={`landing-after-row after-${index + 1}`} key={horario}>
+                    <time>{horario}</time>
+                    <span><b>{descricao}</b><small>{status}</small></span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="landing-preview" aria-labelledby="preview-title">
+          <div className="landing-preview-copy">
+            <span>Fluxo público em uso</span>
+            <h2 id="preview-title">Da vitrine da Jota Barber até a confirmação.</h2>
+            <p>
+              Este exemplo real mostra serviço e profissional já escolhidos. A data
+              e o horário conduzem o cliente às etapas de dados e confirmação.
+            </p>
+            <ul>
+              <li><ShieldCheck aria-hidden="true" size={20} /> Disponibilidade conferida antes da confirmação</li>
+              <li><CalendarCheck2 aria-hidden="true" size={20} /> Sem conta para quem agenda</li>
+            </ul>
+          </div>
+
+          <figure className="landing-public-capture">
+            <div>
+              <img
+                alt="Página pública real da Jota Barber no Agendai, com as etapas Serviço, Profissional, Data e hora, Dados e Confirmação."
+                decoding="async"
+                height="866"
+                loading="lazy"
+                src={agendamentoPublicoJotaBarber}
+                width="1060"
+              />
+            </div>
+            <figcaption>
+              <strong>Jota Barber</strong>
+              <span>Exemplo de negócio configurado no Agendai · captura real da página pública</span>
+            </figcaption>
+          </figure>
+
+          <div className="landing-booking-demo">
+            <header>
+              <div><small>Demonstração complementar</small><strong>Confirme um horário</strong></div>
+              <span>Etapa final</span>
+            </header>
+
+            {statusHorario === 'Confirmado' ? (
+              <div className="landing-demo-success" role="status">
+                <span className="landing-demo-success-icon"><Check aria-hidden="true" size={24} /></span>
+                <div>
+                  <small>Horário confirmado nesta demonstração</small>
+                  <strong>Corte degradê · {horarioSelecionado}</strong>
+                  <span>11/09/2026 · João Lucas Mendes</span>
+                </div>
+                <p><Link2 aria-hidden="true" size={18} /> Na versão real, o cliente recebe um link seguro para gerenciar o agendamento.</p>
+                <button className="landing-demo-reset" onClick={reiniciarDemonstracao} type="button">Escolher outro horário</button>
+              </div>
+            ) : (
+              <>
+                <div className="landing-booking-context">
+                  <span><small>Serviço</small><strong>Corte degradê</strong></span>
+                  <span><small>Profissional</small><strong>João Lucas Mendes</strong></span>
+                  <span><small>Data</small><strong>11/09/2026</strong></span>
+                </div>
+
+                <div className="landing-time-options" aria-label="Horários ilustrativos disponíveis" role="group">
+                  {['09:00', '14:00', '16:30'].map((horario) => {
+                    const selecionado = horarioSelecionado === horario;
+                    return (
+                      <button
+                        aria-label={`${horario}, ${selecionado ? statusHorario : 'Livre'}`}
+                        aria-pressed={selecionado}
+                        className={selecionado ? `is-selected is-${statusHorario.toLowerCase()}` : ''}
+                        disabled={statusHorario === 'Confirmando'}
+                        key={horario}
+                        onClick={() => selecionarHorario(horario)}
+                        type="button"
+                      >
+                        <time>{horario}</time>
+                        <span>{selecionado ? statusHorario : 'Livre'}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="landing-demo-action">
+                  <p className="landing-demo-feedback" aria-live="polite">
+                    {horarioSelecionado
+                      ? `${horarioSelecionado}: ${statusHorario.toLowerCase()} nesta simulação.`
+                      : 'Selecione um horário livre para continuar.'}
+                  </p>
+                  {horarioSelecionado && (
+                    <button
+                      aria-busy={statusHorario === 'Confirmando'}
+                      className="landing-demo-confirm"
+                      disabled={statusHorario === 'Confirmando'}
+                      onClick={confirmarHorario}
+                      type="button"
+                    >
+                      {statusHorario === 'Confirmando' ? 'Confirmando…' : 'Confirmar horário'}
+                      {statusHorario !== 'Confirmando' && <ArrowRight aria-hidden="true" size={18} />}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+
+        <section className="landing-process" id="como-funciona" aria-labelledby="process-title">
+          <div className="landing-section-intro is-light">
+            <span>Um caminho contínuo</span>
+            <h2 id="process-title">Configure uma vez. Acompanhe todos os dias.</h2>
+          </div>
+
+          <ol className="landing-steps">
+            {passos.map(({ titulo, texto, Icone }, index) => (
+              <li key={titulo}>
+                <span className="landing-step-number">{index + 1}</span>
+                <span className="landing-step-icon"><Icone aria-hidden="true" size={23} /></span>
+                <div><h3>{titulo}</h3><p>{texto}</p></div>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="landing-audience" aria-labelledby="audience-title">
+          <div>
+            <h2 id="audience-title">Feito para negócios em que atender bem já ocupa o dia inteiro.</h2>
+            <p>
+              O Agendai nasceu da realidade de pequenos negócios de Cubatão e foi
+              pensado para continuar simples no celular e no computador.
+            </p>
+          </div>
+          <ul aria-label="Públicos atendidos pelo Agendai">
+            {publicos.map(({ nome, Icone }) => (
+              <li key={nome}><Icone aria-hidden="true" size={27} /><span>{nome}</span></li>
             ))}
           </ul>
-        </details>
-      </section>
+        </section>
 
-      <section className="landing-audience-section">
-        <div className="landing-audience-copy">
-          <p>Uma ferramenta próxima da rotina real</p>
-          <h2>Para quem precisa atender bem sem virar especialista em sistemas.</h2>
-          <span>
-            O Agendai nasceu a partir da realidade de pequenos negócios de Cubatão
-            e foi pensado para continuar simples conforme o negócio cresce.
-          </span>
-        </div>
-        <ul className="landing-audience-list" aria-label="Negócios atendidos pelo Agendai">
-          {publicos.map(({ nome, Icone }) => (
-            <li key={nome}><Icone aria-hidden="true" size={22} /><span>{nome}</span></li>
-          ))}
-        </ul>
-      </section>
+        <section className="landing-faq" id="faq" aria-labelledby="faq-title">
+          <div className="landing-section-intro">
+            <span>Dúvidas frequentes</span>
+            <h2 id="faq-title">O que você precisa saber antes de começar.</h2>
+          </div>
 
-      <section className="landing-section landing-process-section" id="como-funciona">
-        <div className="landing-section-heading landing-heading-centered">
-          <p>Da configuração ao primeiro horário</p>
-          <h2>Uma sequência curta, sem trabalho duplicado.</h2>
-        </div>
-        <ol className="landing-steps">
-          {passos.map(([titulo, texto], index) => (
-            <li key={titulo}>
-              <span>{String(index + 1).padStart(2, '0')}</span>
-              <div><h3>{titulo}</h3><p>{texto}</p></div>
-            </li>
-          ))}
-        </ol>
-      </section>
+          <div className="landing-faq-list">
+            {perguntas.map(({ pergunta, resposta }) => (
+              <details key={pergunta}>
+                <summary>
+                  <span>{pergunta}</span>
+                  <ChevronDown aria-hidden="true" size={22} />
+                </summary>
+                <p>{resposta}</p>
+              </details>
+            ))}
+          </div>
+        </section>
 
-      <section className="landing-section landing-faq-section" id="faq">
-        <div className="landing-section-heading">
-          <p>Antes de criar sua agenda</p>
-          <h2>Respostas diretas para decidir com segurança.</h2>
-        </div>
-        <div className="landing-faq-list">
-          {perguntas.map(({ pergunta, resposta }, index) => {
-            const aberta = perguntasAbertas.includes(index);
-            const perguntaId = `pergunta-faq-${index}`;
-            const respostaId = `resposta-faq-${index}`;
-
-            return (
-              <article className={`landing-faq-item ${aberta ? 'is-open' : ''}`} key={pergunta}>
-                <button
-                  aria-controls={respostaId}
-                  aria-expanded={aberta}
-                  id={perguntaId}
-                  onClick={() => alternarPergunta(index)}
-                  type="button"
-                >
-                  {pergunta}
-                  <ChevronDown aria-hidden="true" size={20} />
-                </button>
-                <div
-                  aria-labelledby={perguntaId}
-                  className="landing-faq-answer"
-                  hidden={!aberta}
-                  id={respostaId}
-                  role="region"
-                >
-                  <p>{resposta}</p>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="landing-final-cta">
-        <div>
-          <p>Seu próximo atendimento pode começar mais organizado</p>
-          <h2>Configure a agenda e compartilhe seu link.</h2>
-          <span>O cadastro atual não solicita cartão ou pagamento.</span>
-        </div>
-        <button className="button button-primary" onClick={irParaCadastro} type="button">
-          Criar minha agenda
-          <ArrowRight aria-hidden="true" size={18} />
-        </button>
-      </section>
-
+        <section className="landing-final-cta" aria-labelledby="final-cta-title">
+          <div className="landing-final-orbit" aria-hidden="true">
+            <strong><Check size={18} /> Dia organizado</strong>
+            <div>
+              <i className="landing-final-orbit-line" />
+              <span>08:00</span><span>10:30</span><span>14:00</span><span>16:30</span>
+            </div>
+          </div>
+          <div>
+            <h2 id="final-cta-title">Amanhã começa melhor quando hoje está organizado.</h2>
+            <p>Crie sua agenda e prepare o link que seus clientes vão usar.</p>
+            <span>O cadastro atual não solicita cartão ou pagamento.</span>
+          </div>
+          <button className="landing-button landing-button-light" onClick={irParaCadastro} type="button">
+            Criar minha agenda
+            <ArrowRight aria-hidden="true" size={18} />
+          </button>
+        </section>
       </main>
 
       <footer className="landing-footer">
-        <BrandLogo onClick={irParaLanding} />
-        <p>Agendamento online simples para pequenos negócios.</p>
+        <div className="landing-footer-header">
+          <p className="landing-footer-wordmark" aria-hidden="true">Agendai</p>
+          <div className="landing-footer-time-rule" aria-hidden="true">
+            <span>07:30</span><span>12:00</span><span>18:30</span>
+          </div>
+        </div>
+
+        <div className="landing-footer-body">
+          <div className="landing-footer-brand">
+            <BrandLogo onClick={irParaLanding} />
+            <p>Agendamento online simples para pequenos negócios.</p>
+          </div>
+
+          <div className="landing-footer-links">
+            <nav aria-labelledby="footer-product-title">
+              <strong id="footer-product-title">Produto</strong>
+              <a href="#recursos">O que resolve</a>
+              <a href="#como-funciona">Como funciona</a>
+            </nav>
+            <nav aria-labelledby="footer-access-title">
+              <strong id="footer-access-title">Acesso</strong>
+              <a href="/login">Entrar</a>
+              <a href="/cadastro">Criar agenda</a>
+            </nav>
+            <nav aria-labelledby="footer-legal-title">
+              <strong id="footer-legal-title">Legal</strong>
+              <a href="/privacidade">Privacidade</a>
+              <a href="/termos">Termos</a>
+            </nav>
+          </div>
+        </div>
+
         <p className="landing-footer-origin">Projeto nascido em Cubatão — SP.</p>
       </footer>
     </div>

@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import LandingPage from './LandingPage';
@@ -17,20 +17,18 @@ describe('LandingPage', () => {
     vi.clearAllMocks();
   });
 
-  it('mantem respostas fechadas fora da arvore de acessibilidade', async () => {
+  it('mantem o FAQ navegavel com o comportamento nativo de detalhes', async () => {
     const user = userEvent.setup();
     render(<LandingPage navigate={vi.fn()} />);
 
-    const pergunta = screen.getByRole('button', {
-      name: 'O cliente precisa criar uma conta para agendar?',
-    });
-    expect(pergunta).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.queryByRole('region', { name: pergunta.textContent })).not.toBeInTheDocument();
+    const pergunta = screen.getByText('O cliente precisa criar uma conta para agendar?');
+    const item = pergunta.closest('details');
+    expect(item).not.toHaveAttribute('open');
 
     await user.click(pergunta);
 
-    expect(pergunta).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByRole('region', { name: pergunta.textContent })).toBeVisible();
+    expect(item).toHaveAttribute('open');
+    expect(screen.getByText(/informa apenas os dados necessários/i)).toBeVisible();
   });
 
   it('oferece login e atalhos no menu compacto', async () => {
@@ -42,7 +40,7 @@ describe('LandingPage', () => {
 
     const menu = document.getElementById('landing-mobile-menu');
     expect(menu).not.toHaveAttribute('hidden');
-    expect(within(menu).getByRole('button', { name: 'O que resolve' })).toBeInTheDocument();
+    expect(within(menu).getByRole('link', { name: 'O que resolve' })).toHaveAttribute('href', '#recursos');
 
     await user.keyboard('{Escape}');
     expect(menu).toHaveAttribute('hidden');
@@ -50,10 +48,51 @@ describe('LandingPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Abrir menu' }));
 
-    await user.click(within(menu).getByRole('button', { name: 'Entrar na minha conta' }));
+    await user.click(within(menu).getByRole('link', { name: 'Entrar na minha conta' }));
 
     expect(navigate).toHaveBeenCalledWith('/login');
     expect(menu).toHaveAttribute('hidden');
+  });
+
+  it('marca a secao atual sem substituir as ancoras nativas', () => {
+    const intersectionObserverOriginal = window.IntersectionObserver;
+    let notificarInterseccao;
+
+    class IntersectionObserverMock {
+      constructor(callback) {
+        notificarInterseccao = callback;
+      }
+
+      observe() {}
+
+      disconnect() {}
+    }
+
+    Object.defineProperty(window, 'IntersectionObserver', {
+      configurable: true,
+      value: IntersectionObserverMock,
+    });
+
+    try {
+      render(<LandingPage navigate={vi.fn()} />);
+
+      const atalhos = screen.getByRole('group', { name: 'Seções da página' });
+      const comoFunciona = within(atalhos).getByRole('link', { name: 'Como funciona' });
+      expect(comoFunciona).toHaveAttribute('href', '#como-funciona');
+      expect(comoFunciona).not.toHaveAttribute('aria-current');
+
+      act(() => notificarInterseccao([{
+        isIntersecting: true,
+        target: document.getElementById('como-funciona'),
+      }]));
+
+      expect(comoFunciona).toHaveAttribute('aria-current', 'location');
+    } finally {
+      Object.defineProperty(window, 'IntersectionObserver', {
+        configurable: true,
+        value: intersectionObserverOriginal,
+      });
+    }
   });
 
   it('fecha o menu compacto ao clicar fora ou redimensionar a tela', async () => {
@@ -66,7 +105,7 @@ describe('LandingPage', () => {
     expect(menu).not.toHaveAttribute('hidden');
 
     await user.click(screen.getByRole('heading', {
-      name: 'Menos conversa perdida. Mais horário confirmado.',
+      name: 'Seu dia inteiro em ordem, antes mesmo do primeiro atendimento.',
     }));
 
     expect(menu).toHaveAttribute('hidden');
@@ -121,5 +160,36 @@ describe('LandingPage', () => {
     expect(screen.getAllByText('Criar minha agenda')).toHaveLength(2);
     expect(screen.getByText('O cadastro atual não solicita cartão ou pagamento.')).toBeInTheDocument();
     expect(screen.queryByText(/PWA/i)).not.toBeInTheDocument();
+  });
+
+  it('usa capturas reais identificadas da Jota Barber como prova do produto', () => {
+    render(<LandingPage navigate={vi.fn()} />);
+
+    expect(screen.getByRole('img', { name: /Dashboard administrativo da Jota Barber/i })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /Página pública real da Jota Barber/i })).toBeInTheDocument();
+    expect(screen.getAllByText('Exemplo de negócio configurado no Agendai')).toHaveLength(1);
+  });
+
+  it('confirma explicitamente o horario ilustrativo e mostra o resumo', () => {
+    vi.useFakeTimers();
+    render(<LandingPage navigate={vi.fn()} />);
+
+    const horario = screen.getByRole('button', { name: '14:00, Livre' });
+    fireEvent.click(horario);
+
+    expect(screen.getByRole('button', { name: '14:00, Solicitado' })).toHaveAttribute('aria-pressed', 'true');
+    const confirmar = screen.getByRole('button', { name: 'Confirmar horário' });
+    fireEvent.click(confirmar);
+
+    expect(screen.getByRole('button', { name: 'Confirmando…' })).toBeDisabled();
+
+    act(() => vi.advanceTimersByTime(520));
+
+    expect(screen.getByText('Horário confirmado nesta demonstração')).toBeInTheDocument();
+    expect(screen.getByText('Corte degradê · 14:00')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Escolher outro horário' }));
+    expect(screen.getByRole('button', { name: '14:00, Livre' })).toBeInTheDocument();
+    vi.useRealTimers();
   });
 });
