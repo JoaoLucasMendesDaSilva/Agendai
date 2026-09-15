@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
-import { CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, Phone, ShieldCheck, UserRound } from 'lucide-react';
-import AuthLayout from '../components/AuthLayout';
+import { CheckCircle2, Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, Phone, UserRound } from 'lucide-react';
 import BrandLogo from '../components/BrandLogo';
 import { useAuth } from '../contexts/AuthContext';
 import './cadastro.css';
@@ -79,25 +78,44 @@ function Cadastro({ navigate }) {
   }
 
   return (
-    <AuthLayout mode="cadastro" onLogoClick={() => navigate('/')}>
-      <section className="auth-panel" aria-labelledby="cadastro-title">
-        <div className="auth-panel-header">
+    <main className="auth-page auth-page-cadastro">
+      <div className="auth-card">
+        <header className="cadastro-header">
           <BrandLogo onClick={() => navigate('/')} />
-          <span className="auth-secure-chip"><ShieldCheck aria-hidden="true" size={16} />Dados protegidos</span>
-        </div>
-        <p className="eyebrow">Primeiro acesso</p>
+          <span>Conta do empreendedor</span>
+        </header>
+        <aside className="cadastro-day" aria-label="Exemplo de rotina organizada no Agendai">
+          <div className="cadastro-day-copy">
+            <p className="cadastro-day-kicker">Da primeira reserva ao fim do dia</p>
+            <h2 id="cadastro-day-title">Cada horário.<br />No seu lugar.</h2>
+            <p>Configure seu negócio e reúna os agendamentos em uma só agenda.</p>
+          </div>
+          <figure className="cadastro-day-agenda">
+            <figcaption>Uma rotina organizada <span>Exemplo ilustrativo</span></figcaption>
+            <ol>
+              <li><time>09:00</time><span>Atendimento<small>Confirmado</small></span><CheckCircle2 aria-hidden="true" size={22} /></li>
+              <li><time>10:30</time><span>Próximo horário<small>Confirmado</small></span><CheckCircle2 aria-hidden="true" size={22} /></li>
+              <li><time>14:00</time><span>Espaço na agenda<small>Disponível</small></span><span className="cadastro-day-open" aria-hidden="true" /></li>
+            </ol>
+          </figure>
+          <p className="cadastro-day-note">Seu trabalho tem seu ritmo.<br />Sua agenda acompanha.</p>
+        </aside>
+      <section className="auth-panel auth-form-panel" aria-labelledby="cadastro-title">
         <h1 id="cadastro-title">Crie sua conta</h1>
-        <p className="panel-text auth-intro-text">Comece a organizar seu negócio e ofereça agendamento online aos seus clientes.</p>
+        <p className="panel-text auth-intro-text">O primeiro passo para organizar seus atendimentos.</p>
         {sucesso ? (
           <div className="cadastro-success" role="status" tabIndex={-1} ref={(elemento) => elemento?.focus()}>
             <CheckCircle2 aria-hidden="true" size={32} />
             <h2>Conta criada!</h2>
             <p>Agora entre com seu e-mail e senha para configurar seu negócio.</p>
-            <button className="button button-primary" onClick={() => navigate('/login')} type="button">Ir para o login</button>
+            <button className="button button-primary auth-submit-button" onClick={() => navigate('/login')} type="button">Ir para o login</button>
           </div>
         ) : (
           <form className="form" onSubmit={handleSubmit} noValidate aria-busy={carregando}>
-            {campos.map(({ nome, label, tipo, autocomplete, placeholder, maxLength, Icone }) => {
+            {[['Seus dados', campos.slice(0, 3)], ['Sua senha de acesso', campos.slice(3)]].map(([grupo, camposDoGrupo]) => (
+              <fieldset className="cadastro-group" key={grupo}>
+                <legend>{grupo}</legend>
+            {camposDoGrupo.map(({ nome, label, tipo, autocomplete, placeholder, maxLength, Icone }) => {
               const invalido = Boolean((tocados[nome] || (nome === 'confirmacao' && form.confirmacao)) && erros[nome]);
               return (
                 <div className="cadastro-field" key={nome}>
@@ -124,6 +142,8 @@ function Cadastro({ navigate }) {
                 </div>
               );
             })}
+              </fieldset>
+            ))}
             <div className="cadastro-terms">
               <div className="legal-checkbox">
                 <input id="cadastro-termos" name="documentos_aceitos" type="checkbox" required disabled={carregando} checked={form.documentos_aceitos}
@@ -139,11 +159,13 @@ function Cadastro({ navigate }) {
               {carregando && <LoaderCircle className="cadastro-loader" aria-hidden="true" size={18} />}
               {carregando ? 'Criando conta...' : 'Criar conta'}
             </button>
+            <p className="cadastro-payment-note">Este cadastro não solicita cartão nem pagamento.</p>
           </form>
         )}
         {!sucesso && <a className="cadastro-login" href="/login">Já tenho conta</a>}
       </section>
-    </AuthLayout>
+      </div>
+    </main>
   );
 }
 

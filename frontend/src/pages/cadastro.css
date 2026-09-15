@@ -11,23 +11,29 @@
 
 .auth-page-cadastro .auth-card {
   grid-template-columns: minmax(0, 1fr);
-  max-width: 1120px;
+  width: min(100%, 1200px);
+  max-width: 1200px;
   border: 0;
   box-shadow: var(--shadow-soft);
   animation: none;
 }
 
 .auth-page-cadastro .auth-form-panel {
-  padding: 36px 48px;
-  justify-items: center;
+  padding: 28px 36px;
+  align-content: start;
+  justify-items: stretch;
 }
 
-.auth-page-cadastro .auth-panel-header { margin-bottom: 28px; }
-.auth-page-cadastro .auth-panel { animation: none; }
+.cadastro-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 24px 36px; }
+.cadastro-header > span { color: var(--gray-500); font-size: 0.75rem; }
+.auth-page-cadastro .auth-panel { width: 100%; animation: none; }
 .auth-page-cadastro .eyebrow { margin: 0 0 8px; text-transform: none; letter-spacing: 0; }
 .auth-page-cadastro h1 { margin: 0 0 12px; font-size: 2rem; }
 .auth-page-cadastro .auth-intro-text { margin: 0; line-height: 1.65; font-size: 0.9rem; }
-.auth-page-cadastro .form { gap: 16px; margin-top: 28px; }
+.auth-page-cadastro .form { gap: 18px; margin-top: 24px; }
+.cadastro-group { display: grid; gap: 12px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.cadastro-group legend { width: 100%; margin-bottom: 12px; padding: 0 0 8px; border-bottom: 1px solid var(--gray-300); color: var(--gray-700); font-size: 0.75rem; font-weight: 500; }
+.cadastro-payment-note { margin: -8px 0 0; color: var(--gray-500); font-size: 0.75rem; text-align: center; }
 .cadastro-field { display: grid; gap: 6px; min-width: 0; }
 .auth-page-cadastro .cadastro-field > label { display: block; font-size: 0.875rem; font-weight: 600; }
 .cadastro-optional { color: var(--gray-500); font-weight: 400; }
@@ -65,32 +71,98 @@
 .cadastro-success > svg { color: var(--green-800); }
 .cadastro-success h2, .cadastro-success p { margin: 0; }
 .cadastro-success p { color: var(--gray-700); }
-.auth-page-cadastro .auth-visual-panel { display: none; background: #0b3d2e; padding: 48px 36px; animation: none; }
-.auth-page-cadastro .auth-visual-panel > .brand-logo { display: none; }
-.auth-page-cadastro .auth-visual-proof { gap: 8px; }
-.auth-page-cadastro .auth-visual-proof span { padding: 6px 9px; font-size: 0.6875rem; font-weight: 500; background: transparent; }
-.auth-page-cadastro .auth-illustration-wrap { background: transparent; animation: none; margin: 32px 0; }
-.auth-page-cadastro .auth-illustration { width: 100%; max-width: 370px; filter: none; }
-.auth-page-cadastro .auth-visual-copy h2 { font-size: 2rem; line-height: 1.25; letter-spacing: -0.025em; text-wrap: balance; }
-.auth-page-cadastro .auth-visual-copy p { font-size: 0.9375rem; line-height: 1.7; color: #d3e6dd; }
+.cadastro-day { min-width: 0; padding: 18px 24px; color: #ffffff; background: #093e2a; }
+.cadastro-day-copy, .cadastro-day-note { display: none; }
+.cadastro-day-agenda { margin: 0; }
+.cadastro-day-agenda figcaption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; font-size: 0.75rem; font-weight: 600; }
+.cadastro-day-agenda figcaption > span { color: #c7dfd1; font-size: 0.6875rem; font-weight: 400; }
+.cadastro-day-agenda ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 14px 0 0; padding: 0; list-style: none; }
+.cadastro-day-agenda li { display: grid; gap: 4px; border-top: 1px solid #648675; padding-top: 10px; }
+.cadastro-day-agenda time { font-size: 1.2rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cadastro-day-agenda li > span { font-size: 0; }
+.cadastro-day-agenda small { display: block; color: #c7dfd1; font-size: 0.6875rem; }
+.cadastro-day-agenda li > svg, .cadastro-day-open { display: none; }
+
+@keyframes cadastro-day-enter {
+  from { opacity: 0.88; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes cadastro-header-enter {
+  from { opacity: 0.9; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cadastro-form-shell-enter {
+  from { transform: translateY(8px); }
+  to { transform: translateY(0); }
+}
+
+@keyframes cadastro-form-content-enter {
+  from { opacity: 0.9; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cadastro-agenda-enter {
+  from { transform: translateY(6px); }
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cadastro-header { animation: cadastro-header-enter 360ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+  .auth-page-cadastro .auth-form-panel { animation: cadastro-form-shell-enter 440ms 80ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+  .auth-form-panel > h1, .auth-form-panel > .auth-intro-text, .auth-form-panel .cadastro-group, .cadastro-terms, .auth-form-panel .auth-submit-button, .cadastro-payment-note, .cadastro-login { animation: cadastro-form-content-enter 360ms cubic-bezier(0.23, 1, 0.32, 1) backwards; }
+  .auth-form-panel > h1 { animation-delay: 120ms; }
+  .auth-form-panel > .auth-intro-text { animation-delay: 160ms; }
+  .auth-form-panel .cadastro-group:first-of-type { animation-delay: 200ms; }
+  .auth-form-panel .cadastro-group:nth-of-type(2) { animation-delay: 240ms; }
+  .cadastro-terms { animation-delay: 280ms; }
+  .auth-form-panel .auth-submit-button { animation-delay: 320ms; }
+  .cadastro-payment-note { animation-delay: 360ms; }
+  .cadastro-login { animation-delay: 400ms; }
+  .cadastro-day { animation: cadastro-day-enter 720ms cubic-bezier(0.77, 0, 0.175, 1) both; }
+  .cadastro-day-copy, .cadastro-day-agenda figcaption, .cadastro-day-note { animation: cadastro-agenda-enter 720ms cubic-bezier(0.77, 0, 0.175, 1) backwards; }
+  .cadastro-day-agenda figcaption { animation-delay: 160ms; }
+  .cadastro-day-note { animation-delay: 320ms; }
+  .cadastro-day-agenda li { animation: cadastro-agenda-enter 720ms cubic-bezier(0.77, 0, 0.175, 1) backwards; }
+  .cadastro-day-agenda li:nth-child(2) { animation-delay: 160ms; }
+  .cadastro-day-agenda li:nth-child(3) { animation-delay: 320ms; }
+}
 
 @media (min-width: 960px) {
-  .auth-page-cadastro .auth-card { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); }
-  .auth-page-cadastro .auth-visual-panel { display: grid; align-content: center; }
+  .auth-page-cadastro .auth-card { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .cadastro-header { grid-column: 1 / -1; }
+  .auth-page-cadastro .auth-form-panel { grid-column: 1; grid-row: 2; padding: 8px 48px 32px; }
+  .cadastro-day { grid-column: 2; grid-row: 2; display: grid; align-content: space-between; gap: 48px; margin: 0 20px 20px 0; border-radius: 14px; padding: 44px 36px; }
+  .cadastro-day-copy, .cadastro-day-note { display: block; }
+  .cadastro-day-copy .cadastro-day-kicker { margin: 0 0 24px; color: #c7dfd1; font-size: 0.75rem; }
+  .cadastro-day-copy h2 { margin: 0; color: #ffffff; font-size: clamp(2.5rem, 3.5vw, 3.5rem); letter-spacing: -0.045em; line-height: 1.1; }
+  .cadastro-day-copy > p:last-child { max-width: 32ch; margin: 24px 0 0; color: #c7dfd1; line-height: 1.65; font-size: 0.9rem; }
+  .cadastro-day-agenda ol { grid-template-columns: 1fr; gap: 0; margin-top: 20px; }
+  .cadastro-day-agenda li { grid-template-columns: 84px 1fr 24px; gap: 12px; align-items: center; padding-block: 24px; }
+  .cadastro-day-agenda li:last-child { border-bottom: 1px solid #648675; }
+  .cadastro-day-agenda time { font-size: 1.65rem; }
+  .cadastro-day-agenda li > span { font-size: 0.85rem; }
+  .cadastro-day-agenda small { margin-top: 5px; font-size: 0.75rem; }
+  .cadastro-day-agenda li > svg { display: block; color: #75d99a; }
+  .cadastro-day-open { display: block; width: 20px; height: 20px; border: 1px dashed #c7dfd1; border-radius: 50%; }
+  .cadastro-day-note { margin: 0; color: #c7dfd1; font-size: 0.8rem; line-height: 1.7; }
 }
 
 @media (max-width: 599px) {
   .auth-page-cadastro { padding: 0; display: block; }
   .auth-page-cadastro .auth-card { min-height: 100dvh; border-radius: 0; box-shadow: none; }
-  .auth-page-cadastro .auth-form-panel { padding: 24px 20px 32px; align-content: start; }
-  .auth-page-cadastro .auth-panel-header { flex-direction: row; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; }
-  .auth-page-cadastro .auth-panel-header .brand-name { font-size: 1.4rem; }
-  .auth-page-cadastro .auth-secure-chip { font-size: 0.6875rem; padding: 6px 8px; gap: 5px; }
+  .auth-page-cadastro .auth-form-panel { padding: 24px 20px; align-content: start; }
+  .cadastro-header { padding: 16px 20px; }
+  .cadastro-header .brand-name { font-size: 1.4rem; }
+  .cadastro-header > span { max-width: 100px; text-align: right; font-size: 0.6875rem; }
+  .cadastro-day { padding: 14px 20px; }
   .auth-page-cadastro .auth-panel h1 { font-size: 1.75rem; }
   .auth-page-cadastro .form { margin-top: 24px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .cadastro-loader { animation: none; }
+  .cadastro-header, .auth-page-cadastro .auth-form-panel, .auth-form-panel > h1, .auth-form-panel > .auth-intro-text, .auth-form-panel .cadastro-group, .cadastro-terms, .auth-form-panel .auth-submit-button, .cadastro-payment-note, .cadastro-login, .cadastro-day, .cadastro-day-copy, .cadastro-day-agenda figcaption, .cadastro-day-agenda li, .cadastro-day-note { animation: none; }
   .auth-page-cadastro .auth-input-shell, .auth-page-cadastro .auth-submit-button { transition: none; }
 }

@@ -14,6 +14,16 @@ function preencher() {
   fireEvent.click(screen.getByRole('checkbox'));
 }
 
+it('identifica a composição como exemplo, agrupa os campos e evita promessa genérica de segurança', () => {
+  render(<Cadastro navigate={vi.fn()} />);
+  expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  expect(screen.queryByText('Dados protegidos')).not.toBeInTheDocument();
+  expect(screen.getByText('Exemplo ilustrativo')).toBeVisible();
+  expect(screen.getByRole('group', { name: 'Seus dados' })).toBeInTheDocument();
+  expect(screen.getByRole('group', { name: 'Sua senha de acesso' })).toBeInTheDocument();
+  expect(screen.getByText('Este cadastro não solicita cartão nem pagamento.')).toBeVisible();
+});
+
 it('mantém ordem, termos clicáveis e foco no primeiro erro; revalida confirmação ao mudar senha', () => {
   const { container } = render(<Cadastro navigate={vi.fn()} />);
   expect([...container.querySelectorAll('input')].map((input) => input.name)).toEqual(['nome', 'email', 'telefone', 'senha', 'confirmacao', 'documentos_aceitos']);
