@@ -102,12 +102,14 @@ function Login({ navigate }) {
       <section className="auth-panel" aria-labelledby="login-title">
         <div className="auth-panel-header">
           <BrandLogo onClick={() => navigate('/')} />
+          <span>Acesso do empreendedor</span>
         </div>
         <div className="auth-login-main">
           <div className="auth-heading-group">
-            <h1 id="login-title">Entre no Agendai</h1>
+            <span className="auth-login-kicker">Bem-vindo de volta</span>
+            <h1 id="login-title">Entre na sua agenda.</h1>
             <p className="panel-text auth-intro-text">
-              Acesse sua conta para acompanhar sua agenda e manter tudo organizado.
+              Seus horários, clientes e serviços estão prontos para você acompanhar.
             </p>
           </div>
 
@@ -122,7 +124,7 @@ function Login({ navigate }) {
               <span className={`auth-input-shell ${errosCampos.email || errosCampos.credenciais ? 'is-invalid' : ''}`}>
                 <Mail aria-hidden="true" size={17} strokeWidth={2} />
                 <input
-                  aria-describedby={errosCampos.email ? 'login-email-error' : undefined}
+                  aria-describedby={errosCampos.email ? 'login-email-error' : errosCampos.credenciais ? 'login-access-error' : undefined}
                   aria-invalid={Boolean(errosCampos.email || errosCampos.credenciais)}
                   autoComplete="email"
                   disabled={carregando}
@@ -150,7 +152,7 @@ function Login({ navigate }) {
               <span className={`auth-input-shell auth-password-shell ${errosCampos.senha || errosCampos.credenciais ? 'is-invalid' : ''}`}>
                 <LockKeyhole aria-hidden="true" size={17} strokeWidth={2} />
                 <input
-                  aria-describedby={errosCampos.senha ? 'login-password-error' : undefined}
+                  aria-describedby={errosCampos.senha ? 'login-password-error' : errosCampos.credenciais ? 'login-access-error' : undefined}
                   aria-invalid={Boolean(errosCampos.senha || errosCampos.credenciais)}
                   autoComplete="current-password"
                   disabled={carregando}
@@ -196,6 +198,7 @@ function Login({ navigate }) {
             {erro && (
               <p
                 className="message message-error auth-login-error"
+                id="login-access-error"
                 ref={erroRef}
                 role="alert"
                 tabIndex={-1}

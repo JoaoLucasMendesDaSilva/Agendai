@@ -30,21 +30,43 @@ function AuthLayout({ children, mode = 'login', onLogoClick }) {
             </div>
           </aside>
         ) : (
-          <aside className="auth-visual-panel auth-login-visual" aria-label="Visão geral do Agendai">
+          <aside className="auth-visual-panel auth-login-visual" aria-labelledby="login-preview-title">
             <div className="auth-login-visual-content">
-              <BrandLogo onClick={onLogoClick} />
-
+              <span className="auth-login-visual-kicker">Seu espaço de trabalho</span>
               <div className="auth-login-visual-copy">
-                <h2>Sua agenda começa organizada</h2>
+                <h2 id="login-preview-title">O dia inteiro, em um só lugar.</h2>
                 <p>
-                  Acompanhe clientes, horários e equipe em um só lugar.
-                  Mais controle, menos imprevistos.
+                  Volte para sua agenda e acompanhe os atendimentos do negócio.
                 </p>
               </div>
-
-              <p className="auth-login-visual-note">
-                Feito para a rotina de pequenos negócios.
-              </p>
+              <div className="auth-login-flow" role="group" aria-label="Exemplo ilustrativo do caminho de um agendamento">
+                <span className="auth-login-flow-label">Do pedido à agenda</span>
+                <ol>
+                  <li><span aria-hidden="true">01</span><strong>Pedido recebido</strong></li>
+                  <li><span aria-hidden="true">02</span><strong>Horário conferido</strong></li>
+                  <li><span aria-hidden="true">03</span><strong>Dia em ordem</strong></li>
+                </ol>
+              </div>
+              <figure className="auth-login-day">
+                <figcaption>
+                  <span>Uma rotina em ordem</span>
+                  <small>Exemplo ilustrativo</small>
+                </figcaption>
+                <ol className="auth-login-day-list">
+                  <li>
+                    <time dateTime="09:00">09:00</time>
+                    <div><strong>Primeiro atendimento</strong><span>Confirmado</span></div>
+                  </li>
+                  <li>
+                    <time dateTime="12:30">12:30</time>
+                    <div><strong>Tempo para respirar</strong><span>Intervalo</span></div>
+                  </li>
+                  <li>
+                    <time dateTime="16:00">16:00</time>
+                    <div><strong>Próximo horário</strong><span>Disponível</span></div>
+                  </li>
+                </ol>
+              </figure>
             </div>
           </aside>
         )}

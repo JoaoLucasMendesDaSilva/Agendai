@@ -77,6 +77,25 @@ describe('Login', () => {
     );
     expect(screen.queryByText('detalhe interno')).not.toBeInTheDocument();
     expect(screen.getByLabelText('E-mail')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByLabelText('E-mail')).toHaveAttribute('aria-describedby', 'login-access-error');
+    expect(screen.getByLabelText('Senha')).toHaveAttribute('aria-describedby', 'login-access-error');
+  });
+
+  it('preserva os dados e orienta nova tentativa quando a rede falha', async () => {
+    const user = userEvent.setup();
+    authMock.login.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    render(<Login navigate={vi.fn()} />);
+    await user.type(screen.getByLabelText('E-mail'), 'pessoa@exemplo.com');
+    await user.type(screen.getByLabelText('Senha'), 'senha-segura');
+    await user.click(screen.getByRole('button', { name: 'Entrar' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Não foi possível conectar. Confira sua internet e tente novamente.',
+    );
+    expect(screen.getByLabelText('E-mail')).toHaveValue('pessoa@exemplo.com');
+    expect(screen.getByLabelText('Senha')).toHaveValue('senha-segura');
+    expect(screen.getByRole('button', { name: 'Entrar' })).toBeEnabled();
   });
 
   it('impede envios repetidos enquanto a autenticacao esta em andamento', async () => {
