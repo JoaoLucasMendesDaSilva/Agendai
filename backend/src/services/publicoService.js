@@ -458,6 +458,30 @@ async function buscarAgendamentoPublicoPorToken(token) {
   return buscarAgendamentoGerenciavelPorHash(obterHashTokenPublico(token));
 }
 
+async function buscarDadosNotificacaoPorToken(token) {
+  const tokenHash = obterHashTokenPublico(token);
+  const pool = getDatabasePool();
+  const { rows: agendamentos } = await pool.query(
+    `SELECT n.nome AS negocio_nome, n.slug_publico,
+      s.nome AS servico_nome, p.nome AS profissional_nome,
+      a.cliente_nome, a.cliente_telefone, a.cliente_email,
+      a.data_hora_inicio, a.data_hora_fim, a.status
+     FROM agendamentos a
+     INNER JOIN negocios n ON n.id = a.negocio_id
+     INNER JOIN servicos s ON s.id = a.servico_id
+     INNER JOIN profissionais p ON p.id = a.profissional_id
+     WHERE a.token_publico_hash = $1
+     LIMIT 1`,
+    [tokenHash]
+  );
+
+  if (agendamentos.length === 0) {
+    throw criarErro(404, 'Agendamento não encontrado.');
+  }
+
+  return agendamentos[0];
+}
+
 async function cancelarAgendamentoPublicoPorToken(token) {
   const tokenHash = obterHashTokenPublico(token);
   const pool = getDatabasePool();
@@ -472,9 +496,22 @@ async function cancelarAgendamentoPublicoPorToken(token) {
   if (resultado.rowCount === 0) {
     const agendamento = await buscarAgendamentoGerenciavelPorHash(tokenHash);
     validarAgendamentoGerenciavel(agendamento, 'cancelado');
+
+    Object.defineProperty(agendamento, 'notificacaoNecessaria', {
+      value: false,
+      enumerable: false,
+    });
+
+    return agendamento;
   }
 
-  return buscarAgendamentoGerenciavelPorHash(tokenHash);
+  const agendamento = await buscarAgendamentoGerenciavelPorHash(tokenHash);
+  Object.defineProperty(agendamento, 'notificacaoNecessaria', {
+    value: true,
+    enumerable: false,
+  });
+
+  return agendamento;
 }
 
 async function confirmarPresencaPublicaPorToken(token) {
@@ -993,6 +1030,7 @@ async function criarAgendamentoPublico(slugOuId, dados) {
 
 module.exports = {
   buscarAgendamentoPublicoPorToken,
+  buscarDadosNotificacaoPorToken,
   cancelarAgendamentoPublicoPorToken,
   confirmarPresencaPublicaPorToken,
   criarAgendamentoPublico,

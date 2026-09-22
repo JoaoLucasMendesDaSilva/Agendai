@@ -1,10 +1,26 @@
 const {
   atualizarStatusAgendamento,
   buscarAgendamentoPorId,
+  buscarDadosNotificacao,
   cancelarAgendamento,
   listarAgendamentos,
   listarAgendamentosHoje,
 } = require('../services/agendamentosService');
+const {
+  notificarAgendamentoCancelado,
+} = require('../services/notificacoes/notificacoesService');
+
+async function tentarNotificarCancelamento(usuarioId, agendamentoId) {
+  try {
+    const dados = await buscarDadosNotificacao(usuarioId, agendamentoId);
+    await notificarAgendamentoCancelado(dados);
+  } catch (erro) {
+    console.warn('[notificacoes] dados de cancelamento indisponíveis', {
+      status: Number.isInteger(erro?.status) ? erro.status : undefined,
+      tipo: erro?.name || 'Error',
+    });
+  }
+}
 
 async function listar(req, res, next) {
   try {
@@ -53,6 +69,10 @@ async function atualizarStatus(req, res, next) {
       req.body
     );
 
+    if (agendamento.status === 'cancelado' && agendamento.notificacaoNecessaria) {
+      void tentarNotificarCancelamento(req.usuario.id, req.params.id);
+    }
+
     res.json({
       mensagem: 'Status do agendamento atualizado com sucesso.',
       agendamento,
@@ -64,7 +84,14 @@ async function atualizarStatus(req, res, next) {
 
 async function cancelar(req, res, next) {
   try {
-    await cancelarAgendamento(req.usuario.id, req.params.id);
+    const canceladoAgora = await cancelarAgendamento(
+      req.usuario.id,
+      req.params.id
+    );
+
+    if (canceladoAgora) {
+      void tentarNotificarCancelamento(req.usuario.id, req.params.id);
+    }
 
     res.json({
       mensagem: 'Agendamento cancelado com sucesso.',

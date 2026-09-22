@@ -239,14 +239,23 @@ async function atualizarStatusAgendamento(usuarioId, agendamentoId, dados) {
   const status = validarPayloadStatus(dados);
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const pool = getDatabasePool();
+  let agendamentoAtual;
 
-  if (statusEhAtivo(status)) {
-    const agendamentoAtual = await buscarAgendamentoParaAtualizacaoStatus(
+  if (status === 'cancelado') {
+    agendamentoAtual = await buscarAgendamentoParaAtualizacaoStatus(
       pool,
       id,
       negocioId
     );
-    await rejeitarConflitoStatusAtivo(pool, negocioId, agendamentoAtual);
+  }
+
+  if (statusEhAtivo(status)) {
+    const agendamentoAtivo = await buscarAgendamentoParaAtualizacaoStatus(
+      pool,
+      id,
+      negocioId
+    );
+    await rejeitarConflitoStatusAtivo(pool, negocioId, agendamentoAtivo);
   }
 
   let resultado;
@@ -264,7 +273,16 @@ async function atualizarStatusAgendamento(usuarioId, agendamentoId, dados) {
     throw criarErro(404, 'Agendamento não encontrado.');
   }
 
-  return buscarAgendamentoPorId(usuarioId, id);
+  const agendamento = await buscarAgendamentoPorId(usuarioId, id);
+
+  if (status === 'cancelado') {
+    Object.defineProperty(agendamento, 'notificacaoNecessaria', {
+      value: agendamentoAtual.status !== status,
+      enumerable: false,
+    });
+  }
+
+  return agendamento;
 }
 
 async function cancelarAgendamento(usuarioId, agendamentoId) {
@@ -272,18 +290,55 @@ async function cancelarAgendamento(usuarioId, agendamentoId) {
   const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
   const pool = getDatabasePool();
   const resultado = await pool.query(
-    "UPDATE agendamentos SET status = 'cancelado' WHERE id = $1 AND negocio_id = $2",
+    "UPDATE agendamentos SET status = 'cancelado' WHERE id = $1 AND negocio_id = $2 AND status <> 'cancelado'",
     [id, negocioId]
   );
 
   if (resultado.rowCount === 0) {
+    const existente = await pool.query(
+      'SELECT id FROM agendamentos WHERE id = $1 AND negocio_id = $2 LIMIT 1',
+      [id, negocioId]
+    );
+
+    if (existente.rows.length === 0) {
+      throw criarErro(404, 'Agendamento não encontrado.');
+    }
+
+    return false;
+  }
+
+  return true;
+}
+
+async function buscarDadosNotificacao(usuarioId, agendamentoId) {
+  const id = validarId(agendamentoId);
+  const negocioId = await buscarNegocioIdDoUsuario(usuarioId);
+  const pool = getDatabasePool();
+  const { rows: agendamentos } = await pool.query(
+    `SELECT n.nome AS negocio_nome, n.slug_publico,
+      s.nome AS servico_nome, p.nome AS profissional_nome,
+      a.cliente_nome, a.cliente_telefone, a.cliente_email,
+      a.data_hora_inicio, a.data_hora_fim, a.status
+     FROM agendamentos a
+     INNER JOIN negocios n ON n.id = a.negocio_id
+     INNER JOIN servicos s ON s.id = a.servico_id
+     INNER JOIN profissionais p ON p.id = a.profissional_id
+     WHERE a.id = $1 AND a.negocio_id = $2
+     LIMIT 1`,
+    [id, negocioId]
+  );
+
+  if (agendamentos.length === 0) {
     throw criarErro(404, 'Agendamento não encontrado.');
   }
+
+  return agendamentos[0];
 }
 
 module.exports = {
   atualizarStatusAgendamento,
   buscarAgendamentoPorId,
+  buscarDadosNotificacao,
   cancelarAgendamento,
   listarAgendamentos,
   listarAgendamentosHoje,

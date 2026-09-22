@@ -1,5 +1,6 @@
 const {
   buscarAgendamentoPublicoPorToken,
+  buscarDadosNotificacaoPorToken,
   cancelarAgendamentoPublicoPorToken,
   confirmarPresencaPublicaPorToken,
   criarAgendamentoPublico,
@@ -10,6 +11,27 @@ const {
   obterNegocio,
   reagendarAgendamentoPublicoPorToken,
 } = require('../services/publicoService');
+const {
+  notificarAgendamentoCancelado,
+  notificarAgendamentoConfirmado,
+} = require('../services/notificacoes/notificacoesService');
+
+async function tentarNotificar(tipo, token, tokenGerenciamento = token) {
+  try {
+    const dados = await buscarDadosNotificacaoPorToken(token);
+    const notificar =
+      tipo === 'cancelamento'
+        ? notificarAgendamentoCancelado
+        : notificarAgendamentoConfirmado;
+    await notificar(dados, { tokenGerenciamento });
+  } catch (erro) {
+    console.warn('[notificacoes] dados de agendamento indisponíveis', {
+      evento: tipo,
+      status: Number.isInteger(erro?.status) ? erro.status : undefined,
+      tipoErro: erro?.name || 'Error',
+    });
+  }
+}
 
 async function buscarAgendamento(req, res, next) {
   try {
@@ -26,6 +48,9 @@ async function cancelarAgendamento(req, res, next) {
     const agendamento = await cancelarAgendamentoPublicoPorToken(
       req.params.token
     );
+    if (agendamento.notificacaoNecessaria) {
+      void tentarNotificar('cancelamento', req.params.token);
+    }
 
     res.json({
       mensagem: 'Agendamento cancelado com sucesso.',
@@ -134,6 +159,11 @@ async function criarAgendamento(req, res, next) {
     const agendamento = await criarAgendamentoPublico(
       req.params.slugOuId,
       req.body
+    );
+    void tentarNotificar(
+      'confirmacao',
+      agendamento.token_gerenciamento,
+      agendamento.token_gerenciamento
     );
 
     res.status(201).json({
