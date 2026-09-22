@@ -88,6 +88,16 @@ Além disso, o projeto tem como objetivo demonstrar a construção de uma aplica
 - Estados cancelado e concluído apenas informativos, sem novas alterações;
 - Compartilhamento de links pelo WhatsApp.
 
+### Notificações
+
+- Envio de confirmação após um agendamento público ser criado;
+- Aviso de cancelamento nos fluxos público e administrativo;
+- E-mail transacional pelo SendGrid e mensagem pelo WhatsApp via Z-API;
+- Modo simulado por padrão, modo real com credenciais e modo desativado;
+- Timeout e retry limitado para falhas transitórias;
+- Falhas de notificação não desfazem a criação ou o cancelamento do agendamento;
+- Repetições de cancelamento não geram novo aviso quando o agendamento já estava cancelado.
+
 ### Recursos extras
 
 - PWA;
@@ -323,6 +333,32 @@ RUN_POSTGRES_ROLE_FIXTURES=
 DATABASE_TEST_URL=
 CONFIRM_POSTGRES_TEST_DB=
 ```
+
+As notificações usam estas variáveis adicionais no mesmo `.env` da raiz:
+
+```env
+# simulado (padrão), real ou desativado
+NOTIFICACOES_MODE=simulado
+NOTIFICACOES_TIMEOUT_MS=5000
+NOTIFICACOES_MAX_RETRIES=1
+PUBLIC_APP_URL=http://localhost:5173
+
+SENDGRID_API_KEY=
+SENDGRID_FROM_EMAIL=
+SENDGRID_FROM_NAME=Agendai
+
+ZAPI_INSTANCE_ID=
+ZAPI_INSTANCE_TOKEN=
+ZAPI_CLIENT_TOKEN=
+```
+
+No modo `simulado`, nenhum provedor externo é chamado. Para enviar mensagens,
+configure `NOTIFICACOES_MODE=real`, as credenciais do canal desejado e um
+remetente verificado no SendGrid. A Z-API exige uma instância conectada ao
+WhatsApp. `PUBLIC_APP_URL` é usado para montar o link público de gerenciamento
+incluído na confirmação por e-mail. As credenciais são exclusivas do backend;
+nunca as coloque em variáveis `VITE_*`, no frontend ou no repositório. Reinicie
+o backend depois de alterar o `.env`.
 
 `DATABASE_URL` é obrigatória e deve permanecer somente no ambiente. Não inclua
 parâmetros ou fragmentos na URI; a política TLS é definida separadamente por
@@ -656,7 +692,7 @@ Algumas melhorias planejadas para o projeto:
   operacional da credencial administrativa;
 - Ampliação dos testes HTTP de autorização, isolamento e contratos de erro;
 - Bloqueios de agenda, folgas e indisponibilidades manuais;
-- Simulação e integração progressiva de notificações;
+- Lembretes automáticos antes dos agendamentos;
 - Persistência de uploads em volume ou armazenamento de objetos;
 - Melhorias de performance, acessibilidade, relatórios e documentação da API;
 - Perfil do cliente e integração com Google Calendar como evoluções posteriores.
@@ -683,6 +719,7 @@ Futuro Engenheiro de Dados / Engenheiro de IA
 ## Documentação do produto e da interface
 
 - [Produto](PRODUCT.md) e [padrões visuais](DESIGN.md).
+- [Framework de operação com IA](docs/FRAMEWORK-OPERACAO-IA.md).
 - [Direção do redesign](docs/REDESIGN-PROFISSIONAL.md).
 - [Implementação e verificações das interfaces](docs/IMPLEMENTACAO-DESIGN-PROFISSIONAL.md), incluindo o cadastro.
 - [Operação PostgreSQL/Supabase](docs/POSTGRES-SUPABASE.md), [Render](docs/RENDER.md) e [operação LGPD](docs/OPERACAO-LGPD.md).
